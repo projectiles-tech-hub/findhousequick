@@ -1,13 +1,12 @@
 import {
-  BadRequestException,
-  ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
   OnModuleInit,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
-import type { FeatureRule, FeatureScope, StaffRole } from '../generated/prisma/client.js';
+import type { FeatureRule, FeatureScope, RuleStatus, StaffRole } from '../generated/prisma/client.js';
+import { apiError } from '../common/api-error.js';
 import { parseCountrySettings, type CountrySettings } from './country-settings.schema.js';
 import { FEATURES, isFeatureKey, type FeatureKey } from './feature-catalogue.js';
 import { evaluateFeature, type Decision, type EvaluationContext } from './feature-evaluator.js';
@@ -139,27 +138,33 @@ export class ControlsService implements OnModuleInit {
   // -------------------------------------------------------------------
 
   /**
-   * Creates a feature rule.
-   * - Critical features: switching ON needs a second staff member's approval, so the rule starts as
-   *   PENDING_APPROVAL. Switching OFF takes effect immediately, so emergency pauses are never delayed.
+   * Creates a feature rule (ADR 0002, as confirmed in Decisions Log decision 28).
+   *
+   * - **Switching off at once** (a plain OFF rule: no schedule, no end time, no percentage) applies
+   *   immediately, for super admins and for country managers in their own countries, so an emergency pause
+   *   is never delayed.
+   * - **Country managers**: anything else (switching on, scheduling, gradual release) waits for a super admin.
+   * - **Super admins**: applies at once, except switching a critical feature ON, which waits for a different
+   *   staff member's approval.
    * - Every change is recorded in ControlChange.
    */
   async createRule(input: CreateRuleInput, actor: StaffActor): Promise<FeatureRule> {
-    if (!isFeatureKey(input.flagKey)) throw new BadRequestException(`Unknown feature: ${input.flagKey}`);
-    if (!input.reason?.trim()) throw new BadRequestException('A reason is required for every change');
+    if (!isFeatureKey(input.flagKey)) throw apiError(400, 'UNKNOWN_FEATURE', `Unknown feature: ${input.flagKey}`);
+    if (!input.reason?.trim()) throw apiError(400, 'REASON_REQUIRED', 'A reason is required for every change.');
     if ((input.scope === 'GLOBAL') !== (input.scopeValue === null)) {
-      throw new BadRequestException('Whole-platform rules have no scope value; all other rules need one');
+      throw apiError(400, 'BAD_REQUEST', 'Whole-platform rules have no scope value; all other rules need one.');
     }
     if (input.rolloutPercent != null && (input.rolloutPercent < 0 || input.rolloutPercent > 100)) {
-      throw new BadRequestException('Rollout percentage must be between 0 and 100');
+      throw apiError(400, 'BAD_REQUEST', 'Rollout percentage must be between 0 and 100.');
     }
     if (input.startsAt && input.endsAt && input.endsAt <= input.startsAt) {
-      throw new BadRequestException('The end time must be after the start time');
+      throw apiError(400, 'BAD_REQUEST', 'The end time must be after the start time.');
     }
     await this.assertMayChangeScope(actor, input.scope, input.scopeValue);
 
     const flag = await this.prisma.featureFlag.findUniqueOrThrow({ where: { key: input.flagKey } });
-    const needsApproval = flag.critical && input.enabled;
+    const switchOffNow = !input.enabled && !input.startsAt && !input.endsAt && input.rolloutPercent == null;
+    const needsApproval = isSuperAdmin(actor) ? flag.critical && input.enabled : !switchOffNow;
 
     const rule = await this.prisma.$transaction(async (tx) => {
       const created = await tx.featureRule.create({
@@ -194,22 +199,32 @@ export class ControlsService implements OnModuleInit {
   }
 
   /**
-   * Approves a pending rule. The approver must be a different person from the creator, and at least
-   * one of the two must be a super admin (the Managing Director or a person he appoints).
+   * Approves a waiting change: either a new rule, or a country manager's request to withdraw a live rule.
+   *
+   * - The approver must be a different person from the one who asked.
+   * - A country manager's change needs a super admin. A super admin's critical change needs any second
+   *   authorised staff member (so one of the two is always a super admin).
    */
   async approveRule(ruleId: string, approver: StaffActor): Promise<FeatureRule> {
-    const rule = await this.prisma.featureRule.findUnique({ where: { id: ruleId } });
-    if (!rule) throw new NotFoundException('Rule not found');
-    if (rule.status !== 'PENDING_APPROVAL') throw new BadRequestException('This rule is not waiting for approval');
+    const rule = await this.prisma.featureRule.findUnique({ where: { id: ruleId }, include: { flag: true } });
+    if (!rule) throw apiError(404, 'RULE_NOT_FOUND', 'Rule not found.');
+
+    if (rule.status === 'ACTIVE' && rule.archiveRequestedById) return this.approveWithdrawal(rule, approver);
+    if (rule.status !== 'PENDING_APPROVAL') {
+      throw apiError(400, 'NOT_WAITING', 'This rule is not waiting for approval.');
+    }
     if (rule.createdById === approver.userId) {
-      throw new ForbiddenException('A change must be approved by a different staff member');
+      throw apiError(403, 'SAME_PERSON', 'A change must be approved by a different staff member.');
     }
     await this.assertMayChangeScope(approver, rule.scope, rule.scopeValue);
 
     const creator = await this.prisma.staffMember.findUnique({ where: { userId: rule.createdById } });
-    const superAdminInvolved = approver.roles.includes('SUPER_ADMIN') || !!creator?.roles.includes('SUPER_ADMIN');
-    if (!superAdminInvolved) {
-      throw new ForbiddenException('Critical changes need approval from the Managing Director or his appointee');
+    if (!isSuperAdmin(approver) && !creator?.roles.includes('SUPER_ADMIN')) {
+      throw apiError(
+        403,
+        'SUPER_ADMIN_APPROVAL_REQUIRED',
+        'This change needs approval from the Managing Director or his appointee (a super admin).',
+      );
     }
 
     const approved = await this.prisma.$transaction(async (tx) => {
@@ -236,20 +251,31 @@ export class ControlsService implements OnModuleInit {
   }
 
   /**
-   * Withdraws a rule. Withdrawing a rule that currently switches a critical feature OFF would switch
-   * it back on, so that also needs approval: it is done by creating an approved ON rule instead.
+   * Withdraws a rule.
+   *
+   * - Super admins withdraw at once.
+   * - A country manager can withdraw their own proposal at once, since it changes nothing live. Any other
+   *   withdrawal by a country manager is recorded as a request; the rule stays in force until a super admin
+   *   approves it with approveRule.
+   * - Withdrawing a live rule that switches a critical feature OFF would switch it back on, so it is not
+   *   allowed for anyone: create an ON rule and have it approved instead.
    */
   async archiveRule(ruleId: string, actor: StaffActor, reason: string): Promise<FeatureRule> {
-    if (!reason?.trim()) throw new BadRequestException('A reason is required for every change');
+    if (!reason?.trim()) throw apiError(400, 'REASON_REQUIRED', 'A reason is required for every change.');
     const rule = await this.prisma.featureRule.findUnique({ where: { id: ruleId }, include: { flag: true } });
-    if (!rule) throw new NotFoundException('Rule not found');
-    if (rule.status === 'ARCHIVED') return rule;
+    if (!rule) throw apiError(404, 'RULE_NOT_FOUND', 'Rule not found.');
+    if (rule.status === 'ARCHIVED') return stripFlag(rule);
     await this.assertMayChangeScope(actor, rule.scope, rule.scopeValue);
     if (rule.flag.critical && rule.status === 'ACTIVE' && !rule.enabled) {
-      throw new ForbiddenException(
+      throw apiError(
+        403,
+        'CRITICAL_OFF_RULE',
         'Removing an OFF rule on a critical feature switches it back on. Create an ON rule and have it approved instead.',
       );
     }
+
+    const ownProposal = rule.status === 'PENDING_APPROVAL' && rule.createdById === actor.userId;
+    if (!isSuperAdmin(actor) && !ownProposal) return this.requestWithdrawal(rule, actor, reason.trim());
 
     const archived = await this.prisma.$transaction(async (tx) => {
       const updated = await tx.featureRule.update({ where: { id: ruleId }, data: { status: 'ARCHIVED' } });
@@ -258,7 +284,7 @@ export class ControlsService implements OnModuleInit {
           entityType: 'FeatureRule',
           entityId: ruleId,
           action: 'RULE_ARCHIVED',
-          before: toJson(rule),
+          before: toJson(stripFlag(rule)),
           after: toJson(updated),
           reason: reason.trim(),
           actorId: actor.userId,
@@ -270,17 +296,98 @@ export class ControlsService implements OnModuleInit {
     return archived;
   }
 
+  /**
+   * Rules for the admin panel, newest first. Super admins see every rule; country managers see the
+   * whole-platform and user-type rules (which affect their countries) and the rules for their own countries.
+   */
+  async listRules(actor: StaffActor, filter: { status?: RuleStatus; flagKey?: string } = {}): Promise<FeatureRule[]> {
+    const rules = await this.prisma.featureRule.findMany({
+      where: { ...(filter.status && { status: filter.status }), ...(filter.flagKey && { flagKey: filter.flagKey }) },
+      orderBy: { createdAt: 'desc' },
+      take: 500,
+    });
+    if (isSuperAdmin(actor) || actor.countryScopes.includes('*')) return rules;
+    const visible: FeatureRule[] = [];
+    for (const r of rules) {
+      if (r.scope === 'GLOBAL' || r.scope === 'USER_TYPE') {
+        visible.push(r);
+        continue;
+      }
+      const country = await this.countryOfScope(r.scope, r.scopeValue!).catch(() => null);
+      if (country && actor.countryScopes.includes(country)) visible.push(r);
+    }
+    return visible;
+  }
+
+  /** Records a country manager's request to withdraw a rule. The rule stays as it is until approved. */
+  private async requestWithdrawal(rule: FeatureRule & { flag: unknown }, actor: StaffActor, reason: string): Promise<FeatureRule> {
+    if (rule.archiveRequestedById) {
+      throw apiError(409, 'ALREADY_REQUESTED', 'Withdrawal of this rule has already been requested.');
+    }
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const u = await tx.featureRule.update({
+        where: { id: rule.id },
+        data: { archiveRequestedById: actor.userId, archiveRequestedAt: new Date(), archiveReason: reason },
+      });
+      await tx.controlChange.create({
+        data: {
+          entityType: 'FeatureRule',
+          entityId: rule.id,
+          action: 'RULE_ARCHIVE_REQUESTED',
+          before: toJson(stripFlag(rule)),
+          after: toJson(u),
+          reason,
+          actorId: actor.userId,
+        },
+      });
+      return u;
+    });
+    // Nothing live changed, so the cache stays as it is.
+    return updated;
+  }
+
+  private async approveWithdrawal(rule: FeatureRule, approver: StaffActor): Promise<FeatureRule> {
+    if (!isSuperAdmin(approver)) {
+      throw apiError(
+        403,
+        'SUPER_ADMIN_APPROVAL_REQUIRED',
+        'Withdrawing a rule needs approval from the Managing Director or his appointee (a super admin).',
+      );
+    }
+    if (rule.archiveRequestedById === approver.userId) {
+      throw apiError(403, 'SAME_PERSON', 'A change must be approved by a different staff member.');
+    }
+    const archived = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.featureRule.update({ where: { id: rule.id }, data: { status: 'ARCHIVED' } });
+      await tx.controlChange.create({
+        data: {
+          entityType: 'FeatureRule',
+          entityId: rule.id,
+          action: 'RULE_ARCHIVED',
+          before: toJson(stripFlag(rule)),
+          after: toJson(updated),
+          reason: rule.archiveReason ?? 'Withdrawal approved',
+          actorId: rule.archiveRequestedById!,
+          approvedById: approver.userId,
+        },
+      });
+      return updated;
+    });
+    this.invalidate();
+    return archived;
+  }
+
   private async assertMayChangeScope(actor: StaffActor, scope: FeatureScope, scopeValue: string | null) {
-    if (actor.roles.includes('SUPER_ADMIN')) return;
+    if (isSuperAdmin(actor)) return;
     if (!actor.roles.includes('COUNTRY_MANAGER')) {
-      throw new ForbiddenException('Only super admins and country managers can change feature controls');
+      throw apiError(403, 'FORBIDDEN', 'Only super admins and country managers can change feature controls.');
     }
     if (scope === 'GLOBAL' || scope === 'USER_TYPE') {
-      throw new ForbiddenException('Only super admins can change whole-platform or user-type rules');
+      throw apiError(403, 'FORBIDDEN', 'Only super admins can change whole-platform or user-type rules.');
     }
     const country = await this.countryOfScope(scope, scopeValue!);
     if (!actor.countryScopes.includes('*') && !actor.countryScopes.includes(country)) {
-      throw new ForbiddenException(`You are not assigned to country ${country}`);
+      throw apiError(403, 'FORBIDDEN', `You are not assigned to country ${country}.`);
     }
   }
 
@@ -290,23 +397,33 @@ export class ControlsService implements OnModuleInit {
         return value;
       case 'REGION': {
         const r = await this.prisma.region.findUnique({ where: { id: value } });
-        if (!r) throw new BadRequestException('Region not found');
+        if (!r) throw apiError(400, 'REGION_NOT_FOUND', 'Region not found.');
         return r.countryCode;
       }
       case 'CITY': {
         const c = await this.prisma.city.findUnique({ where: { id: value }, include: { region: true } });
-        if (!c) throw new BadRequestException('City not found');
+        if (!c) throw apiError(400, 'CITY_NOT_FOUND', 'City not found.');
         return c.region.countryCode;
       }
       case 'USER': {
         const u = await this.prisma.user.findUnique({ where: { id: value } });
-        if (!u) throw new BadRequestException('User not found');
+        if (!u) throw apiError(400, 'USER_NOT_FOUND', 'User not found.');
         return u.countryCode;
       }
       default:
-        throw new BadRequestException(`Scope ${scope} has no country`);
+        throw apiError(400, 'BAD_REQUEST', `Scope ${scope} has no country.`);
     }
   }
+}
+
+function isSuperAdmin(actor: StaffActor): boolean {
+  return actor.roles.includes('SUPER_ADMIN');
+}
+
+/** The rule without its joined feature, for the change record. */
+function stripFlag<T extends object>(rule: T): Omit<T, 'flag'> {
+  const { flag: _flag, ...rest } = rule as T & { flag?: unknown };
+  return rest;
 }
 
 function toJson(value: object): object {
