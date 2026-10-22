@@ -17,6 +17,9 @@ info:
     - **Locations** are `{"lat": 6.335, "lng": 5.6037}` in WGS 84.
     - **Lists** use cursor pagination: pass `cursor` from the previous response's `nextCursor`.
     - **Login** uses a short-lived access token (`Authorization: Bearer ...`) and a refresh token.
+      Every route needs sign-in unless it says `security: []`. A refused sign-in returns `401` with
+      `code` UNAUTHENTICATED (no or bad token), TOKEN_EXPIRED (refresh it) or SESSION_INVALID (sign in
+      again), or `403` with `code: ACCOUNT_SUSPENDED`. See ADR 0004.
     - **Location context**: apps send `X-Country`, and when known `X-Region` and `X-City`, so the
       right country settings and feature switches apply.
     - **Feature switches**: a route belonging to a switched-off feature returns `403` with
@@ -70,7 +73,11 @@ paths:
     post:
       tags: [Accounts]
       summary: Send a one-time code by SMS
-      description: Used for registration, login without password and password reset. Rate-limited per phone number.
+      description: |
+        Used for registration and login without password. Limited per phone number (one code a minute,
+        five an hour); a code expires after 10 minutes and stops working after 5 wrong guesses.
+        REGISTER codes are refused with `403 FEATURE_UNAVAILABLE` where registrations are switched off.
+        RESET_PASSWORD is refused with `400 NOT_AVAILABLE_YET` until a password reset endpoint is designed.
       security: []
       requestBody:
         required: true
@@ -84,6 +91,8 @@ paths:
                 purpose: { type: string, enum: [REGISTER, LOGIN, RESET_PASSWORD] }
       responses:
         "202": { description: Code sent if the request is allowed. The response never reveals whether the number is registered. }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
         "429": { $ref: "#/components/responses/TooManyRequests" }
 
   /auth/register:
@@ -98,7 +107,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [phone, otp, password, firstName, lastName, countryCode, types]
+              required: [phone, otp, password, firstName, lastName, countryCode, types, consent]
               properties:
                 phone: { $ref: "#/components/schemas/Phone" }
                 otp: { type: string, pattern: "^[0-9]{6}$" }
@@ -114,6 +123,7 @@ paths:
                 language: { type: string, example: en }
                 consent:
                   type: object
+                  description: Required. The versions of the terms of use and privacy policy the user agreed to.
                   required: [termsVersion, privacyVersion]
                   properties:
                     termsVersion: { type: string }
@@ -124,13 +134,25 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Session" }
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "409": { description: Phone or email already registered. }
+        "400":
+          description: "Invalid request. `code` may be INVALID_CODE, COUNTRY_NOT_AVAILABLE or LANGUAGE_NOT_AVAILABLE."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409":
+          description: "Phone or email already registered (`code` PHONE_TAKEN or EMAIL_TAKEN)."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
 
   /auth/login:
     post:
       tags: [Accounts]
       summary: Sign in with phone and password, or phone and SMS code
+      description: |
+        Give exactly one of `password` or `otp`. After 5 wrong passwords in a row, password sign-in pauses
+        for 15 minutes (`429 PASSWORD_LOCKED`); sign-in by SMS code still works.
       security: []
       requestBody:
         required: true
@@ -150,14 +172,22 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Session" }
-        "401": { description: Wrong credentials. }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401":
+          description: "Wrong credentials (`code` WRONG_CREDENTIALS). The same answer is given for an unknown number."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "403": { $ref: "#/components/responses/Forbidden" }
         "429": { $ref: "#/components/responses/TooManyRequests" }
 
   /auth/refresh:
     post:
       tags: [Accounts]
       summary: Exchange a refresh token for a new access token
-      description: Refresh tokens are single-use; each call returns a new one and invalidates the old.
+      description: |
+        Refresh tokens are single-use; each call returns a new one and invalidates the old. If a token that
+        was already used is presented again, it is treated as copied and that device is signed out.
       security: []
       requestBody:
         required: true
@@ -174,7 +204,11 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Session" }
-        "401": { description: "Token expired, revoked or already used." }
+        "401":
+          description: "Token expired, revoked or already used (`code` SESSION_INVALID)."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
 
   /auth/logout:
     post:
@@ -182,6 +216,7 @@ paths:
       summary: Sign out this device
       responses:
         "204": { description: Signed out. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
 
   /me:
     get:
@@ -193,6 +228,7 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Me" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
     patch:
       tags: [Accounts]
       summary: Update profile details
@@ -213,6 +249,17 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Me" }
+        "400":
+          description: "Invalid request, including a language not offered (`code` LANGUAGE_NOT_AVAILABLE)."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409":
+          description: "Email already used by another account (`code` EMAIL_TAKEN)."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
     delete:
       tags: [Accounts]
       summary: Request account deletion
@@ -1411,13 +1458,18 @@ components:
     CheckId: { name: checkId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
 
   responses:
+    Unauthorized:
+      description: Not signed in. `code` is UNAUTHENTICATED, TOKEN_EXPIRED or SESSION_INVALID.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
     BadRequest:
       description: The request is invalid.
       content:
         application/json:
           schema: { $ref: "#/components/schemas/Error" }
     Forbidden:
-      description: Not allowed. `code` is FEATURE_UNAVAILABLE, VERIFICATION_REQUIRED or FORBIDDEN.
+      description: Not allowed. `code` is FEATURE_UNAVAILABLE, VERIFICATION_REQUIRED, ACCOUNT_SUSPENDED or FORBIDDEN.
       content:
         application/json:
           schema: { $ref: "#/components/schemas/Error" }
@@ -1481,7 +1533,14 @@ components:
           properties:
             level: { type: integer }
             action: { type: string, enum: [VERIFY_IDENTITY, ADD_BANK_ACCOUNT] }
-            unlocks: { type: array, items: { type: string } }
+            unlocks:
+              type: array
+              description: |
+                Codes the apps translate into the user's language. Level 2: CONTACT_LISTERS, CHAT,
+                BOOK_INSPECTIONS (tenants); ADD_PROPERTY_DRAFTS, APPROVE_AGENTS (landlords);
+                REQUEST_PROPERTY_AUTHORITY (agents). Level 3: PAY_THROUGH_ESCROW, SIGN_TENANCY_AGREEMENTS,
+                BOOK_SHORT_LETS (tenants); RECEIVE_PAYMENTS (landlords); RECEIVE_AGENCY_FEES (agents).
+              items: { type: string }
 
     IdentityCheck:
       type: object
