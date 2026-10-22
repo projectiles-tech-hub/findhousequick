@@ -4,7 +4,7 @@ import type { Env } from '../config/env.js';
 import { apiError } from '../common/api-error.js';
 import { SMS_SENDER, type SmsSender } from '../integrations/sms/sms-sender.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { generateNumericCode, hashCode, sameHash } from './secrets.js';
+import { generateNumericCode, hashCode } from './secrets.js';
 
 export const OTP_PURPOSES = ['REGISTER', 'LOGIN', 'RESET_PASSWORD'] as const;
 export type OtpPurpose = (typeof OTP_PURPOSES)[number];
@@ -14,7 +14,7 @@ export const OTP_RULES = {
   length: 6,
   /** Minutes a code stays valid. */
   validMinutes: 10,
-  /** Wrong guesses allowed on one code before it stops working. */
+  /** Guesses allowed on one code (right or wrong) before it stops working. */
   maxAttempts: 5,
   /** Seconds before another code can be requested for the same number and purpose. */
   resendAfterSeconds: 60,
@@ -32,7 +32,7 @@ export class OtpService {
     @Inject(SMS_SENDER) private readonly sms: SmsSender,
     config: ConfigService<Env, true>,
   ) {
-    this.secret = config.get('JWT_SECRET', { infer: true });
+    this.secret = config.get('OTP_HASH_SECRET', { infer: true });
   }
 
   /**
@@ -78,26 +78,31 @@ export class OtpService {
 
   /**
    * Checks a code and uses it up if correct. Only the newest code for the number and purpose counts.
-   * Each wrong guess is counted; after too many, the code stops working and a new one must be requested.
+   *
+   * Every guess, right or wrong, uses one of the code's attempts, and the check, the count and the
+   * "used" mark happen in ONE database statement. The database handles one such statement on a code at a
+   * time, so many guesses sent at the same moment cannot all get past the limit before any is counted:
+   * once the attempts are used up, further guesses match no row and fail.
+   *
+   * Times are compared in UTC because that is how the database stores them.
    */
   async consume(phone: string, purpose: OtpPurpose, code: string): Promise<boolean> {
-    const latest = await this.prisma.otpCode.findFirst({
-      where: { phone, purpose },
-      orderBy: { createdAt: 'desc' },
-    });
-    if (!latest || latest.usedAt || latest.expiresAt.getTime() <= Date.now() || latest.attempts >= OTP_RULES.maxAttempts) {
-      return false;
-    }
-    if (!sameHash(latest.codeHash, hashCode(this.secret, phone, purpose, code))) {
-      await this.prisma.otpCode.update({ where: { id: latest.id }, data: { attempts: { increment: 1 } } });
-      return false;
-    }
-    // Only one request can use the code, even if two arrive at the same moment.
-    const used = await this.prisma.otpCode.updateMany({
-      where: { id: latest.id, usedAt: null },
-      data: { usedAt: new Date() },
-    });
-    return used.count === 1;
+    const guessHash = hashCode(this.secret, phone, purpose, code);
+    const rows = await this.prisma.$queryRaw<{ ok: boolean }[]>`
+      UPDATE "OtpCode"
+         SET "attempts" = "attempts" + 1,
+             "usedAt" = CASE WHEN "codeHash" = ${guessHash} THEN (now() AT TIME ZONE 'UTC') ELSE NULL END
+       WHERE "id" = (
+               SELECT "id" FROM "OtpCode"
+                WHERE "phone" = ${phone} AND "purpose" = ${purpose}
+                ORDER BY "createdAt" DESC, "id" DESC
+                LIMIT 1
+             )
+         AND "usedAt" IS NULL
+         AND "expiresAt" > (now() AT TIME ZONE 'UTC')
+         AND "attempts" < ${OTP_RULES.maxAttempts}
+      RETURNING ("usedAt" IS NOT NULL) AS "ok"`;
+    return rows.length === 1 && rows[0].ok === true;
   }
 }
 
