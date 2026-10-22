@@ -14,7 +14,7 @@ import type { Request } from 'express';
 import { contextFromRequest, type RequestUser } from '../controls/request-context.js';
 import { AccountsService } from './accounts.service.js';
 import { CurrentUser, Public } from './auth.js';
-import { LoginDto, RefreshDto, RegisterDto, RequestOtpDto } from './dto.js';
+import { LoginDto, RefreshDto, RegisterDto, RequestOtpDto, ResetPasswordDto } from './dto.js';
 
 // Per-address limits on top of the per-number and per-account limits inside the services.
 const PER_MINUTE = (limit: number) => Throttle({ default: { limit, ttl: 60_000 } });
@@ -31,7 +31,7 @@ export class AuthController {
   @ApiOperation({
     summary: 'Send a one-time code by SMS',
     description:
-      'Used for registration and sign-in without a password. Limited per phone number. ' +
+      'Used for registration, sign-in without a password and password reset. Limited per phone number. ' +
       'The response never reveals whether the number is registered.',
   })
   @ApiAcceptedResponse({ description: 'Code sent if the request is allowed' })
@@ -61,6 +61,23 @@ export class AuthController {
   @ApiResponse({ status: 429, description: 'Too many attempts (code PASSWORD_LOCKED or TOO_MANY_REQUESTS)' })
   login(@Body() dto: LoginDto) {
     return this.accounts.login(dto);
+  }
+
+  @Public()
+  @Post('password-reset')
+  @HttpCode(204)
+  @PER_MINUTE(10)
+  @ApiOperation({
+    summary: 'Set a new password with an SMS code',
+    description:
+      'Needs a code sent for purpose RESET_PASSWORD. Signs the user out of every device; they then sign in ' +
+      'with the new password. Also lifts any pause on password sign-in.',
+  })
+  @ApiNoContentResponse({ description: 'Password changed and every device signed out' })
+  @ApiResponse({ status: 400, description: 'Wrong or expired code (code INVALID_CODE)' })
+  @ApiResponse({ status: 403, description: 'Account suspended (code ACCOUNT_SUSPENDED)' })
+  async resetPassword(@Body() dto: ResetPasswordDto): Promise<void> {
+    await this.accounts.resetPassword(dto);
   }
 
   @Public()

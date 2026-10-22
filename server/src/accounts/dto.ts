@@ -1,3 +1,4 @@
+import { applyDecorators } from '@nestjs/common';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
@@ -16,23 +17,31 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
+import { IsStandardPhone, toStandardPhone } from '../common/phone.js';
 import { OTP_PURPOSES, type OtpPurpose } from './otp.service.js';
 import type { UserTypeName } from './verification-level.js';
 
-/** International format with country code, e.g. +2348031234567 (E.164). */
-export const PHONE_PATTERN = /^\+[1-9][0-9]{6,14}$/;
 const USER_TYPES: UserTypeName[] = ['TENANT', 'LANDLORD', 'AGENT'];
 
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
 const trimLower = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim().toLowerCase() : value);
 
-const phone = () =>
-  ApiProperty({ example: '+2348031234567', description: 'International format, starting with + and the country code' });
+/**
+ * A phone number field: turned into the standard international form first (see src/common/phone.ts),
+ * then checked, so every service only ever sees the standard form.
+ */
+const PhoneField = () =>
+  applyDecorators(
+    ApiProperty({
+      example: '+2348031234567',
+      description: 'International format, starting with + and the country code. Stored in standard form.',
+    }),
+    Transform(toStandardPhone),
+    IsStandardPhone(),
+  );
 
 export class RequestOtpDto {
-  @phone()
-  @Transform(trim)
-  @Matches(PHONE_PATTERN, { message: 'phone must be in international format, e.g. +2348031234567' })
+  @PhoneField()
   phone!: string;
 
   @ApiProperty({ enum: OTP_PURPOSES })
@@ -55,9 +64,7 @@ export class ConsentDto {
 }
 
 export class RegisterDto {
-  @phone()
-  @Transform(trim)
-  @Matches(PHONE_PATTERN, { message: 'phone must be in international format, e.g. +2348031234567' })
+  @PhoneField()
   phone!: string;
 
   @ApiProperty({ example: '042917', description: 'The code sent by SMS for purpose REGISTER' })
@@ -119,9 +126,7 @@ export class RegisterDto {
 }
 
 export class LoginDto {
-  @phone()
-  @Transform(trim)
-  @Matches(PHONE_PATTERN, { message: 'phone must be in international format, e.g. +2348031234567' })
+  @PhoneField()
   phone!: string;
 
   @ApiPropertyOptional({ description: 'Give either password or otp' })
@@ -140,6 +145,21 @@ export class LoginDto {
   @IsString()
   @MaxLength(100)
   device?: string;
+}
+
+export class ResetPasswordDto {
+  @PhoneField()
+  phone!: string;
+
+  @ApiProperty({ example: '042917', description: 'The code sent by SMS for purpose RESET_PASSWORD' })
+  @Matches(/^[0-9]{6}$/, { message: 'otp must be 6 digits' })
+  otp!: string;
+
+  @ApiProperty({ minLength: 8, maxLength: 128 })
+  @IsString()
+  @MinLength(8)
+  @MaxLength(128)
+  newPassword!: string;
 }
 
 export class RefreshDto {
