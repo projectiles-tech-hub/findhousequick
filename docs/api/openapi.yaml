@@ -215,7 +215,10 @@ paths:
     post:
       tags: [Staff two-step login]
       summary: Send a second-step code by SMS to the signed-in staff member (ADR 0005)
-      description: Staff only. Same limits as other SMS codes (ADR 0004).
+      description: |
+        Staff only, and only on a device that signed in with a password: a device that signed in with an SMS
+        code must use an authenticator app code (`403 DIFFERENT_FACTOR_REQUIRED`, decision 34). Same limits
+        as other SMS codes (ADR 0004).
       responses:
         "202": { description: Code sent. }
         "401": { $ref: "#/components/responses/Unauthorized" }
@@ -227,9 +230,13 @@ paths:
       tags: [Staff two-step login]
       summary: Complete two-step login on this device with an SMS code or an authenticator app code
       description: |
-        Staff only. On success, this signed-in device has passed the second step until it signs out or its
-        session ends. Every attempt counts; after 5 without a correct code the second step pauses for 15
-        minutes (`429 TWO_STEP_LOCKED`). Each authenticator code works once.
+        Staff only. On success, this signed-in device has passed the second step for the period in the
+        platform settings (`staffTwoStepMinutes`, 3 hours by decision 32), after which it must be done again.
+        The second step must be a different factor from the sign-in (decision 34): a device that signed in
+        with an SMS code must use AUTHENTICATOR (`403 DIFFERENT_FACTOR_REQUIRED`, not counted as an attempt);
+        a device that signed in with a password may use either. Every attempt counts; after 5 without a
+        correct code the second step pauses for 15 minutes (`429 TWO_STEP_LOCKED`). Each authenticator code
+        works once.
       requestBody:
         required: true
         content:
@@ -1635,6 +1642,46 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/FeatureRule" }
 
+  /admin/platform-settings:
+    get:
+      tags: [Admin]
+      summary: Current platform-wide settings (super admin)
+      responses:
+        "200":
+          description: Settings.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PlatformSettings" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    patch:
+      tags: [Admin]
+      summary: Change platform-wide settings (super admin; recorded)
+      description: |
+        Send only the settings to change, with a reason. Applies at once on the server where it is made and
+        within 30 seconds on every other server. Every change is recorded with the values before and after.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [settings, reason]
+              properties:
+                settings: { $ref: "#/components/schemas/PlatformSettings" }
+                reason: { type: string, minLength: 3, maxLength: 500 }
+      responses:
+        "200":
+          description: The settings after the change.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PlatformSettings" }
+        "400":
+          description: "A value outside its allowed range, or an unknown setting (`code` INVALID_SETTINGS)."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
   /admin/countries/{countryCode}:
     patch:
       tags: [Admin]
@@ -1692,8 +1739,9 @@ components:
           schema: { $ref: "#/components/schemas/Error" }
     Forbidden:
       description: |
-        Not allowed. `code` is FEATURE_UNAVAILABLE, VERIFICATION_REQUIRED, ACCOUNT_SUSPENDED, FORBIDDEN, or
-        TWO_STEP_REQUIRED (staff routes need the signed-in device to have passed two-step login, ADR 0005).
+        Not allowed. `code` is FEATURE_UNAVAILABLE, VERIFICATION_REQUIRED, ACCOUNT_SUSPENDED, FORBIDDEN,
+        TWO_STEP_REQUIRED (staff routes need the signed-in device to have passed two-step login within the
+        set period, ADR 0005) or DIFFERENT_FACTOR_REQUIRED (the second step must differ from the sign-in).
       content:
         application/json:
           schema: { $ref: "#/components/schemas/Error" }
@@ -2101,6 +2149,17 @@ components:
         endsAt: { type: [string, "null"], format: date-time }
         emergency: { type: boolean }
         reason: { type: string }
+
+    PlatformSettings:
+      type: object
+      additionalProperties: false
+      properties:
+        staffTwoStepMinutes:
+          type: integer
+          minimum: 15
+          maximum: 1440
+          default: 180
+          description: How long a staff device's second step lasts before it must be done again (decision 32).
 
     StaffRole: { type: string, enum: [SUPER_ADMIN, COUNTRY_MANAGER, VERIFIER, FIELD_OFFICER, SUPPORT, FINANCE] }
 

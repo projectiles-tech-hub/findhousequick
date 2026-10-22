@@ -25,10 +25,13 @@ Updated: 22 October 2026 (evening). Read this after CLAUDE.md at the start of ev
 - **Release 1 step 2 (staff accounts and roles)**: in pull request #7, awaiting approval.
   - Staff management by super admins (`/admin/staff`), with every change in the audit log; the first super
     admin is made with `pnpm staff:make-super-admin` (see `docs/DEPLOYMENT.md`)
-  - Two-step login for staff, by SMS code or authenticator app; every `/admin` route needs it
+  - Two-step login for staff, by SMS code or authenticator app; every `/admin` route needs it. It lasts 3 hours
+    (a platform setting super admins can change), and must be a different factor from the sign-in: after an
+    SMS code sign-in, only an authenticator code (decisions 31 to 34)
   - Feature-rule endpoints (`/admin/feature-rules`) following decision 28: country managers switch off at
     once, everything else they do waits for a super admin, including withdrawal requests
-  - Design in `docs/adr/0005-staff-accounts-and-two-step-login.md`; decisions 28 to 30 in the Decisions Log
+  - Platform settings store and `/admin/platform-settings`, starting with the staff second-step period
+  - Design in `docs/adr/0005-staff-accounts-and-two-step-login.md`; decisions 28 to 34 in the Decisions Log
 
 ## Small follow-ups
 

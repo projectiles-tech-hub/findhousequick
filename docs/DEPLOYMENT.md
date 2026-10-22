@@ -26,6 +26,17 @@ GitHub repository secrets, **never in the code**. `server/.env.example` shows th
 | `REFRESH_TOKEN_DAYS` | No (default 30) | How long a device stays signed in | Number of days, 1 to 365 | Agreed in ADR 0004 |
 | `SMS_PROVIDER` | Yes | Which service sends SMS codes | `log` for development only | `log` prints codes instead of sending them and is refused in production. A real provider (e.g. Termii) is added before any pilot |
 
+### Settings changed in the admin panel (not server settings)
+
+These live in the database and are changed by super admins through the admin endpoints, with a reason; every
+change is recorded with the values before and after. They need nothing set on the server.
+
+| Setting | Default | What it is | Where it is changed | Notes |
+| --- | --- | --- | --- | --- |
+| `staffTwoStepMinutes` | 180 (3 hours) | How long a staff device's second step lasts before it must be done again | `PATCH /v1/admin/platform-settings` | Decision 32. Allowed from 15 to 1440 minutes. Reaches every server within 30 seconds |
+
+Country settings and feature switches are also changed this way (see ADR 0002 and the country controls).
+
 ## 2. Outside accounts
 
 All accounts are opened in the name of Projectiles Tech Hub Limited, with the Managing Director holding the master
@@ -60,7 +71,7 @@ login. Most need the CAC certificate (RC 7987623).
 
 | Step | When | How | Notes |
 | --- | --- | --- | --- |
-| Create the first super admin | Once per server, after the database is set up (from the staff accounts pull request) | 1. The person (normally the Managing Director) registers in the app as a normal user. 2. On the server, in the `server` folder: `pnpm staff:make-super-admin +234...` with their phone number. 3. They sign in and complete two-step login with an SMS code. | The command refuses if any super admin already exists, so it can only be used once per server. All further staff are added by a super admin through the admin endpoints (ADR 0005). It is recorded in the audit log |
+| Create the first super admin | Once per server, after the database is set up (from the staff accounts pull request) | 1. The person (normally the Managing Director) registers in the app as a normal user. 2. On the server, in the `server` folder: `pnpm staff:make-super-admin +234...` with their phone number. 3. They sign in **with their password** and complete two-step login with an SMS code (after signing in with an SMS code, the second step must be an authenticator app code, decision 34). They can then add an authenticator app. | The command refuses if any super admin already exists, so it can only be used once per server. All further staff are added by a super admin through the admin endpoints (ADR 0005). It is recorded in the audit log |
 
 ## 5. Checklist before any server goes live
 
