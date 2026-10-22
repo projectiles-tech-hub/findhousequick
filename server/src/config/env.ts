@@ -10,6 +10,11 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   REDIS_URL: z.string().url().default('redis://localhost:6379'),
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
+  /**
+   * Secret used to scramble (hash) SMS codes before they are stored. Kept separate from JWT_SECRET so that
+   * each secret does one job, and one can be changed without affecting the other.
+   */
+  OTP_HASH_SECRET: z.string().min(32, 'OTP_HASH_SECRET must be at least 32 characters'),
   /** Comma-separated web addresses allowed to call the API from a browser (the Flutter web app, admin panel). */
   CORS_ORIGINS: z
     .string()
@@ -28,6 +33,9 @@ const envSchema = z.object({
    */
   SMS_PROVIDER: z.enum(['log']).default('log'),
 }).superRefine((env, ctx) => {
+  if (env.OTP_HASH_SECRET === env.JWT_SECRET) {
+    ctx.addIssue({ code: 'custom', path: ['OTP_HASH_SECRET'], message: 'OTP_HASH_SECRET must be different from JWT_SECRET' });
+  }
   if (env.NODE_ENV === 'production' && env.SMS_PROVIDER === 'log') {
     ctx.addIssue({ code: 'custom', path: ['SMS_PROVIDER'], message: 'The "log" SMS provider cannot be used in production' });
   }

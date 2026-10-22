@@ -57,13 +57,6 @@ export function hashCode(secret: string, phone: string, purpose: string, code: s
   return createHmac('sha256', secret).update(`${phone}|${purpose}|${code}`).digest('base64url');
 }
 
-/** Compares two hashes without leaking, through timing, how many characters matched. */
-export function sameHash(a: string, b: string): boolean {
-  const x = Buffer.from(a);
-  const y = Buffer.from(b);
-  return x.length === y.length && timingSafeEqual(x, y);
-}
-
 /** A long random token (256 bits), safe to put in URLs and headers. */
 export function generateToken(): string {
   return randomBytes(32).toString('base64url');

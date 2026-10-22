@@ -5,7 +5,6 @@ import {
   hashCode,
   hashPassword,
   hashToken,
-  sameHash,
   verifyPassword,
 } from './secrets.js';
 import { maskPhone } from './otp.service.js';
@@ -36,10 +35,10 @@ describe('one-time codes and tokens', () => {
 
   it('ties a code hash to the phone, purpose and server key', () => {
     const h = hashCode('key-1', '+2348031234567', 'LOGIN', '123456');
-    expect(sameHash(h, hashCode('key-1', '+2348031234567', 'LOGIN', '123456'))).toBe(true);
-    expect(sameHash(h, hashCode('key-2', '+2348031234567', 'LOGIN', '123456'))).toBe(false);
-    expect(sameHash(h, hashCode('key-1', '+2348031234567', 'REGISTER', '123456'))).toBe(false);
-    expect(sameHash(h, hashCode('key-1', '+2348031234568', 'LOGIN', '123456'))).toBe(false);
+    expect(hashCode('key-1', '+2348031234567', 'LOGIN', '123456')).toBe(h);
+    expect(hashCode('key-2', '+2348031234567', 'LOGIN', '123456')).not.toBe(h);
+    expect(hashCode('key-1', '+2348031234567', 'REGISTER', '123456')).not.toBe(h);
+    expect(hashCode('key-1', '+2348031234568', 'LOGIN', '123456')).not.toBe(h);
   });
 
   it('makes long random tokens with stable hashes', () => {
