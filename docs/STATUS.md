@@ -16,9 +16,7 @@ Updated: 22 October 2026. Read this after CLAUDE.md at the start of every build 
 
 ## Small follow-ups
 
-- Update GitHub Actions versions in `.github/workflows/ci.yml` (checkout, setup-node, pnpm action-setup)
-  to releases that run on Node.js 24; GitHub shows deprecation warnings for the current ones.
-- `ubuntu-latest` runners are moving to Ubuntu 26; confirm CI still passes after the switch.
+- None at the moment. (CI actions moved to their Node.js 24 releases in the CI update pull request.)
 
 ## Waiting for Emmanuel
 
