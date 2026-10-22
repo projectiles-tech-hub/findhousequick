@@ -1,0 +1,973 @@
+// FindHouseQuick database design.
+//
+// Conventions
+// - Money is stored as whole minor units (kobo, cents) in BigInt with an ISO 4217 currency code.
+// - Rates are stored in basis points (1.5% = 150).
+// - Location columns use PostGIS geography (WGS 84). Prisma cannot read or write them directly;
+//   use raw SQL through the geo helpers in src/common/geo.
+// - Nothing country-specific is hard-coded: see Country.settings and the controls tables.
+// - Ledger tables are append-only; database triggers (see migrations) block updates and deletes.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+  // PostGIS is enabled in the first migration (CREATE EXTENSION postgis).
+}
+
+// =====================================================================
+// Geography and country controls
+// =====================================================================
+
+model Country {
+  code            String   @id @db.Char(2) // ISO 3166-1 alpha-2
+  name            String
+  currency        String   @db.Char(3) // ISO 4217
+  enabled         Boolean  @default(false)
+  defaultLanguage String   @default("en")
+  languages       String[] @default(["en"])
+  timezone        String
+  /// Validated in code (src/controls/country-settings.schema.ts). Holds fee rates, time periods,
+  /// verification provider choices, short-let rules, units and formats.
+  settings        Json     @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  regions       Region[]
+  propertyTypes PropertyType[]
+  documentTypes DocumentType[]
+}
+
+model Region {
+  id          String  @id @default(uuid(7)) @db.Uuid
+  countryCode String  @db.Char(2)
+  code        String
+  name        String
+  enabled     Boolean @default(false)
+
+  country Country @relation(fields: [countryCode], references: [code])
+  cities  City[]
+
+  @@unique([countryCode, code])
+}
+
+model City {
+  id       String                                 @id @default(uuid(7)) @db.Uuid
+  regionId String                                 @db.Uuid
+  name     String
+  enabled  Boolean                                @default(false)
+  centre   Unsupported("geography(Point, 4326)")?
+
+  region    Region     @relation(fields: [regionId], references: [id])
+  buildings Building[]
+
+  @@unique([regionId, name])
+  @@index([centre], map: "City_centre_gist", type: Gist)
+}
+
+enum PropertyCategory {
+  LONG_TERM_RESIDENTIAL
+  COMMERCIAL
+  SHORT_LET
+}
+
+/// Property types are defined per country so local terms can be used.
+model PropertyType {
+  id           String           @id @default(uuid(7)) @db.Uuid
+  countryCode  String           @db.Char(2)
+  category     PropertyCategory
+  code         String
+  label        String
+  /// Rules for the parts checklist, e.g. fixed parts plus one part per bedroom. See src/listings/parts.
+  partTemplate Json             @default("[]")
+  sortOrder    Int              @default(0)
+  enabled      Boolean          @default(true)
+
+  country Country @relation(fields: [countryCode], references: [code])
+  units   Unit[]
+
+  @@unique([countryCode, code])
+}
+
+enum DocumentPurpose {
+  IDENTITY
+  OWNERSHIP
+  AUTHORITY_LETTER
+  DISPUTE_EVIDENCE
+  OTHER
+}
+
+/// Accepted document types per country (e.g. Certificate of Occupancy, deed of assignment, national ID).
+model DocumentType {
+  id          String          @id @default(uuid(7)) @db.Uuid
+  countryCode String          @db.Char(2)
+  purpose     DocumentPurpose
+  code        String
+  label       String
+  enabled     Boolean         @default(true)
+
+  country   Country    @relation(fields: [countryCode], references: [code])
+  documents Document[]
+
+  @@unique([countryCode, code])
+}
+
+// =====================================================================
+// Feature controls
+// =====================================================================
+
+/// A switchable feature. Rules decide where it is on or off.
+model FeatureFlag {
+  key            String   @id
+  area           String
+  description    String
+  /// Critical switches (payments, escrow, verification) need two approvals to change.
+  critical       Boolean  @default(false)
+  defaultEnabled Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  rules FeatureRule[]
+}
+
+enum FeatureScope {
+  GLOBAL
+  COUNTRY
+  REGION
+  CITY
+  USER_TYPE
+  USER
+}
+
+enum RuleStatus {
+  PENDING_APPROVAL
+  ACTIVE
+  ARCHIVED
+}
+
+model FeatureRule {
+  id             String       @id @default(uuid(7)) @db.Uuid
+  flagKey        String
+  scope          FeatureScope
+  /// Country code, region id, city id, user type or user id depending on scope. Null for GLOBAL.
+  scopeValue     String?
+  enabled        Boolean
+  /// Percentage of matching users (0 to 100) for gradual release. Null means everyone.
+  rolloutPercent Int?
+  startsAt       DateTime?
+  endsAt         DateTime?
+  /// Emergency rules beat every other rule, e.g. pausing payments platform-wide.
+  emergency      Boolean      @default(false)
+  status         RuleStatus   @default(ACTIVE)
+  reason         String
+  createdById    String       @db.Uuid
+  approvedById   String?      @db.Uuid
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  flag FeatureFlag @relation(fields: [flagKey], references: [key])
+
+  @@index([flagKey, status])
+}
+
+/// Permanent record of every change to country settings and feature controls.
+model ControlChange {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  entityType   String
+  entityId     String
+  action       String
+  before       Json?
+  after        Json?
+  reason       String
+  actorId      String   @db.Uuid
+  approvedById String?  @db.Uuid
+  createdAt    DateTime @default(now())
+
+  @@index([entityType, entityId])
+}
+
+// =====================================================================
+// Users, identity and staff
+// =====================================================================
+
+enum UserType {
+  TENANT
+  LANDLORD
+  AGENT
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  DELETED
+}
+
+model User {
+  id                 String        @id @default(uuid(7)) @db.Uuid
+  phone              String        @unique // E.164
+  email              String?       @unique
+  phoneVerifiedAt    DateTime?
+  emailVerifiedAt    DateTime?
+  passwordHash       String
+  firstName          String
+  lastName           String
+  countryCode        String        @db.Char(2)
+  types              UserType[]
+  language           String        @default("en")
+  status             AccountStatus @default(ACTIVE)
+  /// Set when identity (NIN or national equivalent, selfie, liveness) has passed.
+  identityVerifiedAt DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  staff               StaffMember?
+  agentProfile        AgentProfile?
+  identityChecks      IdentityVerification[]
+  bankAccounts        BankAccount[]
+  refreshTokens       RefreshToken[]
+  documents           Document[]
+  ownedBuildings      Building[]             @relation("BuildingOwner")
+  createdBuildings    Building[]             @relation("BuildingCreator")
+  authoritiesAsAgent  PropertyAuthority[]    @relation("AuthorityAgent")
+  authoritiesAsOwner  PropertyAuthority[]    @relation("AuthorityLandlord")
+  savedSearches       SavedSearch[]
+  savedListings       SavedListing[]
+  sentMessages        Message[]
+  inspectionsAsTenant Inspection[]           @relation("InspectionTenant")
+  inspectionsAsHost   Inspection[]           @relation("InspectionHost")
+  reports             ListingReport[]
+  mediaUploads        MediaAsset[]
+}
+
+model AgentProfile {
+  userId             String  @id @db.Uuid
+  businessName       String?
+  registrationNumber String?
+  user               User    @relation(fields: [userId], references: [id])
+}
+
+enum CheckStatus {
+  PENDING
+  PASSED
+  FAILED
+  MANUAL_REVIEW
+}
+
+/// Identity check result. The ID number itself is stored encrypted; only the last four digits are readable.
+model IdentityVerification {
+  id                String      @id @default(uuid(7)) @db.Uuid
+  userId            String      @db.Uuid
+  provider          String
+  providerReference String?
+  idType            String
+  idNumberEncrypted String
+  idNumberLast4     String
+  /// Hash used to detect one ID being used on several accounts.
+  idNumberHash      String
+  nameOnId          String?
+  livenessPassed    Boolean?
+  faceMatchScore    Int?
+  nameMatches       Boolean?
+  status            CheckStatus @default(PENDING)
+  reviewedById      String?     @db.Uuid
+  createdAt         DateTime    @default(now())
+  completedAt       DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([idNumberHash])
+}
+
+model BankAccount {
+  id                     String      @id @default(uuid(7)) @db.Uuid
+  userId                 String      @db.Uuid
+  countryCode            String      @db.Char(2)
+  bankCode               String
+  bankName               String
+  accountNumberEncrypted String
+  accountNumberLast4     String
+  accountName            String
+  nameMatches            Boolean?
+  status                 CheckStatus @default(PENDING)
+  isDefault              Boolean     @default(false)
+  /// Payouts to a newly added or changed account are blocked until this time.
+  payoutsAllowedFrom     DateTime?
+  createdAt              DateTime    @default(now())
+  verifiedAt             DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  device    String?
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model OtpCode {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  phone     String
+  purpose   String
+  codeHash  String
+  attempts  Int       @default(0)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([phone, purpose])
+}
+
+enum StaffRole {
+  SUPER_ADMIN
+  COUNTRY_MANAGER
+  VERIFIER
+  FIELD_OFFICER
+  SUPPORT
+  FINANCE
+}
+
+model StaffMember {
+  userId           String      @id @db.Uuid
+  roles            StaffRole[]
+  /// Country codes this staff member may act on. ["*"] means all countries.
+  countryScopes    String[]
+  twoFactorEnabled Boolean     @default(false)
+  active           Boolean     @default(true)
+  createdAt        DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+/// Record of sensitive actions, including every view of identity documents and original media.
+model AuditLog {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  actorId    String?  @db.Uuid
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorId, createdAt])
+}
+
+// =====================================================================
+// Properties and listings
+// =====================================================================
+
+/// A physical building or compound. Units inside it are listed separately.
+model Building {
+  id                    String                                @id @default(uuid(7)) @db.Uuid
+  countryCode           String                                @db.Char(2)
+  cityId                String                                @db.Uuid
+  area                  String
+  street                String
+  houseNumber           String?
+  landmark              String?
+  /// Normalised address used for duplicate detection.
+  addressKey            String
+  location              Unsupported("geography(Point, 4326)")
+  locationAccuracyM     Int?
+  /// Registered landlord, if on the platform.
+  ownerId               String?                               @db.Uuid
+  /// Off-platform landlord details, when an agent lists with a letter of authority.
+  offPlatformOwnerName  String?
+  offPlatformOwnerPhone String?
+  createdById           String                                @db.Uuid
+  createdAt             DateTime                              @default(now())
+  updatedAt             DateTime                              @updatedAt
+
+  city        City                @relation(fields: [cityId], references: [id])
+  owner       User?               @relation("BuildingOwner", fields: [ownerId], references: [id])
+  createdBy   User                @relation("BuildingCreator", fields: [createdById], references: [id])
+  units       Unit[]
+  authorities PropertyAuthority[]
+  documents   Document[]
+  media       MediaAsset[]
+
+  @@index([addressKey])
+  @@index([location], map: "Building_location_gist", type: Gist)
+}
+
+model Unit {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  buildingId     String   @db.Uuid
+  label          String // e.g. "Flat 3" or "Shop 2"
+  propertyTypeId String   @db.Uuid
+  bedrooms       Int      @default(0)
+  bathrooms      Int      @default(0)
+  toilets        Int      @default(0)
+  floorLevel     Int?
+  floorAreaSqm   Decimal? @db.Decimal(10, 2)
+  /// Finishing, power, water, security, parking and similar, validated against country settings.
+  details        Json     @default("{}")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  building     Building     @relation(fields: [buildingId], references: [id])
+  propertyType PropertyType @relation(fields: [propertyTypeId], references: [id])
+  parts        UnitPart[]
+  listings     Listing[]
+  media        MediaAsset[]
+
+  @@unique([buildingId, label])
+}
+
+/// One item of the media checklist, e.g. "Bedroom 2". Generated from the property type's part template.
+model UnitPart {
+  id        String  @id @default(uuid(7)) @db.Uuid
+  unitId    String  @db.Uuid
+  code      String // e.g. "bedroom_2"
+  label     String
+  required  Boolean @default(true)
+  minPhotos Int     @default(2)
+  note      String?
+  sortOrder Int     @default(0)
+
+  unit  Unit         @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  media MediaAsset[]
+
+  @@unique([unitId, code])
+}
+
+enum ListingKind {
+  LONG_TERM
+  SHORT_LET
+}
+
+enum ListingStatus {
+  DRAFT
+  SUBMITTED
+  IN_REVIEW
+  LIVE
+  PAUSED
+  RENTED
+  EXPIRED
+  REJECTED
+  REMOVED
+}
+
+enum RentPeriod {
+  YEAR
+  MONTH
+  WEEK
+  NIGHT
+}
+
+enum RiskBand {
+  GREEN
+  AMBER
+  RED
+}
+
+model Listing {
+  id                  String        @id @default(uuid(7)) @db.Uuid
+  unitId              String        @db.Uuid
+  kind                ListingKind
+  status              ListingStatus @default(DRAFT)
+  title               String
+  description         String
+  currency            String        @db.Char(3)
+  rentMinor           BigInt
+  rentPeriod          RentPeriod
+  agencyFeeMinor      BigInt        @default(0)
+  legalFeeMinor       BigInt        @default(0)
+  cautionDepositMinor BigInt        @default(0)
+  serviceChargeMinor  BigInt        @default(0)
+  serviceChargeCovers String?
+  availableFrom       DateTime?
+  minTermMonths       Int?
+  maxTermMonths       Int?
+  occupancyRules      Json          @default("{}")
+  riskScore           Int?
+  riskBand            RiskBand?
+  submittedAt         DateTime?
+  publishedAt         DateTime?
+  lastConfirmedAt     DateTime?
+  expiresAt           DateTime?
+  createdById         String        @db.Uuid
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  unit          Unit                @relation(fields: [unitId], references: [id])
+  checks        VerificationCheck[]
+  savedBy       SavedListing[]
+  conversations Conversation[]
+  inspections   Inspection[]
+  reports       ListingReport[]
+
+  // A unit can have only one active listing; enforced by a partial unique index in the migrations.
+  @@index([status])
+}
+
+enum AuthorityMethod {
+  IN_APP_APPROVAL
+  LETTER
+}
+
+enum AuthorityStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  REVOKED
+  EXPIRED
+}
+
+/// An agent's authority over a building, granted by the landlord in the app or by a verified letter.
+model PropertyAuthority {
+  id               String          @id @default(uuid(7)) @db.Uuid
+  buildingId       String          @db.Uuid
+  agentId          String          @db.Uuid
+  landlordId       String?         @db.Uuid
+  method           AuthorityMethod
+  letterDocumentId String?         @db.Uuid
+  status           AuthorityStatus @default(REQUESTED)
+  validUntil       DateTime?
+  decidedAt        DateTime?
+  reviewedById     String?         @db.Uuid
+  createdAt        DateTime        @default(now())
+
+  building Building  @relation(fields: [buildingId], references: [id])
+  agent    User      @relation("AuthorityAgent", fields: [agentId], references: [id])
+  landlord User?     @relation("AuthorityLandlord", fields: [landlordId], references: [id])
+  letter   Document? @relation(fields: [letterDocumentId], references: [id])
+
+  @@index([buildingId, status])
+  @@index([agentId, status])
+}
+
+/// Identity, ownership, authority and evidence documents. Files live in private storage only.
+model Document {
+  id             String          @id @default(uuid(7)) @db.Uuid
+  ownerId        String          @db.Uuid
+  documentTypeId String?         @db.Uuid
+  purpose        DocumentPurpose
+  buildingId     String?         @db.Uuid
+  storageKey     String
+  sha256         String
+  /// Document number read from the file (e.g. Certificate of Occupancy number), normalised.
+  documentNumber String?
+  extracted      Json?
+  status         CheckStatus     @default(PENDING)
+  deleteAfter    DateTime?
+  createdAt      DateTime        @default(now())
+
+  owner        User                @relation(fields: [ownerId], references: [id])
+  documentType DocumentType?       @relation(fields: [documentTypeId], references: [id])
+  building     Building?           @relation(fields: [buildingId], references: [id])
+  authorities  PropertyAuthority[]
+
+  @@index([documentNumber])
+  @@index([sha256])
+}
+
+enum MediaKind {
+  PHOTO
+  VIDEO
+  PHOTO_360
+  FLOOR_PLAN
+}
+
+enum MediaStatus {
+  UPLOADING
+  PROCESSING
+  READY
+  REJECTED
+  REMOVED
+}
+
+model MediaAsset {
+  id               String                                 @id @default(uuid(7)) @db.Uuid
+  buildingId       String                                 @db.Uuid
+  unitId           String?                                @db.Uuid
+  unitPartId       String?                                @db.Uuid
+  kind             MediaKind
+  status           MediaStatus                            @default(UPLOADING)
+  originalKey      String
+  /// Display copies by size, e.g. {"small": "...", "large": "..."}. Served only through expiring links.
+  variants         Json?
+  sha256           String?
+  /// Perceptual hash for duplicate and stolen-photo detection.
+  perceptualHash   String?
+  capturedAt       DateTime
+  captureLocation  Unsupported("geography(Point, 4326)")?
+  captureAccuracyM Int?
+  width            Int?
+  height           Int?
+  durationSeconds  Int?
+  qualityFlags     Json?
+  uploadedById     String                                 @db.Uuid
+  createdAt        DateTime                               @default(now())
+  removedAt        DateTime?
+
+  building   Building  @relation(fields: [buildingId], references: [id])
+  unit       Unit?     @relation(fields: [unitId], references: [id])
+  unitPart   UnitPart? @relation(fields: [unitPartId], references: [id])
+  uploadedBy User      @relation(fields: [uploadedById], references: [id])
+
+  @@index([perceptualHash])
+  @@index([unitId, unitPartId])
+  @@index([captureLocation], map: "MediaAsset_captureLocation_gist", type: Gist)
+}
+
+// =====================================================================
+// Verification
+// =====================================================================
+
+enum CheckType {
+  LIVE_MEDIA
+  VIDEO_WALKTHROUGH
+  SATELLITE
+  SURVEY_PLAN_MATCH
+  DOCUMENT_READING
+  NAME_MATCH
+  DUPLICATE_DOCUMENT
+  DUPLICATE_LOCATION
+  DUPLICATE_PHOTO
+  STOLEN_PHOTO
+  REGISTRY
+}
+
+enum CheckResult {
+  PASS
+  WARN
+  FAIL
+  SKIPPED
+  ERROR
+}
+
+model VerificationCheck {
+  id         String      @id @default(uuid(7)) @db.Uuid
+  listingId  String      @db.Uuid
+  type       CheckType
+  result     CheckResult
+  /// Points added to the listing's risk score.
+  riskPoints Int         @default(0)
+  details    Json?
+  ranAt      DateTime    @default(now())
+
+  listing Listing @relation(fields: [listingId], references: [id])
+
+  @@index([listingId])
+}
+
+enum ReviewTaskType {
+  LISTING_REVIEW
+  IDENTITY_REVIEW
+  AUTHORITY_CONFIRMATION
+  DUPLICATE_RESOLUTION
+  SITE_VISIT
+  RANDOM_AUDIT
+  REPORT
+}
+
+enum ReviewTaskStatus {
+  OPEN
+  ASSIGNED
+  DONE
+  CANCELLED
+}
+
+/// Work queue for the verification team.
+model ReviewTask {
+  id           String           @id @default(uuid(7)) @db.Uuid
+  type         ReviewTaskType
+  countryCode  String           @db.Char(2)
+  entityType   String
+  entityId     String
+  status       ReviewTaskStatus @default(OPEN)
+  assignedToId String?          @db.Uuid
+  outcome      String?
+  notes        String?
+  dueAt        DateTime?
+  createdAt    DateTime         @default(now())
+  closedAt     DateTime?
+
+  @@index([countryCode, status, type])
+}
+
+// =====================================================================
+// Search, contact and inspections
+// =====================================================================
+
+model SavedSearch {
+  id            String                                   @id @default(uuid(7)) @db.Uuid
+  userId        String                                   @db.Uuid
+  name          String
+  /// Search area drawn by the tenant, or a circle around a saved point.
+  area          Unsupported("geography(Polygon, 4326)")?
+  filters       Json                                     @default("{}")
+  alertsEnabled Boolean                                  @default(true)
+  createdAt     DateTime                                 @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([area], map: "SavedSearch_area_gist", type: Gist)
+}
+
+model SavedListing {
+  userId    String   @db.Uuid
+  listingId String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  listing Listing @relation(fields: [listingId], references: [id])
+
+  @@id([userId, listingId])
+}
+
+model Conversation {
+  id             String    @id @default(uuid(7)) @db.Uuid
+  listingId      String    @db.Uuid
+  tenantId       String    @db.Uuid
+  listerId       String    @db.Uuid
+  /// Set when both sides agree to share phone numbers (after an inspection is booked).
+  phonesSharedAt DateTime?
+  createdAt      DateTime  @default(now())
+
+  listing  Listing   @relation(fields: [listingId], references: [id])
+  messages Message[]
+
+  @@unique([listingId, tenantId, listerId])
+}
+
+model Message {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  conversationId String   @db.Uuid
+  senderId       String   @db.Uuid
+  body           String
+  /// Results of automatic monitoring, e.g. phone number or bank details detected.
+  flags          Json?
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  sender       User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt])
+}
+
+enum InspectionStatus {
+  REQUESTED
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+model Inspection {
+  id               String           @id @default(uuid(7)) @db.Uuid
+  listingId        String           @db.Uuid
+  tenantId         String           @db.Uuid
+  hostId           String           @db.Uuid
+  scheduledAt      DateTime
+  status           InspectionStatus @default(REQUESTED)
+  /// Token for the safety-sharing link sent to the tenant's chosen contact.
+  safetyShareToken String?          @unique
+  /// Follow-up answers after the inspection.
+  matchedListing   Boolean?
+  tenantSaysRented Boolean?
+  hostSaysRented   Boolean?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  listing Listing @relation(fields: [listingId], references: [id])
+  tenant  User    @relation("InspectionTenant", fields: [tenantId], references: [id])
+  host    User    @relation("InspectionHost", fields: [hostId], references: [id])
+
+  @@index([listingId, status])
+}
+
+enum ReportReason {
+  FAKE_LISTING
+  ALREADY_TAKEN
+  INSPECTION_FEE_DEMANDED
+  EXTRA_FEES_DEMANDED
+  DOES_NOT_MATCH
+  OTHER
+}
+
+model ListingReport {
+  id         String           @id @default(uuid(7)) @db.Uuid
+  listingId  String           @db.Uuid
+  reporterId String           @db.Uuid
+  reason     ReportReason
+  details    String?
+  status     ReviewTaskStatus @default(OPEN)
+  createdAt  DateTime         @default(now())
+
+  listing  Listing @relation(fields: [listingId], references: [id])
+  reporter User    @relation(fields: [reporterId], references: [id])
+}
+
+// =====================================================================
+// Escrow and ledger (designed now, used from Release 2)
+// =====================================================================
+
+enum EscrowStatus {
+  AWAITING_PAYMENT
+  FUNDED
+  AGREEMENT_SIGNED
+  KEYS_HANDED_OVER
+  RELEASED
+  DISPUTED
+  REFUNDED
+  CANCELLED
+  EXPIRED
+}
+
+model EscrowTransaction {
+  id                  String       @id @default(uuid(7)) @db.Uuid
+  listingId           String       @db.Uuid
+  tenantId            String       @db.Uuid
+  landlordId          String       @db.Uuid
+  agentId             String?      @db.Uuid
+  countryCode         String       @db.Char(2)
+  currency            String       @db.Char(3)
+  rentMinor           BigInt
+  agencyFeeMinor      BigInt       @default(0)
+  legalFeeMinor       BigInt       @default(0)
+  cautionDepositMinor BigInt       @default(0)
+  serviceChargeMinor  BigInt       @default(0)
+  /// Fee rates copied from country settings when the transaction starts, so later changes do not affect it.
+  tenantFeeBps        Int
+  landlordFeeBps      Int
+  tenantFeeMinor      BigInt
+  landlordFeeMinor    BigInt
+  status              EscrowStatus @default(AWAITING_PAYMENT)
+  paymentDueBy        DateTime
+  fundedAt            DateTime?
+  agreementSignedAt   DateTime?
+  keysHandedOverAt    DateTime?
+  keyHandoverDeadline DateTime?
+  autoReleaseAt       DateTime?
+  closedAt            DateTime?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  events   EscrowEvent[]
+  journals LedgerJournal[]
+  payments Payment[]
+
+  @@index([status])
+}
+
+model EscrowEvent {
+  id         String        @id @default(uuid(7)) @db.Uuid
+  escrowId   String        @db.Uuid
+  fromStatus EscrowStatus?
+  toStatus   EscrowStatus
+  actorId    String?       @db.Uuid
+  note       String?
+  createdAt  DateTime      @default(now())
+
+  escrow EscrowTransaction @relation(fields: [escrowId], references: [id])
+}
+
+enum LedgerAccountType {
+  ESCROW_BANK // the real escrow bank account
+  PAYMENT_CLEARING // money received by the payment service but not yet settled to the bank
+  ESCROW_HOLD // money held for one escrow transaction
+  USER_PAYABLE // money owed to a user, awaiting payout
+  PLATFORM_FEES // Projectiles fee income
+  REFUND_PAYABLE
+}
+
+model LedgerAccount {
+  id          String            @id @default(uuid(7)) @db.Uuid
+  type        LedgerAccountType
+  countryCode String            @db.Char(2)
+  currency    String            @db.Char(3)
+  ownerUserId String?           @db.Uuid
+  escrowId    String?           @db.Uuid
+  name        String
+  createdAt   DateTime          @default(now())
+
+  entries LedgerEntry[]
+
+  @@unique([type, currency, ownerUserId, escrowId])
+}
+
+enum LedgerJournalKind {
+  PAYMENT_IN
+  HOLD
+  RELEASE
+  REFUND
+  FEE
+  PAYOUT
+  ADJUSTMENT
+}
+
+/// One balanced posting. Debits must equal credits (checked by a database trigger at commit).
+model LedgerJournal {
+  id             String            @id @default(uuid(7)) @db.Uuid
+  kind           LedgerJournalKind
+  escrowId       String?           @db.Uuid
+  idempotencyKey String            @unique
+  description    String
+  createdById    String?           @db.Uuid
+  createdAt      DateTime          @default(now())
+
+  escrow  EscrowTransaction? @relation(fields: [escrowId], references: [id])
+  entries LedgerEntry[]
+}
+
+enum EntryDirection {
+  DEBIT
+  CREDIT
+}
+
+model LedgerEntry {
+  id          String         @id @default(uuid(7)) @db.Uuid
+  journalId   String         @db.Uuid
+  accountId   String         @db.Uuid
+  direction   EntryDirection
+  amountMinor BigInt
+  currency    String         @db.Char(3)
+  createdAt   DateTime       @default(now())
+
+  journal LedgerJournal @relation(fields: [journalId], references: [id])
+  account LedgerAccount @relation(fields: [accountId], references: [id])
+
+  @@index([accountId])
+}
+
+enum PaymentDirection {
+  IN
+  OUT
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REVERSED
+}
+
+/// A payment or payout at the payment service.
+model Payment {
+  id                String           @id @default(uuid(7)) @db.Uuid
+  escrowId          String?          @db.Uuid
+  provider          String
+  providerReference String?          @unique
+  direction         PaymentDirection
+  amountMinor       BigInt
+  currency          String           @db.Char(3)
+  status            PaymentStatus    @default(PENDING)
+  idempotencyKey    String           @unique
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  escrow EscrowTransaction? @relation(fields: [escrowId], references: [id])
+}
