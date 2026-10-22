@@ -6,6 +6,7 @@ import type { Env } from './config/env.js';
 import { authMiddleware } from './accounts/auth.js';
 import { SessionsService } from './accounts/sessions.service.js';
 import { PrismaService } from './prisma/prisma.service.js';
+import { ControlsService } from './controls/controls.service.js';
 
 // JSON has no 64-bit integers; money (bigint) is sent as strings.
 (BigInt.prototype as unknown as { toJSON: () => string }).toJSON = function (this: bigint) {
@@ -24,7 +25,7 @@ export function configureApp(app: INestApplication): INestApplication {
     allowedHeaders: ['Authorization', 'Content-Type', 'Idempotency-Key', 'X-Country', 'X-Region', 'X-City'],
   });
   // Reads the sign-in token before any guard runs (see src/accounts/auth.ts).
-  app.use(authMiddleware(app.get(SessionsService), app.get(PrismaService)));
+  app.use(authMiddleware(app.get(SessionsService), app.get(PrismaService), app.get(ControlsService)));
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),

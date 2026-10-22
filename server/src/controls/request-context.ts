@@ -8,6 +8,21 @@ export interface RequestUser {
   countryCode: string;
   /** The signed-in device; signing out ends it. */
   sessionId: string;
+  /** How this device signed in (decision 34). */
+  signInMethod: 'PASSWORD' | 'SMS_CODE';
+  /** Present when the user is an active staff member (ADR 0005). */
+  staff?: RequestStaff;
+}
+
+export interface RequestStaff {
+  roles: string[];
+  /** Country codes the staff member may act on; ['*'] means all. */
+  countryScopes: string[];
+  /**
+   * True when this signed-in device passed the second step of two-step login within the period in the platform
+   * settings (staffTwoStepMinutes; 3 hours by decision 32).
+   */
+  twoStepVerified: boolean;
 }
 
 /**

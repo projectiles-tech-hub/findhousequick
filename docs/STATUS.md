@@ -22,8 +22,21 @@ Updated: 22 October 2026 (evening). Read this after CLAUDE.md at the start of ev
   - Every route now needs sign-in unless marked `@Public()` (`server/src/accounts/auth.ts`)
   - Design in `docs/adr/0004-sign-in-and-sessions.md` (accepted 22 October 2026)
 
+- **Release 1 step 2 (staff accounts and roles)**: in pull request #7, awaiting approval.
+  - Staff management by super admins (`/admin/staff`), with every change in the audit log; the first super
+    admin is made with `pnpm staff:make-super-admin` (see `docs/DEPLOYMENT.md`)
+  - Two-step login for staff, by SMS code or authenticator app; every `/admin` route needs it. It lasts 3 hours
+    (a platform setting super admins can change), and must be a different factor from the sign-in: after an
+    SMS code sign-in, only an authenticator code (decisions 31 to 34)
+  - Feature-rule endpoints (`/admin/feature-rules`) following decision 28: country managers switch off at
+    once, everything else they do waits for a super admin, including withdrawal requests
+  - Platform settings store and `/admin/platform-settings`, starting with the staff second-step period
+  - Design in `docs/adr/0005-staff-accounts-and-two-step-login.md`; decisions 28 to 34 in the Decisions Log
+
 ## Small follow-ups
 
+- Rare, harmless gap: if a staff member's app renews its sign-in at the very moment they complete the second
+  step, the renewed sign-in may not carry the second step, and they are asked to do it again. Not fixed yet.
 - `ubuntu-latest` runners are moving to Ubuntu 26. On 22 October 2026 the checks still ran on Ubuntu 24.04;
   confirm CI still passes once GitHub makes the switch. (The GitHub Actions versions were moved to their
   Node.js 24 releases in pull request #3.)
@@ -34,8 +47,11 @@ Updated: 22 October 2026 (evening). Read this after CLAUDE.md at the start of ev
   leaked passwords blocked and no character-mix rules (discussed 22 October 2026, not yet decided).
 - Sign in with Google (and Sign in with Apple for the iPhone release): add to Release 1 or not (discussed
   22 October 2026, not yet decided).
-- ADR 0002: confirm the up-to-30-second delay for switch changes, and that country managers can change
-  non-critical switches in their own countries without a second approval.
+- Before step 3 (identity checks) goes live: which ID documents to accept in Nigeria besides NIN, and how long
+  identity images are kept after verification (lawyer). Decisions Log open points 14 and 15; both will be
+  country settings, so step 3 can be built before they are settled.
+- Whether to build country switching (`PATCH /admin/countries`, still to do from step 2) as a small step
+  before step 3 (suggested 22 October 2026).
 - Decisions Log open points: the five escrow settings, escrow legal structure, launch city, partner API,
   mention of the Agent Emma channel in the launch plan, budget, hiring.
 
@@ -44,8 +60,9 @@ Updated: 22 October 2026 (evening). Read this after CLAUDE.md at the start of ev
 1. ~~**Accounts**~~: done (pull request #4). Still to do from the accounts area: `DELETE /me` (account deletion) and
    `POST /me/data-export`; both need background jobs. A real SMS adapter (Termii or Twilio) once an account
    is opened. App sign-in screens.
-2. **Staff accounts and roles**, then expose the admin feature-rule endpoints (`/admin/feature-rules`) using
-   the existing `ControlsService`.
+2. ~~**Staff accounts and roles**~~, and the admin feature-rule endpoints: in pull request #7, awaiting approval.
+   Still to do from this area: admin screens in the app; two-step login for ordinary users (ADR 0005, point 3);
+   `PATCH /admin/countries/{countryCode}` (country settings), which is in the API design but not yet built.
 3. **Verification ladder guard** (`VERIFICATION_REQUIRED`), and the identity check flow behind an adapter.
 4. **Reference data endpoints**, then buildings, units and the parts checklist.
 5. Documents and media upload (private storage adapter), listings and submission, search, saved items,

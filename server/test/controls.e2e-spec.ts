@@ -67,21 +67,24 @@ describe('Country and feature controls (API)', () => {
     expect(res.body.country).toBeNull();
   });
 
-  it('switches a normal feature on for one city immediately, and the server enforces it', async () => {
+  it("waits for a super admin before a country manager's switch-on takes effect, then the server enforces it", async () => {
+    // Decision 28: country managers switch off at once; switching on waits for a super admin.
     await request(app.getHttpServer()).get('/v1/test-short-lets').set('X-City', beninCityId).expect(403);
 
     const rule = await controls.createRule(
       { flagKey: 'listings.short_let', scope: 'CITY', scopeValue: beninCityId, enabled: true, reason: 'Pilot' },
       ngManager,
     );
-    expect(rule.status).toBe('ACTIVE');
+    expect(rule.status).toBe('PENDING_APPROVAL');
+    await request(app.getHttpServer()).get('/v1/test-short-lets').set('X-City', beninCityId).expect(403);
 
+    await controls.approveRule(rule.id, superAdmin);
     await request(app.getHttpServer()).get('/v1/test-short-lets').set('X-City', beninCityId).expect(200);
     const elsewhere = await request(app.getHttpServer()).get('/v1/test-short-lets').expect(403);
     expect(elsewhere.body).toMatchObject({ code: 'FEATURE_UNAVAILABLE', feature: 'listings.short_let' });
 
-    const changes = await prisma.controlChange.findMany({ where: { entityId: rule.id } });
-    expect(changes.map((c) => c.action)).toEqual(['RULE_CREATED']);
+    const changes = await prisma.controlChange.findMany({ where: { entityId: rule.id }, orderBy: { createdAt: 'asc' } });
+    expect(changes.map((c) => c.action)).toEqual(['RULE_PROPOSED', 'RULE_APPROVED']);
   });
 
   it('needs a second person, including a super admin, to switch a critical feature on', async () => {

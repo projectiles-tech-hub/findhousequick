@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { errors as joseErrors, jwtVerify, SignJWT } from 'jose';
 import type { Env } from '../config/env.js';
 import { apiError } from '../common/api-error.js';
+import type { SignInMethod } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { generateToken, hashToken } from './secrets.js';
 
@@ -48,9 +49,12 @@ export class SessionsService {
     this.refreshDays = config.get('REFRESH_TOKEN_DAYS', { infer: true });
   }
 
-  /** Signs a device in: a new family with its first refresh token. */
-  async start(userId: string, device: string | null): Promise<IssuedTokens> {
-    return this.issue(userId, randomUUID(), device);
+  /**
+   * Signs a device in: a new family with its first refresh token. `method` records how it signed in, which
+   * decides the second step a staff member may use on it (decision 34).
+   */
+  async start(userId: string, device: string | null, method: SignInMethod): Promise<IssuedTokens> {
+    return this.issue(userId, randomUUID(), device, method);
   }
 
   /** Swaps a refresh token for new tokens. Returns the user id with them. */
@@ -83,7 +87,10 @@ export class SessionsService {
       await this.endFamily(row.familyId);
       throw invalid();
     }
-    return { userId: row.userId, ...(await this.issue(row.userId, row.familyId, row.device)) };
+    return {
+      userId: row.userId,
+      ...(await this.issue(row.userId, row.familyId, row.device, row.signInMethod, row.twoStepAt)),
+    };
   }
 
   /** Signs a device out. */
@@ -115,7 +122,18 @@ export class SessionsService {
     }
   }
 
-  private async issue(userId: string, familyId: string, device: string | null): Promise<IssuedTokens> {
+  /** Marks a signed-in device as having passed the second step of two-step login (staff, ADR 0005). */
+  async markTwoStepPassed(familyId: string): Promise<void> {
+    await this.prisma.refreshToken.updateMany({ where: { familyId, revokedAt: null }, data: { twoStepAt: new Date() } });
+  }
+
+  private async issue(
+    userId: string,
+    familyId: string,
+    device: string | null,
+    signInMethod: SignInMethod,
+    twoStepAt: Date | null = null,
+  ): Promise<IssuedTokens> {
     const now = Date.now();
     const accessTokenExpiresAt = new Date(now + this.accessMinutes * 60_000);
     const accessToken = await new SignJWT({ typ: 'access', sid: familyId })
@@ -134,6 +152,9 @@ export class SessionsService {
         familyId,
         tokenHash: hashToken(refreshToken),
         device: device?.slice(0, 100) ?? null,
+        // A device keeps how it signed in, and when it passed the second step, when its tokens are renewed.
+        signInMethod,
+        twoStepAt,
         expiresAt: new Date(now + this.refreshDays * 24 * 60 * 60_000),
       },
     });

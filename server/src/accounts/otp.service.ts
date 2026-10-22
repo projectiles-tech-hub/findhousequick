@@ -6,8 +6,10 @@ import { SMS_SENDER, type SmsSender } from '../integrations/sms/sms-sender.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { generateNumericCode, hashCode } from './secrets.js';
 
+/** Purposes anyone can ask a code for through POST /auth/otp. */
 export const OTP_PURPOSES = ['REGISTER', 'LOGIN', 'RESET_PASSWORD'] as const;
-export type OtpPurpose = (typeof OTP_PURPOSES)[number];
+/** TWO_STEP codes are only sent to signed-in staff, through POST /auth/two-step/sms (ADR 0005). */
+export type OtpPurpose = (typeof OTP_PURPOSES)[number] | 'TWO_STEP';
 
 /** Rules for one-time SMS codes. They protect users and limit SMS costs; they do not differ by country. */
 export const OTP_RULES = {
