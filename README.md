@@ -45,4 +45,9 @@ for the release plan.
 
 ## Ownership
 
-Copyright Projectiles Tech Hub Limited. All rights reserved. This repository is private.
+Copyright Projectiles Tech Hub Limited. All rights reserved.
+
+This repository is publicly visible during the build, but it is not open source. No licence is granted to copy,
+modify, distribute or use this code without written permission from Projectiles Tech Hub Limited.
+
+Never commit secrets (passwords, API keys, tokens, `.env` files) to this repository.
