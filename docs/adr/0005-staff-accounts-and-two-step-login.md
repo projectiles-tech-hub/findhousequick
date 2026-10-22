@@ -1,6 +1,9 @@
 # ADR 0005: Staff accounts and two-step login
 
 - Status: Decided by Emmanuel on 22 October 2026 (Decisions Log, decisions 29 to 34)
+- **Refined by decision 36 (22 October 2026):** with email added, the second step never uses the same channel
+  as the sign-in, and after a password sign-in it is offered in the order authenticator app, email code, SMS
+  code. Built in the email step.
 - Context: Product Specification, Sections 15.4 (staff two-step login), 16.2 (team roles by country) and 19
   (administration); Technical Architecture, Section 13; Release 1 step 2.
 
