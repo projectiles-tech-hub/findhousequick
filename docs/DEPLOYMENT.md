@@ -73,6 +73,19 @@ login. Most need the CAC certificate (RC 7987623).
 | --- | --- | --- | --- |
 | Create the first super admin | Once per server, after the database is set up (from the staff accounts pull request) | 1. The person (normally the Managing Director) registers in the app as a normal user. 2. On the server, in the `server` folder: `pnpm staff:make-super-admin +234...` with their phone number. 3. They sign in **with their password** and complete two-step login with an SMS code (after signing in with an SMS code, the second step must be an authenticator app code, decision 34). They can then add an authenticator app. | The command refuses if any super admin already exists, so it can only be used once per server. All further staff are added by a super admin through the admin endpoints (ADR 0005). It is recorded in the audit log |
 
+### Legal and regulatory steps (before any real user signs up)
+
+From the Product Specification (Section 15.1) and the Technical Architecture (Section 5). These are for the
+company and its lawyer, not the developers, but no real user may sign up until they are done.
+
+| Step | Status |
+| --- | --- |
+| Terms of use and privacy policy drafted by a lawyer and published | Not yet |
+| Registration with the Nigeria Data Protection Commission | Not yet |
+| Data Protection Officer appointed | Not yet |
+| Data protection impact assessment written | Not yet |
+| How long identity images are kept after verification (Decisions Log open point 15) | Not yet |
+
 ## 5. Checklist before any server goes live
 
 1. Every required setting in section 1 is set, with fresh secrets.
@@ -82,4 +95,4 @@ login. Most need the CAC certificate (RC 7987623).
 5. The first super admin has been created (section 4) and has completed two-step login.
 6. Daily database backups are running and one restore has been tested.
 7. HTTPS works on the API and web app addresses.
-8. Privacy policy and terms of use are published (needed before any real user signs up).
+8. Every legal and regulatory step in section 4 is done (needed before any real user signs up).

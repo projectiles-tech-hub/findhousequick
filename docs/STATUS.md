@@ -35,6 +35,8 @@ Updated: 22 October 2026 (evening). Read this after CLAUDE.md at the start of ev
 
 ## Small follow-ups
 
+- Rare, harmless gap: if a staff member's app renews its sign-in at the very moment they complete the second
+  step, the renewed sign-in may not carry the second step, and they are asked to do it again. Not fixed yet.
 - `ubuntu-latest` runners are moving to Ubuntu 26. On 22 October 2026 the checks still ran on Ubuntu 24.04;
   confirm CI still passes once GitHub makes the switch. (The GitHub Actions versions were moved to their
   Node.js 24 releases in pull request #3.)
@@ -45,6 +47,11 @@ Updated: 22 October 2026 (evening). Read this after CLAUDE.md at the start of ev
   leaked passwords blocked and no character-mix rules (discussed 22 October 2026, not yet decided).
 - Sign in with Google (and Sign in with Apple for the iPhone release): add to Release 1 or not (discussed
   22 October 2026, not yet decided).
+- Before step 3 (identity checks) goes live: which ID documents to accept in Nigeria besides NIN, and how long
+  identity images are kept after verification (lawyer). Decisions Log open points 14 and 15; both will be
+  country settings, so step 3 can be built before they are settled.
+- Whether to build country switching (`PATCH /admin/countries`, still to do from step 2) as a small step
+  before step 3 (suggested 22 October 2026).
 - Decisions Log open points: the five escrow settings, escrow legal structure, launch city, partner API,
   mention of the Agent Emma channel in the launch plan, budget, hiring.
 
