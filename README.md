@@ -17,7 +17,8 @@ landlords and authorised agents responsible for them. Built by Projectiles Tech 
 
 ## Getting started
 
-You need Node.js 22, Flutter 3.x, and either Docker or local installations of PostgreSQL 16 (with PostGIS) and Redis 7.
+You need Node.js 22, pnpm 10, Flutter 3.x, and either Docker or local installations of PostgreSQL 16 (with PostGIS)
+and Redis 7. On Ubuntu, `bash scripts/setup-dev.sh` installs and prepares everything.
 
 ```bash
 # 1. Start the database and Redis
@@ -25,11 +26,11 @@ docker compose -f infra/docker-compose.yml up -d
 
 # 2. Run the API server
 cd server
-cp .env.example .env
-npm install
-npx prisma migrate dev
-npm run db:seed
-npm run start:dev        # API at http://localhost:3000, API docs at http://localhost:3000/docs
+cp .env.example .env     # then set the two secrets as described in the file
+pnpm install
+npx prisma migrate deploy
+pnpm db:seed
+pnpm start:dev           # API at http://localhost:3000/v1, API docs at http://localhost:3000/docs
 
 # 3. Run the app
 cd ../app

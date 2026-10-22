@@ -45,19 +45,43 @@ build them as configurable settings, not hard-coded guesses.
 - **Personal data is minimised and access is logged.** ID documents and original media live in private storage only.
 - **Outside services are reached through adapters** in `server/src/integrations`, one adapter per provider.
 
-## Commands (server)
+## Setting up a fresh workspace
+
+```bash
+bash scripts/setup-dev.sh        # PostgreSQL+PostGIS, Redis, server deps, migrations, seed, Flutter
+export PATH="/opt/sdk/flutter/bin:$PATH"
+```
+
+## Commands (server, uses pnpm)
 
 ```bash
 cd server
-npm install
-npm run db:up          # start local Postgres+Redis with Docker (or use local services)
-npx prisma migrate dev # apply migrations
-npm run db:seed        # load starter data (Nigeria, Edo, Benin City, categories, feature switches)
-npm run start:dev      # run the API on http://localhost:3000 (docs at /docs)
-npm test               # unit tests
-npm run test:e2e       # API tests against a real database
-npm run lint
+pnpm install
+pnpm db:up             # start Postgres+Redis with Docker (alternative to the setup script)
+pnpm db:migrate        # create and apply a migration after changing schema.prisma
+pnpm db:seed           # load starter data (Nigeria, states, Benin City, property types, feature switches)
+pnpm start:dev         # API on http://localhost:3000/v1, docs at http://localhost:3000/docs
+pnpm test              # unit tests
+pnpm test:e2e          # API and database tests (rebuilds the findhousequick_test database)
+pnpm lint && pnpm typecheck
 ```
+
+After editing `schema.prisma`, confirm no drift:
+`npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script` must print an empty migration.
+
+## Commands (app)
+
+```bash
+cd app
+flutter pub get
+flutter analyze && flutter test
+flutter run -d chrome
+```
+
+## API design
+
+`docs/api/openapi.yaml` is the agreed Release 1 API. Build endpoints to match it; update it when the design changes.
+Lint it with `npx @redocly/cli lint docs/api/openapi.yaml`.
 
 ## Git
 

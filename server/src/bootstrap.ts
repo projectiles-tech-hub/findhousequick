@@ -1,6 +1,8 @@
 import { INestApplication, ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
+import type { Env } from './config/env.js';
 
 // JSON has no 64-bit integers; money (bigint) is sent as strings.
 (BigInt.prototype as unknown as { toJSON: () => string }).toJSON = function (this: bigint) {
@@ -13,6 +15,11 @@ import helmet from 'helmet';
  */
 export function configureApp(app: INestApplication): INestApplication {
   app.use(helmet());
+  const origins = app.get(ConfigService<Env, true>).get('CORS_ORIGINS', { infer: true });
+  app.enableCors({
+    origin: origins,
+    allowedHeaders: ['Authorization', 'Content-Type', 'Idempotency-Key', 'X-Country', 'X-Region', 'X-City'],
+  });
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),

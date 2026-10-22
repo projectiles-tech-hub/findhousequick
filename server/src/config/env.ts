@@ -10,6 +10,11 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   REDIS_URL: z.string().url().default('redis://localhost:6379'),
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
+  /** Comma-separated web addresses allowed to call the API from a browser (the Flutter web app, admin panel). */
+  CORS_ORIGINS: z
+    .string()
+    .default('http://localhost:8080')
+    .transform((v) => v.split(',').map((o) => o.trim()).filter(Boolean)),
   FIELD_ENCRYPTION_KEY: z
     .string()
     .refine((v) => Buffer.from(v, 'base64').length === 32, 'FIELD_ENCRYPTION_KEY must be 32 bytes, base64 encoded'),
