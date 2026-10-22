@@ -8,6 +8,11 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import type { FeatureRule, FeatureScope, RuleStatus, StaffRole } from '../generated/prisma/client.js';
 import { apiError } from '../common/api-error.js';
 import { parseCountrySettings, type CountrySettings } from './country-settings.schema.js';
+import {
+  parsePlatformSettings,
+  platformSettingsChangeSchema,
+  type PlatformSettings,
+} from './platform-settings.schema.js';
 import { FEATURES, isFeatureKey, type FeatureKey } from './feature-catalogue.js';
 import { evaluateFeature, type Decision, type EvaluationContext } from './feature-evaluator.js';
 
@@ -71,6 +76,54 @@ export class ControlsService implements OnModuleInit {
 
   invalidate(): void {
     this.snapshot = null;
+    this.platform = null;
+  }
+
+  private platform: { loadedAt: number; value: PlatformSettings } | null = null;
+
+  /**
+   * Platform-wide settings (platform-settings.schema.ts). Cached for up to 30 seconds like the feature switches,
+   * so a change reaches every server within half a minute (at once on the server where it was made).
+   */
+  async getPlatformSettings(): Promise<PlatformSettings> {
+    if (this.platform && Date.now() - this.platform.loadedAt < CACHE_TTL_MS) return this.platform.value;
+    const row = await this.prisma.platformSettings.findUnique({ where: { id: 1 } });
+    const value = parsePlatformSettings(row?.settings);
+    this.platform = { loadedAt: Date.now(), value };
+    return value;
+  }
+
+  /** Changes platform-wide settings. Super admins only; every change is recorded with before and after values. */
+  async updatePlatformSettings(change: unknown, reason: string, actor: StaffActor): Promise<PlatformSettings> {
+    if (!isSuperAdmin(actor)) throw apiError(403, 'FORBIDDEN', 'Only super admins can change platform settings.');
+    if (!reason?.trim()) throw apiError(400, 'REASON_REQUIRED', 'A reason is required for every change.');
+    const parsed = platformSettingsChangeSchema.safeParse(change);
+    if (!parsed.success) {
+      const problems = parsed.error.issues.map((i) => `${i.path.join('.') || 'settings'}: ${i.message}`).join('; ');
+      throw apiError(400, 'INVALID_SETTINGS', `These settings are not valid: ${problems}`);
+    }
+    const updated = await this.prisma.$transaction(async (tx) => {
+      // Lock the row so two changes at the same moment cannot overwrite each other.
+      await tx.$executeRaw`INSERT INTO "PlatformSettings" ("id", "settings", "updatedAt") VALUES (1, '{}', now()) ON CONFLICT ("id") DO NOTHING`;
+      const [row] = await tx.$queryRaw<{ settings: unknown }[]>`SELECT "settings" FROM "PlatformSettings" WHERE "id" = 1 FOR UPDATE`;
+      const before = parsePlatformSettings(row.settings);
+      const after = parsePlatformSettings({ ...before, ...parsed.data });
+      await tx.platformSettings.update({ where: { id: 1 }, data: { settings: after } });
+      await tx.controlChange.create({
+        data: {
+          entityType: 'PlatformSettings',
+          entityId: '1',
+          action: 'SETTINGS_CHANGED',
+          before: toJson(before),
+          after: toJson(after),
+          reason: reason.trim(),
+          actorId: actor.userId,
+        },
+      });
+      return after;
+    });
+    this.invalidate();
+    return updated;
   }
 
   private async load(): Promise<Snapshot> {
