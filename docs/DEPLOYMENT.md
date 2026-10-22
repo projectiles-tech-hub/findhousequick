@@ -47,6 +47,7 @@ login. Most need the CAC certificate (RC 7987623).
 | GitHub organisation `projectiles-tech-hub` | Code, checks, deployment | Now | Done |
 | Claude GitHub App on the organisation | Build sessions can push code | Now | Done |
 | SMS provider (Termii recommended; Africa's Talking as backup) | SMS codes | Pilot | Not yet |
+| Email sending service (for example Resend, Postmark or Amazon SES) | Email confirmation, sign-in and reset codes, receipts and statements (decisions 35 and 36) | Pilot | Not yet |
 | Hosting (VPS, e.g. DigitalOcean or Hetzner) | Runs the API, database and Redis | Test system and pilot | Not yet (needs a company dollar card) |
 | Cloudflare | Domain DNS, web app hosting (Pages), file storage (R2) | Test system and pilot | Not yet |
 | Domain name (findhousequick.com and/or .com.ng) | Web addresses | Pilot | Not yet |

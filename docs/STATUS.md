@@ -22,7 +22,7 @@ Updated: 22 October 2026 (evening). Read this after CLAUDE.md at the start of ev
   - Every route now needs sign-in unless marked `@Public()` (`server/src/accounts/auth.ts`)
   - Design in `docs/adr/0004-sign-in-and-sessions.md` (accepted 22 October 2026)
 
-- **Release 1 step 2 (staff accounts and roles)**: in pull request #7, awaiting approval.
+- **Release 1 step 2 (staff accounts and roles)**: complete. Merged in pull request #7.
   - Staff management by super admins (`/admin/staff`), with every change in the audit log; the first super
     admin is made with `pnpm staff:make-super-admin` (see `docs/DEPLOYMENT.md`)
   - Two-step login for staff, by SMS code or authenticator app; every `/admin` route needs it. It lasts 3 hours
@@ -60,9 +60,16 @@ Updated: 22 October 2026 (evening). Read this after CLAUDE.md at the start of ev
 1. ~~**Accounts**~~: done (pull request #4). Still to do from the accounts area: `DELETE /me` (account deletion) and
    `POST /me/data-export`; both need background jobs. A real SMS adapter (Termii or Twilio) once an account
    is opened. App sign-in screens.
-2. ~~**Staff accounts and roles**~~, and the admin feature-rule endpoints: in pull request #7, awaiting approval.
+2. ~~**Staff accounts and roles**~~, and the admin feature-rule endpoints: done (pull request #7).
    Still to do from this area: admin screens in the app; two-step login for ordinary users (ADR 0005, point 3);
    `PATCH /admin/countries/{countryCode}` (country settings), which is in the API design but not yet built.
+2a. **Check the specification against what is built and designed** (agreed 22 October 2026, after the missing
+    email requirement was found): every difference listed for Emmanuel in a Word document, decided once, and
+    recorded in the Decisions Log.
+2b. **Email** (decisions 35 to 38): email required at registration; sign-up and sign-in with phone or email;
+    both confirmed; phone confirmed before any action; email codes for sign-in, the second step and password
+    reset; level 1 needs both confirmed; staff can be added by confirmed email; an email adapter (a development provider that logs emails, then a real one). Needs an email sending
+    account (see `docs/DEPLOYMENT.md`).
 3. **Verification ladder guard** (`VERIFICATION_REQUIRED`), and the identity check flow behind an adapter.
 4. **Reference data endpoints**, then buildings, units and the parts checklist.
 5. Documents and media upload (private storage adapter), listings and submission, search, saved items,
