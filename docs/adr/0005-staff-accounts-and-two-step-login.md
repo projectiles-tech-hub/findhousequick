@@ -1,7 +1,6 @@
 # ADR 0005: Staff accounts and two-step login
 
-- Status: Decided by Emmanuel on 22 October 2026 (Decisions Log, decisions 29 and 30); the details marked
-  "proposed" below are for his confirmation
+- Status: Decided by Emmanuel on 22 October 2026 (Decisions Log, decisions 29 to 34)
 - Context: Product Specification, Sections 15.4 (staff two-step login), 16.2 (team roles by country) and 19
   (administration); Technical Architecture, Section 13; Release 1 step 2.
 
@@ -29,8 +28,20 @@
 - Changes take effect on the staff member's next request; nobody needs to sign out and in again.
 
 ### Two-step login
-- Every staff-only route (`/v1/admin/...`) needs the signed-in device to have passed the second step. Without
-  it the answer is `403 TWO_STEP_REQUIRED`.
+- Every staff-only route (`/v1/admin/...`) needs the signed-in device to have passed the second step **within the
+  last 3 hours** (decision 32). Without it the answer is `403 TWO_STEP_REQUIRED`, and the staff member does the
+  second step again.
+- The 3 hours is a **platform setting** (`staffTwoStepMinutes`, default 180), which super admins can change through
+  `PATCH /v1/admin/platform-settings` with a reason. Every change is recorded with the person, time, reason, and
+  the values before and after. A change applies to every device straight away, including devices that passed
+  the second step earlier.
+- **The second step must be a different factor from the sign-in** (decision 34). The server records how each
+  device signed in (password or SMS code):
+  - signed in with a **password**: the second step may be an SMS code or an authenticator app code;
+  - signed in with an **SMS code** (or just registered, which also uses an SMS code): the second step must be an
+    authenticator app code, because a second SMS code would prove the same phone twice. Such a device is
+    refused an SMS second-step code (`403 DIFFERENT_FACTOR_REQUIRED`). A staff member with no authenticator app
+    signs in with their password instead.
 - After signing in normally, the staff member either asks for an SMS code (`POST /v1/auth/two-step/sms`) or opens
   their authenticator app, then sends the code (`POST /v1/auth/two-step/verify`, saying which kind).
 - **Setting up an authenticator** (`POST /v1/me/two-step/authenticator`, then `.../confirm` with a first code)
@@ -52,10 +63,11 @@
 - Country managers see whole-platform and user-type rules (they affect their countries) and the rules for their
   own countries; super admins see all rules.
 
-## Proposed (for confirmation)
+## Confirmed (22 October 2026)
 
-1. **Second-step guess limit**: after 5 wrong second-step codes, the second step pauses for 15 minutes for that
-   staff member (the same rule as passwords), counted in one database statement as in ADR 0004.
-2. **How long the second step lasts**: until that device signs out or its session ends (30 days without use,
-   ADR 0004). A shorter period for staff, for example 12 hours, is possible if wanted.
-3. Two-step login for **ordinary users** (Specification 15.4 says they may turn it on) is left for a later step.
+1. After 5 wrong second-step codes, the second step pauses for 15 minutes for that staff member (the same rule
+   as passwords), counted in one database statement as in ADR 0004 (decision 31).
+2. The staff second step lasts 3 hours, then must be done again; super admins can change the period (decision 32).
+3. Two-step login for ordinary users is left for a later step (decision 31).
+4. "Switching off at once" means an off rule with no start time, end time or percentage (decision 33).
+5. The second step must be a different factor from the sign-in (decision 34).

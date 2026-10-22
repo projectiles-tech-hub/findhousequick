@@ -42,9 +42,6 @@ Updated: 22 October 2026 (evening). Read this after CLAUDE.md at the start of ev
   leaked passwords blocked and no character-mix rules (discussed 22 October 2026, not yet decided).
 - Sign in with Google (and Sign in with Apple for the iPhone release): add to Release 1 or not (discussed
   22 October 2026, not yet decided).
-- ADR 0005, proposed details: (1) after 5 wrong second-step codes the second step pauses for 15 minutes;
-  (2) the second step lasts until the device signs out or its session ends, or a shorter period for staff,
-  e.g. 12 hours; (3) two-step login for ordinary users left for a later step. Built as proposed; easy to change.
 - Decisions Log open points: the five escrow settings, escrow legal structure, launch city, partner API,
   mention of the Agent Emma channel in the launch plan, budget, hiring.
 
