@@ -1,11 +1,13 @@
 import { Controller, Get, type INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { Public } from '../src/accounts/auth.js';
 import { ControlsService, type StaffActor } from '../src/controls/controls.service.js';
 import { RequireFeature } from '../src/controls/require-feature.guard.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { createStaff, createTestApp } from './helpers.js';
 
 /** A route used only by these tests, to check that switched-off features are refused. */
+@Public()
 @Controller('test-short-lets')
 class ShortLetProbeController {
   @Get()

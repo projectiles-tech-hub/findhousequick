@@ -10,6 +10,11 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   REDIS_URL: z.string().url().default('redis://localhost:6379'),
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
+  /**
+   * Secret used to scramble (hash) SMS codes before they are stored. Kept separate from JWT_SECRET so that
+   * each secret does one job, and one can be changed without affecting the other.
+   */
+  OTP_HASH_SECRET: z.string().min(32, 'OTP_HASH_SECRET must be at least 32 characters'),
   /** Comma-separated web addresses allowed to call the API from a browser (the Flutter web app, admin panel). */
   CORS_ORIGINS: z
     .string()
@@ -18,6 +23,22 @@ const envSchema = z.object({
   FIELD_ENCRYPTION_KEY: z
     .string()
     .refine((v) => Buffer.from(v, 'base64').length === 32, 'FIELD_ENCRYPTION_KEY must be 32 bytes, base64 encoded'),
+  /** Minutes an access token stays valid. Apps refresh it silently before it runs out. */
+  ACCESS_TOKEN_MINUTES: z.coerce.number().int().min(1).max(60).default(15),
+  /** Days a signed-in device stays signed in without being used. */
+  REFRESH_TOKEN_DAYS: z.coerce.number().int().min(1).max(365).default(30),
+  /**
+   * Which SMS service sends one-time codes. "log" writes codes to the server log instead of sending them;
+   * it is for development and tests only and is refused in production.
+   */
+  SMS_PROVIDER: z.enum(['log']).default('log'),
+}).superRefine((env, ctx) => {
+  if (env.OTP_HASH_SECRET === env.JWT_SECRET) {
+    ctx.addIssue({ code: 'custom', path: ['OTP_HASH_SECRET'], message: 'OTP_HASH_SECRET must be different from JWT_SECRET' });
+  }
+  if (env.NODE_ENV === 'production' && env.SMS_PROVIDER === 'log') {
+    ctx.addIssue({ code: 'custom', path: ['SMS_PROVIDER'], message: 'The "log" SMS provider cannot be used in production' });
+  }
 });
 
 export type Env = z.infer<typeof envSchema>;

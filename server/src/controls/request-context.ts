@@ -1,11 +1,13 @@
 import type { Request } from 'express';
 import type { EvaluationContext } from './feature-evaluator.js';
 
-/** Fields the authentication layer will attach to the request once accounts are built. */
+/** The signed-in user, attached to the request by the sign-in check (src/accounts/auth.ts). */
 export interface RequestUser {
   id: string;
   types: string[];
   countryCode: string;
+  /** The signed-in device; signing out ends it. */
+  sessionId: string;
 }
 
 /**

@@ -207,22 +207,30 @@ enum AccountStatus {
 }
 
 model User {
-  id                 String        @id @default(uuid(7)) @db.Uuid
-  phone              String        @unique // E.164
-  email              String?       @unique
-  phoneVerifiedAt    DateTime?
-  emailVerifiedAt    DateTime?
-  passwordHash       String
-  firstName          String
-  lastName           String
-  countryCode        String        @db.Char(2)
-  types              UserType[]
-  language           String        @default("en")
-  status             AccountStatus @default(ACTIVE)
+  id                  String        @id @default(uuid(7)) @db.Uuid
+  phone               String        @unique // E.164
+  email               String?       @unique
+  phoneVerifiedAt     DateTime?
+  emailVerifiedAt     DateTime?
+  passwordHash        String
+  firstName           String
+  lastName            String
+  countryCode         String        @db.Char(2)
+  types               UserType[]
+  language            String        @default("en")
+  status              AccountStatus @default(ACTIVE)
   /// Set when identity (NIN or national equivalent, selfie, liveness) has passed.
-  identityVerifiedAt DateTime?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  identityVerifiedAt  DateTime?
+  /// Versions of the terms of use and privacy policy the user agreed to at registration, and when.
+  termsVersion        String?
+  privacyVersion      String?
+  consentedAt         DateTime?
+  /// Password attempts since the last correct one; each attempt is counted before it is checked.
+  /// Reaching the limit pauses password sign-in until passwordLockedUntil (src/accounts/accounts.service.ts).
+  failedPasswordCount Int           @default(0)
+  passwordLockedUntil DateTime?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
 
   staff               StaffMember?
   agentProfile        AgentProfile?
@@ -302,16 +310,25 @@ model BankAccount {
   user User @relation(fields: [userId], references: [id])
 }
 
+/// One row per refresh token. Tokens are single-use: each refresh marks the old token used and issues a new
+/// one in the same family (one family per signed-in device). Presenting a used token again means it was
+/// copied, so the whole family is revoked and that device must sign in again.
 model RefreshToken {
   id        String    @id @default(uuid(7)) @db.Uuid
   userId    String    @db.Uuid
+  /// Shared by every token issued to one signed-in device. Also carried in access tokens as the session id.
+  familyId  String    @db.Uuid
   tokenHash String    @unique
   device    String?
   expiresAt DateTime
+  usedAt    DateTime?
   revokedAt DateTime?
   createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id])
+
+  @@index([familyId])
+  @@index([userId])
 }
 
 model OtpCode {
@@ -324,7 +341,7 @@ model OtpCode {
   usedAt    DateTime?
   createdAt DateTime  @default(now())
 
-  @@index([phone, purpose])
+  @@index([phone, purpose, createdAt])
 }
 
 enum StaffRole {

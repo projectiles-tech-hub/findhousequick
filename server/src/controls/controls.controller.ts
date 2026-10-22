@@ -3,9 +3,11 @@ import { ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger
 import type { Request } from 'express';
 import { ControlsService } from './controls.service.js';
 import { publicCountrySettings } from './country-settings.schema.js';
+import { Public } from '../accounts/auth.js';
 import { contextFromRequest } from './request-context.js';
 
 @ApiTags('Controls')
+@Public()
 @Controller('controls')
 export class ControlsController {
   constructor(private readonly controls: ControlsService) {}

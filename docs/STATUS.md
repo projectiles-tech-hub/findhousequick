@@ -14,6 +14,14 @@ Updated: 22 October 2026. Read this after CLAUDE.md at the start of every build 
   - Release 1 API design in `docs/api/openapi.yaml`
   - CI on GitHub Actions; one-command setup in `scripts/setup-dev.sh`
 
+- **Release 1 step 1 (accounts)**: built on branch `release-1/accounts`, waiting for approval.
+  - SMS codes through an adapter (`log` provider for development), registration with consent, sign-in by
+    password or code, password reset by code, single-use refresh tokens, sign-out, `GET` and `PATCH /me`
+  - Review fixes: code guesses and password attempts counted in single database statements; phone numbers
+    in one standard form (libphonenumber-js); separate `OTP_HASH_SECRET` for SMS codes
+  - Every route now needs sign-in unless marked `@Public()` (`server/src/accounts/auth.ts`)
+  - Design in `docs/adr/0004-sign-in-and-sessions.md` (accepted 22 October 2026)
+
 ## Small follow-ups
 
 - `ubuntu-latest` runners are moving to Ubuntu 26. On 22 October 2026 the checks still ran on Ubuntu 24.04;
@@ -29,8 +37,9 @@ Updated: 22 October 2026. Read this after CLAUDE.md at the start of every build 
 
 ## Next: Release 1, in this order
 
-1. **Accounts**: SMS codes (adapter, with a development provider that logs codes), registration with consent,
-   login (password or code), refresh tokens (single use), logout, `/me` with verification level.
+1. ~~**Accounts**~~: built (see above). Still to do from the accounts area: `DELETE /me` (account deletion) and
+   `POST /me/data-export`; both need background jobs. A real SMS adapter (Termii or Twilio) once an account
+   is opened. App sign-in screens.
 2. **Staff accounts and roles**, then expose the admin feature-rule endpoints (`/admin/feature-rules`) using
    the existing `ControlsService`.
 3. **Verification ladder guard** (`VERIFICATION_REQUIRED`), and the identity check flow behind an adapter.
