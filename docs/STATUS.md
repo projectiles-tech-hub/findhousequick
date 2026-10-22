@@ -16,7 +16,9 @@ Updated: 22 October 2026. Read this after CLAUDE.md at the start of every build 
 
 ## Small follow-ups
 
-- None at the moment. (CI actions moved to their Node.js 24 releases in the CI update pull request.)
+- `ubuntu-latest` runners are moving to Ubuntu 26. On 22 October 2026 the checks still ran on Ubuntu 24.04;
+  confirm CI still passes once GitHub makes the switch. (The GitHub Actions versions were moved to their
+  Node.js 24 releases in pull request #3.)
 
 ## Waiting for Emmanuel
 
