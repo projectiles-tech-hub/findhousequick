@@ -4,7 +4,7 @@ import { ControlsService } from '../controls/controls.service.js';
 import type { EvaluationContext } from '../controls/feature-evaluator.js';
 import { Prisma } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import type { LoginDto, RegisterDto, RequestOtpDto, UpdateMeDto } from './dto.js';
+import type { LoginDto, RegisterDto, RequestOtpDto, ResetPasswordDto, UpdateMeDto } from './dto.js';
 import { OtpService } from './otp.service.js';
 import { DUMMY_PASSWORD_HASH, hashPassword, verifyPassword } from './secrets.js';
 import { SessionsService, type IssuedTokens } from './sessions.service.js';
@@ -12,7 +12,7 @@ import { nextStep, verificationLevel, type UserTypeName } from './verification-l
 
 /** Protection against password guessing on one account. */
 export const PASSWORD_RULES = {
-  /** Wrong passwords in a row before password sign-in pauses. Sign-in by SMS code still works. */
+  /** Password attempts without a success before password sign-in pauses. Sign-in by SMS code still works. */
   maxFailures: 5,
   /** Minutes password sign-in stays paused. */
   lockMinutes: 15,
@@ -72,11 +72,6 @@ export class AccountsService {
 
   /** Sends a one-time code. The outcome looks the same whether or not the number is registered. */
   async requestOtp(dto: RequestOtpDto, ctx: EvaluationContext): Promise<void> {
-    if (dto.purpose === 'RESET_PASSWORD') {
-      // The design lists this purpose, but there is no reset endpoint in docs/api/openapi.yaml yet,
-      // so a code sent now could not be used. Refused until that endpoint is designed and built.
-      throw apiError(400, 'NOT_AVAILABLE_YET', 'Password reset is not available yet. Please sign in with an SMS code.');
-    }
     if (dto.purpose === 'REGISTER') await this.assertRegistrationsOpen(ctx);
 
     const user = await this.prisma.user.findUnique({ where: { phone: dto.phone }, select: { status: true } });
@@ -131,31 +126,37 @@ export class AccountsService {
     const wrong = () => apiError(401, 'WRONG_CREDENTIALS', 'The phone number, password or code is not correct.');
     const user = await this.prisma.user.findUnique({
       where: { phone: dto.phone },
-      select: { ...meSelect, status: true, passwordHash: true, failedPasswordCount: true, passwordLockedUntil: true },
+      select: { ...meSelect, status: true, passwordHash: true },
     });
 
     if (dto.otp) {
       if (!(await this.otp.consume(dto.phone, 'LOGIN', dto.otp)) || !user) throw wrong();
     } else {
-      if (user?.passwordLockedUntil && user.passwordLockedUntil.getTime() > Date.now()) {
+      if (!user) {
+        // Same work as a real check, so an unknown number takes as long to refuse as a wrong password.
+        await verifyPassword(dto.password!, DUMMY_PASSWORD_HASH);
+        throw wrong();
+      }
+      const attempt = await this.claimPasswordAttempt(user.id);
+      if (attempt === null) {
         throw apiError(
           429,
           'PASSWORD_LOCKED',
           'Too many wrong passwords. Please wait a few minutes, or sign in with an SMS code.',
         );
       }
-      // Check against a dummy hash when there is no such user, so the answer takes the same time.
-      const ok = await verifyPassword(dto.password!, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
-      if (!user || !ok) {
-        if (user) await this.recordWrongPassword(user.id, user.failedPasswordCount);
+      if (!(await verifyPassword(dto.password!, user.passwordHash))) {
+        if (attempt >= PASSWORD_RULES.maxFailures) {
+          await this.prisma.auditLog.create({
+            data: { actorId: null, action: 'auth.password_locked', entityType: 'User', entityId: user.id },
+          });
+        }
         throw wrong();
       }
-      if (user.failedPasswordCount > 0 || user.passwordLockedUntil) {
-        await this.prisma.user.update({
-          where: { id: user.id },
-          data: { failedPasswordCount: 0, passwordLockedUntil: null },
-        });
-      }
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { failedPasswordCount: 0, passwordLockedUntil: null },
+      });
     }
 
     if (user.status === 'DELETED') throw wrong();
@@ -163,6 +164,32 @@ export class AccountsService {
       throw apiError(403, 'ACCOUNT_SUSPENDED', 'This account has been suspended. Please contact support.');
     }
     return this.session(user, await this.sessions.start(user.id, dto.device ?? null));
+  }
+
+  /**
+   * Sets a new password using an SMS code, then signs the user out of every device, so anyone who had the
+   * old password or a stolen session is shut out. Also lifts any pause on password sign-in.
+   */
+  async resetPassword(dto: ResetPasswordDto): Promise<void> {
+    if (!(await this.otp.consume(dto.phone, 'RESET_PASSWORD', dto.otp))) {
+      throw apiError(400, 'INVALID_CODE', 'The code is wrong or has expired. Please request a new one.');
+    }
+    // A reset code is only ever sent to an active account, so a missing account here is treated the same way.
+    const user = await this.prisma.user.findUnique({ where: { phone: dto.phone }, select: { id: true, status: true } });
+    if (!user || user.status === 'DELETED') {
+      throw apiError(400, 'INVALID_CODE', 'The code is wrong or has expired. Please request a new one.');
+    }
+    if (user.status !== 'ACTIVE') {
+      throw apiError(403, 'ACCOUNT_SUSPENDED', 'This account has been suspended. Please contact support.');
+    }
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: await hashPassword(dto.newPassword), failedPasswordCount: 0, passwordLockedUntil: null },
+    });
+    await this.sessions.endAllForUser(user.id);
+    await this.prisma.auditLog.create({
+      data: { actorId: user.id, action: 'auth.password_reset', entityType: 'User', entityId: user.id },
+    });
   }
 
   async refresh(refreshToken: string): Promise<Session> {
@@ -206,20 +233,31 @@ export class AccountsService {
     return { ...tokens, user: toMe(user) };
   }
 
-  private async recordWrongPassword(userId: string, failuresSoFar: number): Promise<void> {
-    const failures = failuresSoFar + 1;
-    const lock = failures >= PASSWORD_RULES.maxFailures;
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: lock
-        ? { failedPasswordCount: 0, passwordLockedUntil: new Date(Date.now() + PASSWORD_RULES.lockMinutes * 60_000) }
-        : { failedPasswordCount: failures },
-    });
-    if (lock) {
-      await this.prisma.auditLog.create({
-        data: { actorId: null, action: 'auth.password_locked', entityType: 'User', entityId: userId },
-      });
-    }
+  /**
+   * Takes one password attempt for a user, or returns null while password sign-in is paused.
+   *
+   * The check and the count are ONE database statement, so many guesses sent at the same moment cannot
+   * all get past the limit: the database handles one such statement on a user at a time. The attempt that
+   * reaches the limit also starts the pause in that same statement, so there is never a moment when the
+   * limit is used up but the pause has not started. Once a pause has run out, counting starts again at 1.
+   * A correct password sets the count back to 0.
+   *
+   * Returns the attempt number (1 for the first attempt since the last success).
+   */
+  private async claimPasswordAttempt(userId: string): Promise<number | null> {
+    const { maxFailures, lockMinutes } = PASSWORD_RULES;
+    const rows = await this.prisma.$queryRaw<{ attempt: number }[]>`
+      UPDATE "User"
+         SET "failedPasswordCount" =
+               CASE WHEN "passwordLockedUntil" IS NOT NULL THEN 1 ELSE "failedPasswordCount" + 1 END,
+             "passwordLockedUntil" =
+               CASE WHEN (CASE WHEN "passwordLockedUntil" IS NOT NULL THEN 1 ELSE "failedPasswordCount" + 1 END) >= ${maxFailures}::int
+                    THEN (now() AT TIME ZONE 'UTC') + make_interval(mins => ${lockMinutes}::int)
+                    ELSE NULL END
+       WHERE "id" = ${userId}::uuid
+         AND ("passwordLockedUntil" IS NULL OR "passwordLockedUntil" <= (now() AT TIME ZONE 'UTC'))
+      RETURNING "failedPasswordCount" AS "attempt"`;
+    return rows.length === 1 ? Number(rows[0].attempt) : null;
   }
 
   private async assertRegistrationsOpen(ctx: EvaluationContext): Promise<void> {

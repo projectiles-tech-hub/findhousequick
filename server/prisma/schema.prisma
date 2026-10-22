@@ -225,7 +225,8 @@ model User {
   termsVersion        String?
   privacyVersion      String?
   consentedAt         DateTime?
-  /// Wrong passwords in a row. Password sign-in is paused until passwordLockedUntil once the limit is reached.
+  /// Password attempts since the last correct one; each attempt is counted before it is checked.
+  /// Reaching the limit pauses password sign-in until passwordLockedUntil (src/accounts/accounts.service.ts).
   failedPasswordCount Int           @default(0)
   passwordLockedUntil DateTime?
   createdAt           DateTime      @default(now())
