@@ -1,6 +1,7 @@
 # ADR 0002: How feature controls decide
 
-- Status: Proposed for Emmanuel's confirmation
+- Status: Accepted by Emmanuel on 22 October 2026, with one change to what country managers may do
+  (Decisions Log, decision 28)
 - Context: Product Specification, Section 17 (Feature Controls).
 
 ## Decision
@@ -22,12 +23,17 @@ A feature's state for a request is decided in this order:
 
 - **Critical features** (payments, escrow, verification checks, platform-wide registration and listing switches)
   are marked in the catalogue.
-- Switching a critical feature **on** creates a rule that waits for approval by a **different** staff member;
-  one of the two must be a super admin (the Managing Director or a person he appoints).
-- Switching **off** applies at once, so an emergency pause is never delayed by an approval step.
+- **Switching off applies at once**, for super admins and for country managers in their own countries, so an
+  emergency pause is never delayed by an approval step.
+- **Country managers**: every change other than switching off (switching on, scheduling, gradual release,
+  withdrawing a rule) waits for approval by a **super admin**. A country manager can withdraw their own proposal
+  before it is approved, since that changes nothing live.
+- **Super admins**: changes apply at once, except switching a **critical** feature **on**, which waits for
+  approval by a **different** staff member. One of the two must be a super admin (the Managing Director or a
+  person he appoints).
 - Withdrawing an "off" rule on a critical feature would switch it back on, so it is not allowed. Staff create an
   "on" rule instead, which goes through approval.
-- Country managers can only change rules for their own countries; whole-platform and user-type rules are
+- Country managers can only act on rules for their own countries; whole-platform and user-type rules are
   super admin only.
 - Every change is written to `ControlChange` with the person, time and reason.
 
@@ -40,7 +46,7 @@ A feature's state for a request is decided in this order:
 - Switch values are cached in the server for up to 30 seconds, so a change takes effect within half a minute
   (immediately on the server instance where it was made).
 
-## Points for confirmation
+## Confirmed (22 October 2026)
 
-- The 30-second delay before a change reaches every server.
-- That country managers may switch non-critical features on and off in their countries without a second approval.
+- A switch change reaches every server within 30 seconds.
+- Country managers need a super admin's approval for every change except switching off (the change above).
