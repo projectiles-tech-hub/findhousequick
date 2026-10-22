@@ -21,7 +21,7 @@ GitHub repository secrets, **never in the code**. `server/.env.example` shows th
 | `CORS_ORIGINS` | Yes | Web addresses allowed to call the API from a browser | e.g. `https://app.findhousequick.com` (comma-separated) | Must include the web app's address |
 | `JWT_SECRET` | Yes | Signs sign-in passes | `openssl rand -hex 32` | **Secret.** At least 32 characters. Changing it signs every user out |
 | `OTP_HASH_SECRET` | Yes (from pull request #4, accounts) | Scrambles SMS codes before storing them | `openssl rand -hex 32` | **Secret.** At least 32 characters and **must differ from `JWT_SECRET`**; the server refuses to start otherwise. Changing it cancels codes already sent |
-| `FIELD_ENCRYPTION_KEY` | Yes | Encrypts ID numbers and bank account numbers in the database | `openssl rand -base64 32` | **Secret. Never change or lose it**: data encrypted with it cannot be read without it. Keep a copy offline in a safe place (see section 3) |
+| `FIELD_ENCRYPTION_KEY` | Yes | Encrypts staff authenticator app secrets (from the staff accounts pull request), and later ID numbers and bank account numbers, in the database | `openssl rand -base64 32` | **Secret. Never change or lose it**: data encrypted with it cannot be read without it. Keep a copy offline in a safe place (see section 3) |
 | `ACCESS_TOKEN_MINUTES` | No (default 15) | How long a sign-in pass lasts | Number of minutes, 1 to 60 | Agreed in ADR 0004 |
 | `REFRESH_TOKEN_DAYS` | No (default 30) | How long a device stays signed in | Number of days, 1 to 365 | Agreed in ADR 0004 |
 | `SMS_PROVIDER` | Yes | Which service sends SMS codes | `log` for development only | `log` prints codes instead of sending them and is refused in production. A real provider (e.g. Termii) is added before any pilot |
@@ -56,12 +56,19 @@ login. Most need the CAC certificate (RC 7987623).
 - If a secret is ever exposed (pasted in a chat, committed by mistake), replace it at once. For
   `FIELD_ENCRYPTION_KEY`, ask a developer first: it needs a re-encryption step, not a simple swap.
 
-## 4. Checklist before any server goes live
+## 4. One-time and manual steps
+
+| Step | When | How | Notes |
+| --- | --- | --- | --- |
+| Create the first super admin | Once per server, after the database is set up (from the staff accounts pull request) | 1. The person (normally the Managing Director) registers in the app as a normal user. 2. On the server, in the `server` folder: `pnpm staff:make-super-admin +234...` with their phone number. 3. They sign in and complete two-step login with an SMS code. | The command refuses if any super admin already exists, so it can only be used once per server. All further staff are added by a super admin through the admin endpoints (ADR 0005). It is recorded in the audit log |
+
+## 5. Checklist before any server goes live
 
 1. Every required setting in section 1 is set, with fresh secrets.
 2. `NODE_ENV` is `production` and `SMS_PROVIDER` is a real provider.
 3. Database migrations applied (`npx prisma migrate deploy`) and starter data loaded (`pnpm db:seed`).
 4. `GET /v1/health` returns `status: ok`.
-5. Daily database backups are running and one restore has been tested.
-6. HTTPS works on the API and web app addresses.
-7. Privacy policy and terms of use are published (needed before any real user signs up).
+5. The first super admin has been created (section 4) and has completed two-step login.
+6. Daily database backups are running and one restore has been tested.
+7. HTTPS works on the API and web app addresses.
+8. Privacy policy and terms of use are published (needed before any real user signs up).

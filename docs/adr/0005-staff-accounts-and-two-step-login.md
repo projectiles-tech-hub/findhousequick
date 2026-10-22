@@ -34,8 +34,8 @@
 - After signing in normally, the staff member either asks for an SMS code (`POST /v1/auth/two-step/sms`) or opens
   their authenticator app, then sends the code (`POST /v1/auth/two-step/verify`, saying which kind).
 - **Setting up an authenticator** (`POST /v1/me/two-step/authenticator`, then `.../confirm` with a first code)
-  needs a device that has already passed the second step by SMS. Otherwise someone who stole only the password
-  could add their own authenticator.
+  needs a device that has already passed the second step (by SMS, or by an authenticator already set up).
+  Otherwise someone who stole only the password could add their own authenticator.
 - The authenticator's secret is encrypted in the database with `FIELD_ENCRYPTION_KEY`. Each authenticator code
   works once, so a code seen over someone's shoulder cannot be reused.
 - SMS codes for the second step follow the code rules in ADR 0004 (10 minutes, 5 guesses, one a minute, five an
@@ -44,8 +44,13 @@
 ### Feature-rule endpoints
 - `GET /v1/admin/feature-rules`, `POST /v1/admin/feature-rules`, `POST .../{ruleId}/approve` and
   `POST .../{ruleId}/archive`, for super admins and country managers, following ADR 0002 as confirmed.
+- "Switching off at once" means a rule that switches a feature off with no start time, end time or percentage.
+  An off rule with a start time is scheduling, and one with an end time switches the feature back on later
+  without approval, so both wait for a super admin when a country manager makes them.
 - When a country manager withdraws a live rule, the rule is marked "withdrawal requested" and stays in force until
   a super admin approves the withdrawal with the same approve endpoint.
+- Country managers see whole-platform and user-type rules (they affect their countries) and the rules for their
+  own countries; super admins see all rules.
 
 ## Proposed (for confirmation)
 
