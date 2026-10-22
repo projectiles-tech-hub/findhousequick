@@ -1,0 +1,32 @@
+import { z } from 'zod';
+
+/**
+ * Environment variables the server needs. The server refuses to start if any are missing or invalid,
+ * so configuration mistakes show up immediately rather than at the first request that needs them.
+ */
+const envSchema = z.object({
+  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  PORT: z.coerce.number().int().positive().default(3000),
+  DATABASE_URL: z.string().url(),
+  REDIS_URL: z.string().url().default('redis://localhost:6379'),
+  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
+  /** Comma-separated web addresses allowed to call the API from a browser (the Flutter web app, admin panel). */
+  CORS_ORIGINS: z
+    .string()
+    .default('http://localhost:8080')
+    .transform((v) => v.split(',').map((o) => o.trim()).filter(Boolean)),
+  FIELD_ENCRYPTION_KEY: z
+    .string()
+    .refine((v) => Buffer.from(v, 'base64').length === 32, 'FIELD_ENCRYPTION_KEY must be 32 bytes, base64 encoded'),
+});
+
+export type Env = z.infer<typeof envSchema>;
+
+export function validateEnv(raw: Record<string, unknown>): Env {
+  const parsed = envSchema.safeParse(raw);
+  if (!parsed.success) {
+    const problems = parsed.error.issues.map((i) => `  ${i.path.join('.')}: ${i.message}`).join('\n');
+    throw new Error(`Invalid environment configuration:\n${problems}`);
+  }
+  return parsed.data;
+}

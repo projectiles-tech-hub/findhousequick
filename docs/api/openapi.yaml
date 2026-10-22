@@ -1,0 +1,1825 @@
+openapi: 3.1.0
+info:
+  title: FindHouseQuick API
+  version: "1.0.0-design"
+  summary: Release 1 API design for the FindHouseQuick apps.
+  description: |
+    This is the agreed design for the Release 1 API. The running server publishes its own live
+    documentation at `/docs`; as each area is built, the live documentation must match this design,
+    and this file is updated if the design changes.
+
+    ## Conventions
+    - All routes are under `/v1`.
+    - Requests and responses are JSON. Field names are camelCase.
+    - **Money** is sent as a string of whole minor units (kobo, cents) with an ISO 4217 currency,
+      e.g. `{"amountMinor": "100000000", "currency": "NGN"}` is N1,000,000.
+    - **Times** are ISO 8601 in UTC.
+    - **Locations** are `{"lat": 6.335, "lng": 5.6037}` in WGS 84.
+    - **Lists** use cursor pagination: pass `cursor` from the previous response's `nextCursor`.
+    - **Login** uses a short-lived access token (`Authorization: Bearer ...`) and a refresh token.
+    - **Location context**: apps send `X-Country`, and when known `X-Region` and `X-City`, so the
+      right country settings and feature switches apply.
+    - **Feature switches**: a route belonging to a switched-off feature returns `403` with
+      `code: FEATURE_UNAVAILABLE`.
+    - **Verification ladder**: a route needing a higher verification level returns `403` with
+      `code: VERIFICATION_REQUIRED` and the level needed, so the app can guide the user.
+    - **Idempotency**: requests that create money movements or uploads accept an `Idempotency-Key`
+      header; repeating a request with the same key returns the original result.
+
+    ## Verification levels
+    | Level | Name | Reached by |
+    | --- | --- | --- |
+    | 1 | BASIC | Phone number confirmed by SMS code |
+    | 2 | VERIFIED | Identity check passed (NIN or national equivalent, selfie, liveness) |
+    | 3 | PAYMENT_READY | Bank account verified in the user's own name |
+
+    Landlords additionally need ownership verified per property before a listing goes live, and
+    agents need approved authority per property.
+  contact:
+    name: Projectiles Tech Hub Limited
+
+servers:
+  - url: http://localhost:3000/v1
+    description: Local development
+
+tags:
+  - name: Accounts
+  - name: Identity
+  - name: Controls
+  - name: Reference
+  - name: Properties
+  - name: Authority
+  - name: Documents
+  - name: Media
+  - name: Listings
+  - name: Search
+  - name: Saved
+  - name: Messaging
+  - name: Inspections
+  - name: Reports
+  - name: Admin
+
+security:
+  - bearer: []
+
+paths:
+  # ------------------------------------------------------------------
+  # Accounts
+  # ------------------------------------------------------------------
+  /auth/otp:
+    post:
+      tags: [Accounts]
+      summary: Send a one-time code by SMS
+      description: Used for registration, login without password and password reset. Rate-limited per phone number.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, purpose]
+              properties:
+                phone: { $ref: "#/components/schemas/Phone" }
+                purpose: { type: string, enum: [REGISTER, LOGIN, RESET_PASSWORD] }
+      responses:
+        "202": { description: Code sent if the request is allowed. The response never reveals whether the number is registered. }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+
+  /auth/register:
+    post:
+      tags: [Accounts]
+      summary: Register (free). Reaches verification level 1.
+      security: []
+      x-feature: platform.new_registrations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, otp, password, firstName, lastName, countryCode, types]
+              properties:
+                phone: { $ref: "#/components/schemas/Phone" }
+                otp: { type: string, pattern: "^[0-9]{6}$" }
+                password: { type: string, minLength: 8, maxLength: 128 }
+                email: { type: string, format: email }
+                firstName: { type: string, maxLength: 100 }
+                lastName: { type: string, maxLength: 100 }
+                countryCode: { $ref: "#/components/schemas/CountryCode" }
+                types:
+                  type: array
+                  minItems: 1
+                  items: { $ref: "#/components/schemas/UserType" }
+                language: { type: string, example: en }
+                consent:
+                  type: object
+                  required: [termsVersion, privacyVersion]
+                  properties:
+                    termsVersion: { type: string }
+                    privacyVersion: { type: string }
+      responses:
+        "201":
+          description: Registered and signed in.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409": { description: Phone or email already registered. }
+
+  /auth/login:
+    post:
+      tags: [Accounts]
+      summary: Sign in with phone and password, or phone and SMS code
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone]
+              properties:
+                phone: { $ref: "#/components/schemas/Phone" }
+                password: { type: string }
+                otp: { type: string }
+                device: { type: string, description: Device name shown in the user's list of signed-in devices }
+      responses:
+        "200":
+          description: Signed in.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+        "401": { description: Wrong credentials. }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+
+  /auth/refresh:
+    post:
+      tags: [Accounts]
+      summary: Exchange a refresh token for a new access token
+      description: Refresh tokens are single-use; each call returns a new one and invalidates the old.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        "200":
+          description: New tokens.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+        "401": { description: "Token expired, revoked or already used." }
+
+  /auth/logout:
+    post:
+      tags: [Accounts]
+      summary: Sign out this device
+      responses:
+        "204": { description: Signed out. }
+
+  /me:
+    get:
+      tags: [Accounts]
+      summary: The signed-in user, with verification level and what it unlocks
+      responses:
+        "200":
+          description: Current user.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Me" }
+    patch:
+      tags: [Accounts]
+      summary: Update profile details
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email }
+                language: { type: string }
+                types:
+                  type: array
+                  items: { $ref: "#/components/schemas/UserType" }
+      responses:
+        "200":
+          description: Updated user.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Me" }
+    delete:
+      tags: [Accounts]
+      summary: Request account deletion
+      description: Personal data is deleted except records the law requires to be kept (e.g. payment records), which are retained for the legal period only.
+      responses:
+        "202": { description: Deletion scheduled. }
+
+  /me/data-export:
+    post:
+      tags: [Accounts]
+      summary: Request a copy of all personal data held about the user
+      responses:
+        "202": { description: Export being prepared; the user is notified when it is ready. }
+
+  # ------------------------------------------------------------------
+  # Identity
+  # ------------------------------------------------------------------
+  /identity/checks:
+    post:
+      tags: [Identity]
+      summary: Start an identity check (NIN or national equivalent, selfie, liveness)
+      description: |
+        Returns a session for the identity provider's camera flow inside the app. The ID number is
+        encrypted on arrival; only the last four digits are ever shown again. Reaching a PASSED result
+        moves the user to verification level 2.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [idType, idNumber, consent]
+              properties:
+                idType: { type: string, example: NIN, description: Must be one of the country's accepted ID types }
+                idNumber: { type: string, writeOnly: true }
+                consent: { type: boolean, const: true }
+      responses:
+        "201":
+          description: Check started.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/IdentityCheck"
+                  - type: object
+                    properties:
+                      providerSession:
+                        type: object
+                        description: Values the app passes to the provider's camera component.
+                        additionalProperties: true
+        "409": { description: This ID is already linked to another account; the case is sent for review. }
+    get:
+      tags: [Identity]
+      summary: The user's identity checks
+      responses:
+        "200":
+          description: Checks, newest first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/IdentityCheck" }
+
+  /identity/checks/{checkId}:
+    get:
+      tags: [Identity]
+      summary: Status of one identity check
+      parameters: [{ $ref: "#/components/parameters/CheckId" }]
+      responses:
+        "200":
+          description: Check.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IdentityCheck" }
+
+  # ------------------------------------------------------------------
+  # Controls and reference data
+  # ------------------------------------------------------------------
+  /controls:
+    get:
+      tags: [Controls]
+      summary: Feature switches and country settings for the caller (built)
+      security: [{}, { bearer: [] }]
+      parameters:
+        - { $ref: "#/components/parameters/XCountry" }
+        - { $ref: "#/components/parameters/XRegion" }
+        - { $ref: "#/components/parameters/XCity" }
+      responses:
+        "200":
+          description: Switches and settings.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Controls" }
+
+  /reference/countries/{countryCode}/property-types:
+    get:
+      tags: [Reference]
+      summary: Property categories and types for a country, with their photo checklists
+      security: [{}, { bearer: [] }]
+      parameters: [{ $ref: "#/components/parameters/CountryCodePath" }]
+      responses:
+        "200":
+          description: Property types.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/PropertyType" }
+
+  /reference/countries/{countryCode}/document-types:
+    get:
+      tags: [Reference]
+      summary: Accepted identity, ownership and authority documents for a country
+      security: [{}, { bearer: [] }]
+      parameters: [{ $ref: "#/components/parameters/CountryCodePath" }]
+      responses:
+        "200":
+          description: Document types.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code: { type: string }
+                    label: { type: string }
+                    purpose: { type: string, enum: [IDENTITY, OWNERSHIP, AUTHORITY_LETTER] }
+
+  /reference/countries/{countryCode}/regions:
+    get:
+      tags: [Reference]
+      summary: States or regions of a country, with their cities
+      security: [{}, { bearer: [] }]
+      parameters: [{ $ref: "#/components/parameters/CountryCodePath" }]
+      responses:
+        "200":
+          description: Regions.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { $ref: "#/components/schemas/Id" }
+                    code: { type: string }
+                    name: { type: string }
+                    enabled: { type: boolean }
+                    cities:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id: { $ref: "#/components/schemas/Id" }
+                          name: { type: string }
+                          enabled: { type: boolean }
+                          centre: { $ref: "#/components/schemas/LatLng" }
+
+  # ------------------------------------------------------------------
+  # Properties (buildings and units)
+  # ------------------------------------------------------------------
+  /buildings:
+    post:
+      tags: [Properties]
+      summary: Register a building while standing at it
+      description: |
+        Needs verification level 2. The location must be the phone's live GPS reading taken in the
+        app; the server compares it with the capture location of the first photos.
+        If another building is within the country's duplicate radius, the response includes
+        `possibleDuplicates` and the building is flagged for review.
+      x-verification-level: 2
+      x-feature: platform.new_listings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cityId, area, street, location, locationAccuracyM]
+              properties:
+                cityId: { $ref: "#/components/schemas/Id" }
+                area: { type: string, description: "Neighbourhood, e.g. Ugbowo" }
+                street: { type: string }
+                houseNumber: { type: string }
+                landmark: { type: string }
+                location: { $ref: "#/components/schemas/LatLng" }
+                locationAccuracyM: { type: integer, minimum: 0 }
+                offPlatformOwner:
+                  description: For agents listing with a letter of authority when the landlord is not on the app.
+                  type: object
+                  properties:
+                    name: { type: string }
+                    phone: { $ref: "#/components/schemas/Phone" }
+      responses:
+        "201":
+          description: Building created.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Building"
+                  - type: object
+                    properties:
+                      possibleDuplicates:
+                        type: array
+                        items: { $ref: "#/components/schemas/Id" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /buildings/{buildingId}:
+    get:
+      tags: [Properties]
+      summary: A building the user owns, manages or created
+      parameters: [{ $ref: "#/components/parameters/BuildingId" }]
+      responses:
+        "200":
+          description: Building with its units.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Building" }
+
+  /buildings/{buildingId}/units:
+    post:
+      tags: [Properties]
+      summary: Add a unit (e.g. Flat 3) and generate its photo checklist
+      parameters: [{ $ref: "#/components/parameters/BuildingId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [label, propertyTypeId, bedrooms, bathrooms, toilets]
+              properties:
+                label: { type: string }
+                propertyTypeId: { $ref: "#/components/schemas/Id" }
+                bedrooms: { type: integer, minimum: 0 }
+                bathrooms: { type: integer, minimum: 0 }
+                toilets: { type: integer, minimum: 0 }
+                floorLevel: { type: integer }
+                floorArea: { type: number, description: In the country's area unit }
+                details: { $ref: "#/components/schemas/UnitDetails" }
+      responses:
+        "201":
+          description: Unit created with its parts checklist.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Unit" }
+
+  /units/{unitId}:
+    get:
+      tags: [Properties]
+      summary: A unit with its checklist and media progress
+      parameters: [{ $ref: "#/components/parameters/UnitId" }]
+      responses:
+        "200":
+          description: Unit.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Unit" }
+    patch:
+      tags: [Properties]
+      summary: Update unit details. Changing room counts regenerates the checklist, keeping captured media.
+      parameters: [{ $ref: "#/components/parameters/UnitId" }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bedrooms: { type: integer, minimum: 0 }
+                bathrooms: { type: integer, minimum: 0 }
+                toilets: { type: integer, minimum: 0 }
+                details: { $ref: "#/components/schemas/UnitDetails" }
+      responses:
+        "200":
+          description: Updated unit.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Unit" }
+
+  # ------------------------------------------------------------------
+  # Agent authority
+  # ------------------------------------------------------------------
+  /buildings/{buildingId}/authorities:
+    post:
+      tags: [Authority]
+      summary: Agent requests authority over a building
+      description: |
+        If the landlord is on the app, they receive the request to approve. Otherwise the agent
+        attaches a signed letter of authority (uploaded through /documents) and the platform team
+        calls the landlord to confirm.
+      x-verification-level: 2
+      parameters: [{ $ref: "#/components/parameters/BuildingId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [method]
+              properties:
+                method: { type: string, enum: [IN_APP_APPROVAL, LETTER] }
+                letterDocumentId: { $ref: "#/components/schemas/Id" }
+                validUntil: { type: string, format: date-time }
+      responses:
+        "201":
+          description: Request created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Authority" }
+    get:
+      tags: [Authority]
+      summary: Authorities on a building (landlord, authorised agents and staff)
+      parameters: [{ $ref: "#/components/parameters/BuildingId" }]
+      responses:
+        "200":
+          description: Authorities.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Authority" }
+
+  /authorities/{authorityId}/decision:
+    post:
+      tags: [Authority]
+      summary: Landlord approves, rejects or withdraws an agent's authority
+      description: Withdrawing removes the agent from the listing immediately.
+      parameters: [{ $ref: "#/components/parameters/AuthorityId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision: { type: string, enum: [APPROVE, REJECT, REVOKE] }
+                validUntil: { type: string, format: date-time }
+      responses:
+        "200":
+          description: Updated authority.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Authority" }
+
+  # ------------------------------------------------------------------
+  # Documents (identity, ownership, authority letters)
+  # ------------------------------------------------------------------
+  /documents:
+    post:
+      tags: [Documents]
+      summary: Start a private document upload
+      description: |
+        Returns a short-lived upload address. Files go to private storage only; they are never
+        publicly reachable. After upload, call `/documents/{id}/complete`.
+      parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [documentTypeCode, purpose, contentType, sizeBytes, sha256]
+              properties:
+                documentTypeCode: { type: string, example: CERTIFICATE_OF_OCCUPANCY }
+                purpose: { type: string, enum: [OWNERSHIP, AUTHORITY_LETTER, DISPUTE_EVIDENCE, OTHER] }
+                buildingId: { $ref: "#/components/schemas/Id" }
+                contentType: { type: string, enum: [application/pdf, image/jpeg, image/png] }
+                sizeBytes: { type: integer, maximum: 20971520 }
+                sha256: { type: string }
+      responses:
+        "201":
+          description: Upload address issued.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UploadTicket" }
+
+  /documents/{documentId}/complete:
+    post:
+      tags: [Documents]
+      summary: Confirm a document upload finished; starts automatic reading and checks
+      parameters: [{ $ref: "#/components/parameters/DocumentId" }]
+      responses:
+        "200":
+          description: Document recorded.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Document" }
+
+  # ------------------------------------------------------------------
+  # Media (photos and videos of property parts)
+  # ------------------------------------------------------------------
+  /units/{unitId}/media:
+    post:
+      tags: [Media]
+      summary: Start a photo or video upload for one part of the unit
+      description: |
+        Only media captured with the app's camera is accepted. The app sends the capture time and
+        GPS reading recorded at the moment of capture. Uploads are resumable: large files are sent in
+        parts, and an interrupted upload continues from the last part received.
+      parameters:
+        - { $ref: "#/components/parameters/UnitId" }
+        - { $ref: "#/components/parameters/IdempotencyKey" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [partCode, kind, contentType, sizeBytes, sha256, capturedAt, captureLocation]
+              properties:
+                partCode: { type: string, example: bedroom_2 }
+                kind: { type: string, enum: [PHOTO, VIDEO, PHOTO_360, FLOOR_PLAN] }
+                contentType: { type: string, enum: [image/jpeg, image/heic, video/mp4] }
+                sizeBytes: { type: integer }
+                sha256: { type: string }
+                capturedAt: { type: string, format: date-time }
+                captureLocation: { $ref: "#/components/schemas/LatLng" }
+                captureAccuracyM: { type: integer }
+                occupantConsent: { type: boolean, description: Required when the unit is still occupied }
+      responses:
+        "201":
+          description: Resumable upload created.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/UploadTicket"
+                  - type: object
+                    properties:
+                      mediaId: { $ref: "#/components/schemas/Id" }
+                      partSizeBytes: { type: integer }
+                      partUrls: { type: array, items: { type: string, format: uri } }
+        "422": { description: "Capture location too far from the building, or capture time too old." }
+    get:
+      tags: [Media]
+      summary: Media captured for the unit, grouped by part (owner, agents and staff)
+      parameters: [{ $ref: "#/components/parameters/UnitId" }]
+      responses:
+        "200":
+          description: Media by part.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/MediaItem" }
+
+  /media/{mediaId}/complete:
+    post:
+      tags: [Media]
+      summary: Confirm an upload finished; starts processing (quality check, blurring, watermarking)
+      parameters: [{ $ref: "#/components/parameters/MediaId" }]
+      responses:
+        "202":
+          description: Processing started. Status becomes READY or REJECTED (with reasons such as BLURRY or TOO_DARK).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MediaItem" }
+
+  /media/{mediaId}:
+    delete:
+      tags: [Media]
+      summary: Remove a photo or video from a draft listing
+      parameters: [{ $ref: "#/components/parameters/MediaId" }]
+      responses:
+        "204": { description: Removed. }
+
+  # ------------------------------------------------------------------
+  # Listings
+  # ------------------------------------------------------------------
+  /listings:
+    post:
+      tags: [Listings]
+      summary: Create a draft listing for a unit
+      description: Only one open listing per unit is allowed. All fees must be entered; no fee outside the listing may be charged.
+      x-verification-level: 2
+      x-feature: platform.new_listings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ListingInput" }
+      responses:
+        "201":
+          description: Draft created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListingOwnerView" }
+        "409": { description: The unit already has an open listing. }
+
+  /listings/{listingId}:
+    get:
+      tags: [Listings]
+      summary: Public property page
+      description: |
+        Gallery, walkthrough and exact location are returned only to signed-in users. The location is
+        approximate (`approximateArea`) until an inspection is confirmed.
+      security: [{}, { bearer: [] }]
+      parameters: [{ $ref: "#/components/parameters/ListingId" }]
+      responses:
+        "200":
+          description: Property page.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListingPublicView" }
+        "404": { description: Not found or not live. }
+    patch:
+      tags: [Listings]
+      summary: Edit a draft, or edit text and fees of a live listing (fee changes are logged)
+      parameters: [{ $ref: "#/components/parameters/ListingId" }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ListingInput" }
+      responses:
+        "200":
+          description: Updated.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListingOwnerView" }
+
+  /listings/{listingId}/submit:
+    post:
+      tags: [Listings]
+      summary: Submit for verification
+      description: |
+        Refused until every required part has its minimum photos and the walkthrough video, ownership
+        documents (landlord) or approved authority (agent) are in place. Runs the automatic checks,
+        sets the risk score and band, and then: GREEN goes live, AMBER goes to desk review, RED
+        needs a site visit.
+      parameters: [{ $ref: "#/components/parameters/ListingId" }]
+      responses:
+        "200":
+          description: Submitted; current status and any missing items.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListingOwnerView" }
+        "422":
+          description: Not ready. Lists missing parts and documents.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: string, const: LISTING_INCOMPLETE }
+                  missing:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        kind: { type: string, enum: [PART_MEDIA, WALKTHROUGH, OWNERSHIP_DOCUMENT, AUTHORITY, FEES] }
+                        partCode: { type: string }
+                        message: { type: string }
+
+  /listings/{listingId}/confirm-available:
+    post:
+      tags: [Listings]
+      summary: Confirm the property is still available (resets the expiry clock)
+      parameters: [{ $ref: "#/components/parameters/ListingId" }]
+      responses:
+        "200":
+          description: Confirmed.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListingOwnerView" }
+
+  /listings/{listingId}/status:
+    post:
+      tags: [Listings]
+      summary: Pause, resume, mark rented or close a listing
+      parameters: [{ $ref: "#/components/parameters/ListingId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action: { type: string, enum: [PAUSE, RESUME, MARK_RENTED, CLOSE] }
+                rentedToUserId: { $ref: "#/components/schemas/Id" }
+      responses:
+        "200":
+          description: Updated.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ListingOwnerView" }
+
+  /me/listings:
+    get:
+      tags: [Listings]
+      summary: Listings the user created or is authorised on
+      parameters:
+        - { $ref: "#/components/parameters/Cursor" }
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/ListingStatus" }
+      responses:
+        "200":
+          description: Listings.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/ListingOwnerView" } }
+                  nextCursor: { type: [string, "null"] }
+
+  # ------------------------------------------------------------------
+  # Search
+  # ------------------------------------------------------------------
+  /search/listings:
+    get:
+      tags: [Search]
+      summary: Search live listings around a point, inside a map area, or near a landmark
+      description: |
+        Exactly one of: `near` (with `radiusM`) for "around me" and landmark search, or `bbox` for
+        map search. Results include distance when `near` is used. Pins for the map are returned
+        grouped when zoomed out (`clusters`).
+      security: [{}, { bearer: [] }]
+      parameters:
+        - name: near
+          in: query
+          description: "lat,lng, e.g. 6.3350,5.6037"
+          schema: { type: string }
+        - name: radiusM
+          in: query
+          schema: { type: integer, minimum: 100, maximum: 50000, default: 1000 }
+        - name: bbox
+          in: query
+          description: "south,west,north,east"
+          schema: { type: string }
+        - name: zoom
+          in: query
+          description: Map zoom level; low values return clusters instead of individual pins.
+          schema: { type: integer, minimum: 1, maximum: 22 }
+        - name: kind
+          in: query
+          schema: { type: string, enum: [LONG_TERM, SHORT_LET] }
+        - name: category
+          in: query
+          schema: { type: string, enum: [LONG_TERM_RESIDENTIAL, COMMERCIAL, SHORT_LET] }
+        - name: propertyType
+          in: query
+          schema: { type: string }
+        - name: minRent
+          in: query
+          schema: { type: string, description: Minor units }
+        - name: maxRent
+          in: query
+          schema: { type: string, description: Minor units }
+        - name: minBedrooms
+          in: query
+          schema: { type: integer }
+        - name: furnished
+          in: query
+          schema: { type: string, enum: [UNFURNISHED, SEMI_FURNISHED, FURNISHED] }
+        - name: verifiedOnly
+          in: query
+          schema: { type: boolean }
+        - name: sort
+          in: query
+          schema: { type: string, enum: [DISTANCE, PRICE_ASC, PRICE_DESC, NEWEST], default: DISTANCE }
+        - { $ref: "#/components/parameters/Cursor" }
+      responses:
+        "200":
+          description: Results.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/ListingCard" } }
+                  clusters:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        centre: { $ref: "#/components/schemas/LatLng" }
+                        count: { type: integer }
+                  nextCursor: { type: [string, "null"] }
+
+  /search/places:
+    get:
+      tags: [Search]
+      summary: Find areas and landmarks by name (for landmark search)
+      security: [{}, { bearer: [] }]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 2 }
+      responses:
+        "200":
+          description: Matching places.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name: { type: string }
+                    description: { type: string }
+                    location: { $ref: "#/components/schemas/LatLng" }
+
+  # ------------------------------------------------------------------
+  # Saved searches and favourites
+  # ------------------------------------------------------------------
+  /me/saved-searches:
+    get:
+      tags: [Saved]
+      summary: Saved areas and their alert settings
+      responses:
+        "200":
+          description: Saved searches.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/SavedSearch" } }
+    post:
+      tags: [Saved]
+      summary: Save an area with filters; alerts arrive when a matching listing goes live
+      x-feature: search.saved_alerts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SavedSearch" }
+      responses:
+        "201":
+          description: Saved.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SavedSearch" }
+
+  /me/saved-searches/{savedSearchId}:
+    delete:
+      tags: [Saved]
+      summary: Delete a saved search
+      parameters:
+        - name: savedSearchId
+          in: path
+          required: true
+          schema: { $ref: "#/components/schemas/Id" }
+      responses:
+        "204": { description: Deleted. }
+
+  /me/saved-listings:
+    get:
+      tags: [Saved]
+      summary: Favourite listings
+      responses:
+        "200":
+          description: Favourites.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/ListingCard" } }
+
+  /me/saved-listings/{listingId}:
+    put:
+      tags: [Saved]
+      summary: Add a favourite
+      parameters: [{ $ref: "#/components/parameters/ListingId" }]
+      responses:
+        "204": { description: Saved. }
+    delete:
+      tags: [Saved]
+      summary: Remove a favourite
+      parameters: [{ $ref: "#/components/parameters/ListingId" }]
+      responses:
+        "204": { description: Removed. }
+
+  # ------------------------------------------------------------------
+  # Messaging
+  # ------------------------------------------------------------------
+  /conversations:
+    post:
+      tags: [Messaging]
+      summary: Start (or reopen) a conversation about a listing
+      x-verification-level: 2
+      x-feature: contact.chat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [listingId]
+              properties:
+                listingId: { $ref: "#/components/schemas/Id" }
+                firstMessage: { type: string, maxLength: 2000 }
+      responses:
+        "201":
+          description: Conversation.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Conversation" }
+    get:
+      tags: [Messaging]
+      summary: The user's conversations, most recent first
+      parameters: [{ $ref: "#/components/parameters/Cursor" }]
+      responses:
+        "200":
+          description: Conversations.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Conversation" } }
+                  nextCursor: { type: [string, "null"] }
+
+  /conversations/{conversationId}/messages:
+    get:
+      tags: [Messaging]
+      summary: Messages in a conversation (newest first)
+      parameters:
+        - { $ref: "#/components/parameters/ConversationId" }
+        - { $ref: "#/components/parameters/Cursor" }
+      responses:
+        "200":
+          description: Messages.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Message" } }
+                  nextCursor: { type: [string, "null"] }
+    post:
+      tags: [Messaging]
+      summary: Send a message
+      description: |
+        Messages are checked automatically for phone numbers, bank details and attempts to move the
+        deal off the platform. When found, the sender sees a warning (`warning` in the response) and
+        the event is logged. Users are told about this monitoring in the terms of use.
+      x-feature: contact.chat
+      parameters: [{ $ref: "#/components/parameters/ConversationId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                body: { type: string, minLength: 1, maxLength: 2000 }
+      responses:
+        "201":
+          description: Sent.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Message"
+                  - type: object
+                    properties:
+                      warning: { type: [string, "null"] }
+
+  /conversations/{conversationId}/share-phones:
+    post:
+      tags: [Messaging]
+      summary: Agree to share phone numbers (allowed once an inspection is booked; both sides must agree)
+      x-feature: contact.phone_reveal
+      parameters: [{ $ref: "#/components/parameters/ConversationId" }]
+      responses:
+        "200":
+          description: Updated conversation; phones included once both sides have agreed.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Conversation" }
+
+  # ------------------------------------------------------------------
+  # Inspections
+  # ------------------------------------------------------------------
+  /listings/{listingId}/inspections:
+    post:
+      tags: [Inspections]
+      summary: Book an inspection (always free)
+      x-verification-level: 2
+      x-feature: contact.inspection_booking
+      parameters: [{ $ref: "#/components/parameters/ListingId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [scheduledAt]
+              properties:
+                scheduledAt: { type: string, format: date-time }
+                note: { type: string, maxLength: 500 }
+      responses:
+        "201":
+          description: Requested.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Inspection" }
+
+  /me/inspections:
+    get:
+      tags: [Inspections]
+      summary: Inspections the user booked or hosts
+      parameters: [{ $ref: "#/components/parameters/Cursor" }]
+      responses:
+        "200":
+          description: Inspections.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/Inspection" } }
+                  nextCursor: { type: [string, "null"] }
+
+  /inspections/{inspectionId}/status:
+    post:
+      tags: [Inspections]
+      summary: Confirm, reschedule, cancel, complete or mark no-show
+      description: Confirming releases the exact location and directions to the tenant.
+      parameters: [{ $ref: "#/components/parameters/InspectionId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action: { type: string, enum: [CONFIRM, RESCHEDULE, CANCEL, COMPLETE, NO_SHOW] }
+                scheduledAt: { type: string, format: date-time }
+                reason: { type: string }
+      responses:
+        "200":
+          description: Updated.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Inspection" }
+
+  /inspections/{inspectionId}/safety-share:
+    post:
+      tags: [Inspections]
+      summary: Send inspection details to a trusted contact by SMS
+      x-feature: contact.inspection_safety_share
+      parameters: [{ $ref: "#/components/parameters/InspectionId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contactName, contactPhone]
+              properties:
+                contactName: { type: string }
+                contactPhone: { $ref: "#/components/schemas/Phone" }
+      responses:
+        "202": { description: Details sent. }
+
+  /inspections/{inspectionId}/follow-up:
+    post:
+      tags: [Inspections]
+      summary: Answer the follow-up questions after an inspection
+      parameters: [{ $ref: "#/components/parameters/InspectionId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                matchedListing: { type: boolean, description: Tenant only. Did the property match the listing? }
+                rented: { type: boolean, description: Did this lead to a rental? }
+      responses:
+        "200":
+          description: Recorded.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Inspection" }
+
+  # ------------------------------------------------------------------
+  # Reports
+  # ------------------------------------------------------------------
+  /listings/{listingId}/reports:
+    post:
+      tags: [Reports]
+      summary: Report a listing (fake, already taken, inspection fee demanded, extra fees, does not match)
+      x-feature: trust.report_button
+      parameters: [{ $ref: "#/components/parameters/ListingId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+                  enum: [FAKE_LISTING, ALREADY_TAKEN, INSPECTION_FEE_DEMANDED, EXTRA_FEES_DEMANDED, DOES_NOT_MATCH, OTHER]
+                details: { type: string, maxLength: 2000 }
+      responses:
+        "201": { description: Report received and queued for review. }
+
+  # ------------------------------------------------------------------
+  # Admin (staff only; every action is recorded)
+  # ------------------------------------------------------------------
+  /admin/review-tasks:
+    get:
+      tags: [Admin]
+      summary: Verification work queue, limited to the staff member's countries
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [LISTING_REVIEW, IDENTITY_REVIEW, AUTHORITY_CONFIRMATION, DUPLICATE_RESOLUTION, SITE_VISIT, RANDOM_AUDIT, REPORT]
+        - name: status
+          in: query
+          schema: { type: string, enum: [OPEN, ASSIGNED, DONE, CANCELLED] }
+        - { $ref: "#/components/parameters/Cursor" }
+      responses:
+        "200":
+          description: Tasks.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/ReviewTask" } }
+                  nextCursor: { type: [string, "null"] }
+
+  /admin/review-tasks/{taskId}/decision:
+    post:
+      tags: [Admin]
+      summary: Record the outcome of a review, site visit or report
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema: { $ref: "#/components/schemas/Id" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [outcome, notes]
+              properties:
+                outcome: { type: string, enum: [APPROVE, REJECT, NEEDS_SITE_VISIT, MERGE_DUPLICATE, WARN_USER, SUSPEND_USER, NO_ACTION] }
+                notes: { type: string }
+      responses:
+        "200":
+          description: Recorded.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReviewTask" }
+
+  /admin/documents/{documentId}/view:
+    post:
+      tags: [Admin]
+      summary: Get a short-lived link to view a private document (recorded in the audit log)
+      parameters: [{ $ref: "#/components/parameters/DocumentId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string }
+      responses:
+        "200":
+          description: Link valid for a few minutes.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string, format: uri }
+                  expiresAt: { type: string, format: date-time }
+
+  /admin/feature-rules:
+    get:
+      tags: [Admin]
+      summary: Feature rules, including those waiting for approval
+      responses:
+        "200":
+          description: Rules.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/FeatureRule" } }
+    post:
+      tags: [Admin]
+      summary: Create a feature rule
+      description: |
+        Switching a critical feature ON creates a rule waiting for a second person's approval, and one
+        of the two must be a super admin. Switching OFF (including emergency pauses) applies at once.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/FeatureRuleInput" }
+      responses:
+        "201":
+          description: Rule created (ACTIVE or PENDING_APPROVAL).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FeatureRule" }
+
+  /admin/feature-rules/{ruleId}/approve:
+    post:
+      tags: [Admin]
+      summary: Approve a pending rule (must be a different staff member)
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema: { $ref: "#/components/schemas/Id" }
+      responses:
+        "200":
+          description: Approved.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FeatureRule" }
+
+  /admin/feature-rules/{ruleId}/archive:
+    post:
+      tags: [Admin]
+      summary: Withdraw a rule
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema: { $ref: "#/components/schemas/Id" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string }
+      responses:
+        "200":
+          description: Archived.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FeatureRule" }
+
+  /admin/countries/{countryCode}:
+    patch:
+      tags: [Admin]
+      summary: Change a country's settings or switch it on or off (super admin; recorded)
+      parameters: [{ $ref: "#/components/parameters/CountryCodePath" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                enabled: { type: boolean }
+                languages: { type: array, items: { type: string } }
+                settings: { type: object, description: Partial settings; validated against the country settings schema }
+                reason: { type: string }
+      responses:
+        "200": { description: Updated. }
+
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    XCountry: { name: X-Country, in: header, required: false, schema: { $ref: "#/components/schemas/CountryCode" } }
+    XRegion: { name: X-Region, in: header, required: false, schema: { $ref: "#/components/schemas/Id" } }
+    XCity: { name: X-City, in: header, required: false, schema: { $ref: "#/components/schemas/Id" } }
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: false, schema: { type: string, maxLength: 100 } }
+    Cursor: { name: cursor, in: query, required: false, schema: { type: string } }
+    CountryCodePath: { name: countryCode, in: path, required: true, schema: { $ref: "#/components/schemas/CountryCode" } }
+    BuildingId: { name: buildingId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+    UnitId: { name: unitId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+    ListingId: { name: listingId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+    MediaId: { name: mediaId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+    DocumentId: { name: documentId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+    AuthorityId: { name: authorityId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+    ConversationId: { name: conversationId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+    InspectionId: { name: inspectionId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+    CheckId: { name: checkId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+
+  responses:
+    BadRequest:
+      description: The request is invalid.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Forbidden:
+      description: Not allowed. `code` is FEATURE_UNAVAILABLE, VERIFICATION_REQUIRED or FORBIDDEN.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    TooManyRequests:
+      description: Too many requests; try again later.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+
+  schemas:
+    Id: { type: string, format: uuid }
+    CountryCode: { type: string, pattern: "^[A-Z]{2}$", example: NG }
+    Phone: { type: string, pattern: "^\\+[1-9][0-9]{6,14}$", example: "+2348031234567" }
+    UserType: { type: string, enum: [TENANT, LANDLORD, AGENT] }
+    LatLng:
+      type: object
+      required: [lat, lng]
+      properties:
+        lat: { type: number, minimum: -90, maximum: 90 }
+        lng: { type: number, minimum: -180, maximum: 180 }
+    Money:
+      type: object
+      required: [amountMinor, currency]
+      properties:
+        amountMinor: { type: string, pattern: "^[0-9]+$", description: Whole minor units }
+        currency: { type: string, pattern: "^[A-Z]{3}$" }
+
+    Error:
+      type: object
+      required: [statusCode, message]
+      properties:
+        statusCode: { type: integer }
+        code: { type: string, description: "Machine-readable reason, e.g. FEATURE_UNAVAILABLE" }
+        message: { type: string, description: Plain-language message safe to show users }
+        feature: { type: string }
+        requiredLevel: { type: integer, minimum: 1, maximum: 3 }
+
+    Session:
+      type: object
+      properties:
+        accessToken: { type: string }
+        accessTokenExpiresAt: { type: string, format: date-time }
+        refreshToken: { type: string }
+        user: { $ref: "#/components/schemas/Me" }
+
+    Me:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        phone: { $ref: "#/components/schemas/Phone" }
+        email: { type: [string, "null"] }
+        firstName: { type: string }
+        lastName: { type: string }
+        countryCode: { $ref: "#/components/schemas/CountryCode" }
+        types: { type: array, items: { $ref: "#/components/schemas/UserType" } }
+        language: { type: string }
+        verificationLevel: { type: integer, minimum: 1, maximum: 3 }
+        next:
+          type: [object, "null"]
+          description: What the user must do to reach the next level, for the app to guide them.
+          properties:
+            level: { type: integer }
+            action: { type: string, enum: [VERIFY_IDENTITY, ADD_BANK_ACCOUNT] }
+            unlocks: { type: array, items: { type: string } }
+
+    IdentityCheck:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        idType: { type: string }
+        idNumberLast4: { type: string }
+        status: { type: string, enum: [PENDING, PASSED, FAILED, MANUAL_REVIEW] }
+        createdAt: { type: string, format: date-time }
+        completedAt: { type: [string, "null"], format: date-time }
+
+    Controls:
+      type: object
+      properties:
+        features:
+          type: object
+          additionalProperties: { type: boolean }
+          example: { contact.chat: true, money.escrow: false }
+        country:
+          type: [object, "null"]
+          properties:
+            code: { $ref: "#/components/schemas/CountryCode" }
+            name: { type: string }
+            currency: { type: string }
+            languages: { type: array, items: { type: string } }
+            defaultLanguage: { type: string }
+            timezone: { type: string }
+            settings: { type: object }
+        refreshAfterSeconds: { type: integer }
+
+    PropertyType:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        category: { type: string, enum: [LONG_TERM_RESIDENTIAL, COMMERCIAL, SHORT_LET] }
+        code: { type: string }
+        label: { type: string }
+        partTemplate:
+          type: array
+          items:
+            type: object
+            properties:
+              code: { type: string }
+              label: { type: string }
+              required: { type: boolean }
+              minPhotos: { type: integer }
+              repeat: { type: string, enum: [bedrooms, bathrooms, toilets] }
+              mediaKind: { type: string, enum: [PHOTO, VIDEO] }
+
+    Building:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        cityId: { $ref: "#/components/schemas/Id" }
+        area: { type: string }
+        street: { type: string }
+        houseNumber: { type: [string, "null"] }
+        landmark: { type: [string, "null"] }
+        location: { $ref: "#/components/schemas/LatLng" }
+        ownerVerified: { type: boolean }
+        units: { type: array, items: { $ref: "#/components/schemas/Unit" } }
+
+    UnitDetails:
+      type: object
+      description: Validated against the country's detail fields.
+      properties:
+        furnishing: { type: string, enum: [UNFURNISHED, SEMI_FURNISHED, FURNISHED] }
+        power: { type: array, items: { type: string, enum: [PUBLIC_SUPPLY, PREPAID_METER, SHARED_METER, GENERATOR, INVERTER, SOLAR] } }
+        water: { type: array, items: { type: string, enum: [BOREHOLE, PUBLIC_SUPPLY, TREATED] } }
+        security: { type: array, items: { type: string, enum: [FENCED, GATED, GUARD, CCTV, ESTATE_SECURITY] } }
+        parkingSpaces: { type: integer }
+        roadCondition: { type: string, enum: [TARRED, UNTARRED, PARTLY_TARRED] }
+        finishing: { type: object, additionalProperties: true }
+
+    Unit:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        label: { type: string }
+        propertyTypeId: { $ref: "#/components/schemas/Id" }
+        bedrooms: { type: integer }
+        bathrooms: { type: integer }
+        toilets: { type: integer }
+        floorLevel: { type: [integer, "null"] }
+        floorArea: { type: [number, "null"] }
+        details: { $ref: "#/components/schemas/UnitDetails" }
+        parts:
+          type: array
+          items:
+            type: object
+            properties:
+              code: { type: string }
+              label: { type: string }
+              required: { type: boolean }
+              minPhotos: { type: integer }
+              mediaKind: { type: string, enum: [PHOTO, VIDEO] }
+              captured: { type: integer, description: Ready photos or videos for this part }
+              complete: { type: boolean }
+
+    Authority:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        buildingId: { $ref: "#/components/schemas/Id" }
+        agentId: { $ref: "#/components/schemas/Id" }
+        method: { type: string, enum: [IN_APP_APPROVAL, LETTER] }
+        status: { type: string, enum: [REQUESTED, APPROVED, REJECTED, REVOKED, EXPIRED] }
+        validUntil: { type: [string, "null"], format: date-time }
+
+    UploadTicket:
+      type: object
+      properties:
+        documentId: { $ref: "#/components/schemas/Id" }
+        uploadUrl: { type: string, format: uri }
+        expiresAt: { type: string, format: date-time }
+
+    Document:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        documentTypeCode: { type: string }
+        purpose: { type: string }
+        status: { type: string, enum: [PENDING, PASSED, FAILED, MANUAL_REVIEW] }
+        createdAt: { type: string, format: date-time }
+
+    MediaItem:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        partCode: { type: string }
+        kind: { type: string, enum: [PHOTO, VIDEO, PHOTO_360, FLOOR_PLAN] }
+        status: { type: string, enum: [UPLOADING, PROCESSING, READY, REJECTED, REMOVED] }
+        rejectionReasons: { type: array, items: { type: string, enum: [BLURRY, TOO_DARK, LOW_RESOLUTION, WRONG_LOCATION, DUPLICATE, STOLEN] } }
+        capturedAt: { type: string, format: date-time }
+        display:
+          type: object
+          description: Watermarked display copies behind expiring links. Originals are never returned.
+          properties:
+            small: { type: string, format: uri }
+            medium: { type: string, format: uri }
+            large: { type: string, format: uri }
+            expiresAt: { type: string, format: date-time }
+
+    ListingStatus:
+      type: string
+      enum: [DRAFT, SUBMITTED, IN_REVIEW, LIVE, PAUSED, RENTED, EXPIRED, REJECTED, REMOVED]
+
+    ListingInput:
+      type: object
+      properties:
+        unitId: { $ref: "#/components/schemas/Id" }
+        kind: { type: string, enum: [LONG_TERM, SHORT_LET] }
+        title: { type: string, maxLength: 120 }
+        description: { type: string, maxLength: 5000 }
+        rent: { $ref: "#/components/schemas/Money" }
+        rentPeriod: { type: string, enum: [YEAR, MONTH, WEEK, NIGHT] }
+        agencyFee: { $ref: "#/components/schemas/Money" }
+        legalFee: { $ref: "#/components/schemas/Money" }
+        cautionDeposit: { $ref: "#/components/schemas/Money" }
+        serviceCharge: { $ref: "#/components/schemas/Money" }
+        serviceChargeCovers: { type: string }
+        availableFrom: { type: string, format: date }
+        minTermMonths: { type: integer }
+        maxTermMonths: { type: integer }
+        occupancyRules:
+          type: object
+          properties:
+            allowed: { type: array, items: { type: string, enum: [SINGLES, FAMILIES, STUDENTS, CORPORATE] } }
+            pets: { type: boolean }
+            maxOccupants: { type: integer }
+
+    MoveInCost:
+      type: object
+      description: Total move-in cost box shown on every long-term listing.
+      properties:
+        rent: { $ref: "#/components/schemas/Money" }
+        agencyFee: { $ref: "#/components/schemas/Money" }
+        legalFee: { $ref: "#/components/schemas/Money" }
+        cautionDeposit: { $ref: "#/components/schemas/Money" }
+        serviceCharge: { $ref: "#/components/schemas/Money" }
+        total: { $ref: "#/components/schemas/Money" }
+        inspectionFee: { type: string, const: FREE }
+
+    ListingCard:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        title: { type: string }
+        coverImage: { type: string, format: uri }
+        propertyTypeLabel: { type: string }
+        bedrooms: { type: integer }
+        bathrooms: { type: integer }
+        rent: { $ref: "#/components/schemas/Money" }
+        rentPeriod: { type: string }
+        area: { type: string }
+        approximateLocation: { $ref: "#/components/schemas/LatLng" }
+        distanceM: { type: [integer, "null"] }
+        badges: { type: array, items: { type: string, enum: [OWNER_VERIFIED, AUTHORITY_VERIFIED, SITE_INSPECTED, ESCROW_PROTECTED] } }
+        photosTakenAt: { type: string, format: date-time }
+
+    ListingPublicView:
+      allOf:
+        - $ref: "#/components/schemas/ListingCard"
+        - type: object
+          properties:
+            kind: { type: string, enum: [LONG_TERM, SHORT_LET] }
+            description: { type: string }
+            moveInCost: { $ref: "#/components/schemas/MoveInCost" }
+            availableFrom: { type: [string, "null"], format: date }
+            unit: { $ref: "#/components/schemas/Unit" }
+            gallery:
+              type: array
+              description: Photos grouped by part, in checklist order. Signed-in users only.
+              items:
+                type: object
+                properties:
+                  partCode: { type: string }
+                  partLabel: { type: string }
+                  media: { type: array, items: { $ref: "#/components/schemas/MediaItem" } }
+            walkthrough: { $ref: "#/components/schemas/MediaItem" }
+            nearbyAmenities:
+              type: array
+              items:
+                type: object
+                properties:
+                  kind: { type: string }
+                  name: { type: string }
+                  distanceM: { type: integer }
+            lister:
+              type: object
+              properties:
+                id: { $ref: "#/components/schemas/Id" }
+                displayName: { type: string }
+                role: { type: string, enum: [LANDLORD, AGENT] }
+                verified: { type: boolean }
+                typicalResponseMinutes: { type: [integer, "null"] }
+            exactLocation:
+              description: Only after the viewer has a confirmed inspection.
+              oneOf:
+                - $ref: "#/components/schemas/LatLng"
+                - type: "null"
+
+    ListingOwnerView:
+      allOf:
+        - $ref: "#/components/schemas/ListingPublicView"
+        - type: object
+          properties:
+            status: { $ref: "#/components/schemas/ListingStatus" }
+            riskBand: { type: [string, "null"], enum: [GREEN, AMBER, RED, null] }
+            expiresAt: { type: [string, "null"], format: date-time }
+            lastConfirmedAt: { type: [string, "null"], format: date-time }
+
+    SavedSearch:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Id", readOnly: true }
+        name: { type: string }
+        area:
+          description: A drawn polygon, or a circle around a point.
+          oneOf:
+            - type: object
+              properties:
+                polygon: { type: array, items: { $ref: "#/components/schemas/LatLng" }, minItems: 3 }
+            - type: object
+              properties:
+                centre: { $ref: "#/components/schemas/LatLng" }
+                radiusM: { type: integer }
+        filters: { type: object }
+        alertsEnabled: { type: boolean }
+
+    Conversation:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        listingId: { $ref: "#/components/schemas/Id" }
+        otherParty:
+          type: object
+          properties:
+            id: { $ref: "#/components/schemas/Id" }
+            displayName: { type: string }
+            phone: { type: [string, "null"], description: Only after both sides agree to share }
+        lastMessage: { $ref: "#/components/schemas/Message" }
+        unreadCount: { type: integer }
+
+    Message:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        senderId: { $ref: "#/components/schemas/Id" }
+        body: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    Inspection:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        listingId: { $ref: "#/components/schemas/Id" }
+        scheduledAt: { type: string, format: date-time }
+        status: { type: string, enum: [REQUESTED, CONFIRMED, CANCELLED, COMPLETED, NO_SHOW] }
+        exactLocation:
+          oneOf:
+            - $ref: "#/components/schemas/LatLng"
+            - type: "null"
+        directionsUrl: { type: [string, "null"], format: uri }
+
+    ReviewTask:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        type: { type: string }
+        countryCode: { $ref: "#/components/schemas/CountryCode" }
+        entityType: { type: string }
+        entityId: { type: string }
+        status: { type: string }
+        assignedToId: { type: [string, "null"] }
+        dueAt: { type: [string, "null"], format: date-time }
+
+    FeatureRuleInput:
+      type: object
+      required: [flagKey, scope, enabled, reason]
+      properties:
+        flagKey: { type: string, example: listings.short_let }
+        scope: { type: string, enum: [GLOBAL, COUNTRY, REGION, CITY, USER_TYPE, USER] }
+        scopeValue: { type: [string, "null"] }
+        enabled: { type: boolean }
+        rolloutPercent: { type: [integer, "null"], minimum: 0, maximum: 100 }
+        startsAt: { type: [string, "null"], format: date-time }
+        endsAt: { type: [string, "null"], format: date-time }
+        emergency: { type: boolean }
+        reason: { type: string }
+
+    FeatureRule:
+      allOf:
+        - $ref: "#/components/schemas/FeatureRuleInput"
+        - type: object
+          properties:
+            id: { $ref: "#/components/schemas/Id" }
+            status: { type: string, enum: [PENDING_APPROVAL, ACTIVE, ARCHIVED] }
+            createdById: { $ref: "#/components/schemas/Id" }
+            approvedById: { type: [string, "null"] }
+            createdAt: { type: string, format: date-time }

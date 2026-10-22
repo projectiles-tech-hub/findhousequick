@@ -1,0 +1,77 @@
+**FindHouseQuick**
+
+Decisions Log
+
+Projectiles Tech Hub Limited
+
+Emmanuel Chukwuka Oraegbu, Managing Director
+
+Updated 22 October 2026
+
+# Contents
+
+1\. How to Use This Log
+
+2\. Decisions Made
+
+3\. Open Points
+
+4\. Related Documents
+
+# 1. How to Use This Log
+
+This log records every decision made about FindHouseQuick and every point still open. It is read before any new piece of work starts. A decision recorded here may only be changed with the approval of the Managing Director, and any change is added as a new entry with its date.
+
+# 2. Decisions Made
+
+| **No.** | **Area**              | **Decision**                                                                                                                                                                                                           | **Date**          |
+|---------|-----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
+| 1       | Name                  | FindHouseQuick adopted as the platform name. Domain, app store and trademark checks still to be done.                                                                                                                  | 22 Oct 2026       |
+| 2       | Platforms             | Web app, mobile app and desktop software, sharing one central system.                                                                                                                                                  | 21 Oct 2026       |
+| 3       | Scope                 | Rentals only: long-term residential, commercial and short lets. No sales or land.                                                                                                                                      | 21 to 22 Oct 2026 |
+| 4       | Coverage              | Built to operate worldwide, country by country, through country controls.                                                                                                                                              | 22 Oct 2026       |
+| 5       | Registration          | Everyone registers; registration and listing are free.                                                                                                                                                                 | 21 Oct 2026       |
+| 6       | Verification          | Verification enforced by limiting what users can do at each level (basic browsing; KYC to contact; bank details to pay or receive).                                                                                    | 21 Oct 2026       |
+| 7       | Agents                | Agents must provide documentary evidence of the landlord's authority for each property, verified by the platform team.                                                                                                 | 21 Oct 2026       |
+| 8       | Property verification | Automatic verification built in to avoid visits where possible; team visits also allowed.                                                                                                                              | 21 Oct 2026       |
+| 9       | Duplicates            | Checks to prevent multiple listings of the same property.                                                                                                                                                              | 21 Oct 2026       |
+| 10      | Search                | Tenants can see available properties around their current location, as well as by map and area.                                                                                                                        | 21 Oct 2026       |
+| 11      | Fees shown            | Agency and legal or agreement fees shown upfront on every listing, set as obtainable in the market.                                                                                                                    | 21 Oct 2026       |
+| 12      | Inspection fees       | No inspection fees.                                                                                                                                                                                                    | 21 Oct 2026       |
+| 13      | Escrow fee            | 1.5% of the rent, paid by the tenant and 1.5% paid by the landlord.                                                                                                                                                    | 21 Oct 2026       |
+| 14      | Completed rental fee  | 2% of the rent, paid by the tenant and 2% paid by the landlord, for rentals completed outside escrow.                                                                                                                  | 21 Oct 2026       |
+| 15      | Fee rules             | Fees are percentages. Escrow fee and completed rental fee never stack.                                                                                                                                                 | 21 Oct 2026       |
+| 16      | Escrow operator       | Projectiles Tech Hub Limited operates escrow. No outside escrow partner.                                                                                                                                               | 22 Oct 2026       |
+| 17      | Property management   | Property management features built into the platform.                                                                                                                                                                  | 21 Oct 2026       |
+| 18      | Presentation          | Properties categorised; every part of a property captured and shown part by part.                                                                                                                                      | 22 Oct 2026       |
+| 19      | Data protection       | Data protection built in; property images and videos must not be used for any other purpose.                                                                                                                           | 22 Oct 2026       |
+| 20      | Feature controls      | Every feature can be turned on or off.                                                                                                                                                                                 | 22 Oct 2026       |
+| 21      | Additional features   | Approved: commercial rentals, rent financing, fair rent indicator, neighbourhood ratings, customer support channels, launch languages (English, Pidgin, Yoruba, Igbo, Hausa, French), management reports, launch plan. | 22 Oct 2026       |
+| 22      | APIs                  | The platform is built around its own API and connects to outside services through APIs.                                                                                                                                | 22 Oct 2026       |
+| 23      | Way forward           | Ready to build. Work continues in a Claude Project, with code kept in a Projectiles-owned GitHub repository.                                                                                                           | 22 Oct 2026       |
+
+# 3. Open Points
+
+| **No.** | **Open point**                                                          | **Notes**                                                                                             |
+|---------|-------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
+| 1       | Days after key handover before automatic escrow release                 | To be decided                                                                                         |
+| 2       | Days a landlord has to hand over keys after escrow is funded            | To be decided                                                                                         |
+| 3       | Whether the tenant's 1.5% fee is refunded when the landlord is at fault | To be decided                                                                                         |
+| 4       | Who keeps interest earned on money held in escrow                       | To be decided                                                                                         |
+| 5       | Whether yearly rent renewals paid through the platform attract a fee    | To be decided                                                                                         |
+| 6       | Legal structure of the escrow service                                   | To be confirmed with a lawyer before Release 2                                                        |
+| 7       | Launch city and areas                                                   | Benin City was discussed; not yet confirmed                                                           |
+| 8       | Partner API for agencies, developers and lenders                        | Proposed; not yet approved                                                                            |
+| 9       | Mention of the Agent Emma channel in the launch plan                    | Keep or remove                                                                                        |
+| 10      | Technology choices                                                      | Recommended in the Technical Architecture and Execution Plan; to be confirmed with the technical lead |
+| 11      | Budget for development and first 12 to 18 months of running costs       | To be prepared                                                                                        |
+| 12      | Hiring of technical lead and team                                       | To be started                                                                                         |
+| 13      | GitHub account for Projectiles and the FindHouseQuick repository        | To be created and connected                                                                           |
+| 14      | Domain name, trademark and app store name checks for FindHouseQuick     | To be done                                                                                            |
+
+# 4. Related Documents
+
+| **Document**                                             | **Version**          |
+|----------------------------------------------------------|----------------------|
+| FindHouseQuick Product Specification                     | 1.3, 22 October 2026 |
+| FindHouseQuick Technical Architecture and Execution Plan | 1.0, 22 October 2026 |
