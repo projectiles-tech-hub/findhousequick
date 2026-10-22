@@ -40,8 +40,8 @@ flutter run              # choose a device, or: flutter run -d chrome
 
 ## Status
 
-Release 0 (foundations) complete; Release 1 next. See `docs/STATUS.md` for current status and `docs/specs/FindHouseQuick_Technical_Architecture_and_Execution_Plan.md`
-the release plan.
+Release 0 (foundations) complete; Release 1 next. See `docs/STATUS.md` for current status, and
+`docs/specs/FindHouseQuick_Technical_Architecture_and_Execution_Plan.md` for the release plan.
 
 ## Ownership
 
