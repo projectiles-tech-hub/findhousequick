@@ -74,10 +74,9 @@ paths:
       tags: [Accounts]
       summary: Send a one-time code by SMS
       description: |
-        Used for registration and login without password. Limited per phone number (one code a minute,
-        five an hour); a code expires after 10 minutes and stops working after 5 wrong guesses.
+        Used for registration, login without password and password reset. Limited per phone number (one
+        code a minute, five an hour); a code expires after 10 minutes and allows 5 guesses in all.
         REGISTER codes are refused with `403 FEATURE_UNAVAILABLE` where registrations are switched off.
-        RESET_PASSWORD is refused with `400 NOT_AVAILABLE_YET` until a password reset endpoint is designed.
       security: []
       requestBody:
         required: true
@@ -175,6 +174,36 @@ paths:
         "400": { $ref: "#/components/responses/BadRequest" }
         "401":
           description: "Wrong credentials (`code` WRONG_CREDENTIALS). The same answer is given for an unknown number."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+
+  /auth/password-reset:
+    post:
+      tags: [Accounts]
+      summary: Set a new password with an SMS code, then sign out every device
+      description: |
+        Needs a code sent with purpose RESET_PASSWORD. On success the password is changed, any pause on
+        password sign-in is lifted, and every signed-in device is signed out; the user then signs in with
+        the new password.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, otp, newPassword]
+              properties:
+                phone: { $ref: "#/components/schemas/Phone" }
+                otp: { type: string, pattern: "^[0-9]{6}$" }
+                newPassword: { type: string, minLength: 8, maxLength: 128 }
+      responses:
+        "204": { description: Password changed and every device signed out. }
+        "400":
+          description: "Invalid request, or wrong or expired code (`code` INVALID_CODE)."
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
@@ -1482,7 +1511,13 @@ components:
   schemas:
     Id: { type: string, format: uuid }
     CountryCode: { type: string, pattern: "^[A-Z]{2}$", example: NG }
-    Phone: { type: string, pattern: "^\\+[1-9][0-9]{6,14}$", example: "+2348031234567" }
+    Phone:
+      type: string
+      example: "+2348031234567"
+      description: |
+        International format starting with + and the country code. Spaces, dashes, dots, brackets and a
+        trunk "0" are accepted and removed: "+234 0803 123 4567" is stored and returned as "+2348031234567".
+        Numbers that cannot exist in their country are refused.
     UserType: { type: string, enum: [TENANT, LANDLORD, AGENT] }
     LatLng:
       type: object

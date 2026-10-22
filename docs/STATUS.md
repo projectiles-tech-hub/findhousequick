@@ -16,9 +16,11 @@ Updated: 22 October 2026. Read this after CLAUDE.md at the start of every build 
 
 - **Release 1 step 1 (accounts)**: built on branch `release-1/accounts`, waiting for approval.
   - SMS codes through an adapter (`log` provider for development), registration with consent, sign-in by
-    password or code, single-use refresh tokens, sign-out, `GET` and `PATCH /me` with verification level
+    password or code, password reset by code, single-use refresh tokens, sign-out, `GET` and `PATCH /me`
+  - Review fixes: code guesses and password attempts counted in single database statements; phone numbers
+    in one standard form (libphonenumber-js); separate `OTP_HASH_SECRET` for SMS codes
   - Every route now needs sign-in unless marked `@Public()` (`server/src/accounts/auth.ts`)
-  - Design notes and points to confirm in `docs/adr/0004-sign-in-and-sessions.md`
+  - Design in `docs/adr/0004-sign-in-and-sessions.md` (accepted 22 October 2026)
 
 ## Small follow-ups
 
@@ -28,7 +30,6 @@ Updated: 22 October 2026. Read this after CLAUDE.md at the start of every build 
 
 ## Waiting for Emmanuel
 
-- ADR 0004: session lengths, code rules, password rules, and whether to add a password reset endpoint.
 - ADR 0002: confirm the up-to-30-second delay for switch changes, and that country managers can change
   non-critical switches in their own countries without a second approval.
 - Decisions Log open points: the five escrow settings, escrow legal structure, launch city, partner API,
