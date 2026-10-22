@@ -57,9 +57,11 @@ export function authMiddleware(sessions: SessionsService, prisma: PrismaService)
           status: true,
           types: true,
           countryCode: true,
+          staff: { select: { roles: true, countryScopes: true, active: true } },
           refreshTokens: {
             where: { familyId: claims.sessionId, revokedAt: null, expiresAt: { gt: new Date() } },
-            select: { id: true },
+            select: { id: true, twoStepAt: true },
+            orderBy: { createdAt: 'desc' },
             take: 1,
           },
         },
@@ -70,6 +72,13 @@ export function authMiddleware(sessions: SessionsService, prisma: PrismaService)
         req.authError = apiError(403, 'ACCOUNT_SUSPENDED', 'This account has been suspended. Please contact support.');
       } else {
         req.user = { id: user.id, types: user.types, countryCode: user.countryCode, sessionId: claims.sessionId };
+        if (user.staff?.active) {
+          req.user.staff = {
+            roles: user.staff.roles,
+            countryScopes: user.staff.countryScopes,
+            twoStepVerified: user.refreshTokens[0].twoStepAt !== null,
+          };
+        }
       }
     } catch (err) {
       req.authError =

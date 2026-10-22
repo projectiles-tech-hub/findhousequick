@@ -8,6 +8,16 @@ export interface RequestUser {
   countryCode: string;
   /** The signed-in device; signing out ends it. */
   sessionId: string;
+  /** Present when the user is an active staff member (ADR 0005). */
+  staff?: RequestStaff;
+}
+
+export interface RequestStaff {
+  roles: string[];
+  /** Country codes the staff member may act on; ['*'] means all. */
+  countryScopes: string[];
+  /** True when this signed-in device has passed the second step of two-step login. */
+  twoStepVerified: boolean;
 }
 
 /**

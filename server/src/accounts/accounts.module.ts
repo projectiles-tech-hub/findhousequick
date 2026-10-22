@@ -15,6 +15,6 @@ import { SessionsService } from './sessions.service.js';
 @Module({
   controllers: [AuthController, MeController],
   providers: [AccountsService, OtpService, SessionsService, { provide: APP_GUARD, useClass: AuthGuard }],
-  exports: [SessionsService],
+  exports: [SessionsService, OtpService],
 })
 export class AccountsModule {}

@@ -83,7 +83,7 @@ export class SessionsService {
       await this.endFamily(row.familyId);
       throw invalid();
     }
-    return { userId: row.userId, ...(await this.issue(row.userId, row.familyId, row.device)) };
+    return { userId: row.userId, ...(await this.issue(row.userId, row.familyId, row.device, row.twoStepAt)) };
   }
 
   /** Signs a device out. */
@@ -115,7 +115,17 @@ export class SessionsService {
     }
   }
 
-  private async issue(userId: string, familyId: string, device: string | null): Promise<IssuedTokens> {
+  /** Marks a signed-in device as having passed the second step of two-step login (staff, ADR 0005). */
+  async markTwoStepPassed(familyId: string): Promise<void> {
+    await this.prisma.refreshToken.updateMany({ where: { familyId, revokedAt: null }, data: { twoStepAt: new Date() } });
+  }
+
+  private async issue(
+    userId: string,
+    familyId: string,
+    device: string | null,
+    twoStepAt: Date | null = null,
+  ): Promise<IssuedTokens> {
     const now = Date.now();
     const accessTokenExpiresAt = new Date(now + this.accessMinutes * 60_000);
     const accessToken = await new SignJWT({ typ: 'access', sid: familyId })
@@ -134,6 +144,8 @@ export class SessionsService {
         familyId,
         tokenHash: hashToken(refreshToken),
         device: device?.slice(0, 100) ?? null,
+        // A device that passed the second step keeps that status when its tokens are renewed.
+        twoStepAt,
         expiresAt: new Date(now + this.refreshDays * 24 * 60 * 60_000),
       },
     });

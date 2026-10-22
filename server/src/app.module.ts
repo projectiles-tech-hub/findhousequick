@@ -7,6 +7,7 @@ import { validateEnv } from './config/env.js';
 import { ControlsModule } from './controls/controls.module.js';
 import { HealthController } from './health/health.controller.js';
 import { SmsModule } from './integrations/sms/sms.module.js';
+import { StaffModule } from './staff/staff.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 
 @Module({
@@ -23,6 +24,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
     ControlsModule,
     SmsModule,
     AccountsModule,
+    StaffModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

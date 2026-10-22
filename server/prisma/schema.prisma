@@ -149,24 +149,28 @@ enum RuleStatus {
 }
 
 model FeatureRule {
-  id             String       @id @default(uuid(7)) @db.Uuid
-  flagKey        String
-  scope          FeatureScope
+  id                   String       @id @default(uuid(7)) @db.Uuid
+  flagKey              String
+  scope                FeatureScope
   /// Country code, region id, city id, user type or user id depending on scope. Null for GLOBAL.
-  scopeValue     String?
-  enabled        Boolean
+  scopeValue           String?
+  enabled              Boolean
   /// Percentage of matching users (0 to 100) for gradual release. Null means everyone.
-  rolloutPercent Int?
-  startsAt       DateTime?
-  endsAt         DateTime?
+  rolloutPercent       Int?
+  startsAt             DateTime?
+  endsAt               DateTime?
   /// Emergency rules beat every other rule, e.g. pausing payments platform-wide.
-  emergency      Boolean      @default(false)
-  status         RuleStatus   @default(ACTIVE)
-  reason         String
-  createdById    String       @db.Uuid
-  approvedById   String?      @db.Uuid
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  emergency            Boolean      @default(false)
+  status               RuleStatus   @default(ACTIVE)
+  reason               String
+  createdById          String       @db.Uuid
+  approvedById         String?      @db.Uuid
+  /// A country manager asked to withdraw this live rule; it stays in force until a super admin approves.
+  archiveRequestedById String?      @db.Uuid
+  archiveRequestedAt   DateTime?
+  archiveReason        String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
 
   flag FeatureFlag @relation(fields: [flagKey], references: [key])
 
@@ -323,6 +327,8 @@ model RefreshToken {
   expiresAt DateTime
   usedAt    DateTime?
   revokedAt DateTime?
+  /// When this signed-in device passed the second step (staff). Carried over to each new token in the family.
+  twoStepAt DateTime?
   createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id])
@@ -354,13 +360,24 @@ enum StaffRole {
 }
 
 model StaffMember {
-  userId           String      @id @db.Uuid
-  roles            StaffRole[]
+  userId        String      @id @db.Uuid
+  roles         StaffRole[]
   /// Country codes this staff member may act on. ["*"] means all countries.
-  countryScopes    String[]
-  twoFactorEnabled Boolean     @default(false)
-  active           Boolean     @default(true)
-  createdAt        DateTime    @default(now())
+  countryScopes String[]
+  active        Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @default(now()) @updatedAt
+
+  /// Authenticator app (ADR 0005). Secrets are encrypted with FIELD_ENCRYPTION_KEY.
+  totpSecretEncrypted        String?
+  /// Secret shown during set-up; becomes totpSecretEncrypted once a first code confirms it.
+  totpPendingSecretEncrypted String?
+  totpEnabledAt              DateTime?
+  /// Time step of the last authenticator code accepted, so each code works only once.
+  totpLastStep               Int?
+  /// Second-step attempts since the last correct one; the second step pauses at the limit (ADR 0005).
+  twoStepFailedCount         Int       @default(0)
+  twoStepLockedUntil         DateTime?
 
   user User @relation(fields: [userId], references: [id])
 }
