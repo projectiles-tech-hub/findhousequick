@@ -10,6 +10,7 @@ Projectiles Tech Hub Limited. The product owner is Emmanuel Chukwuka Oraegbu (Ma
 3. `docs/specs/FindHouseQuick_Technical_Architecture_and_Execution_Plan.md`: how it is built.
 4. `docs/adr/`: architecture decision records made during the build.
 5. `docs/STATUS.md`: where the build stands and what comes next. Update it at the end of every session.
+6. `docs/DEPLOYMENT.md`: every server setting, secret, outside account and manual step needed to run the system.
 
 The `.docx` files in `docs/specs/` are the originals given to Emmanuel; the `.md` files are copies for reading.
 If the two differ, the `.docx` wins. Regenerate the `.md` with `pandoc -t gfm --wrap=none`.
@@ -45,6 +46,10 @@ build them as configurable settings, not hard-coded guesses.
 - **Payment and payout requests carry an idempotency key.**
 - **Personal data is minimised and access is logged.** ID documents and original media live in private storage only.
 - **Outside services are reached through adapters** in `server/src/integrations`, one adapter per provider.
+- **Nothing Emmanuel needs to know lives only in a chat message.** Any new or changed setting, secret, outside
+  account or manual step goes into `docs/DEPLOYMENT.md` (and `server/.env.example` for settings) in the same pull
+  request, and is listed under "Deployment notes" in the pull request description. Decisions go into the Decisions
+  Log or an ADR; progress and next steps go into `docs/STATUS.md`.
 
 ## Setting up a fresh workspace
 
