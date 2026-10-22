@@ -1,6 +1,7 @@
 import type { INestApplication } from '@nestjs/common';
 import { SignJWT } from 'jose';
 import request from 'supertest';
+import { hashCode } from '../src/accounts/secrets.js';
 import { ControlsService } from '../src/controls/controls.service.js';
 import { LogSmsAdapter } from '../src/integrations/sms/log-sms.adapter.js';
 import { SMS_SENDER } from '../src/integrations/sms/sms-sender.js';
@@ -14,8 +15,10 @@ describe('Accounts: codes, registration, sign-in and sessions (API)', () => {
   let sms: LogSmsAdapter;
   let seq = 0;
 
-  /** A phone number no other test uses. */
-  const newPhone = () => `+23490${String(process.pid).slice(-3).padStart(3, '0')}${String(++seq).padStart(5, '0')}`;
+  /** A valid Nigerian mobile number, in standard form, that no other test uses. */
+  const newPhone = () => `+234803${String(process.pid % 100).padStart(2, '0')}${String(++seq).padStart(5, '0')}`;
+  /** The same number written another way: with the trunk "0" and spaces. */
+  const writtenDifferently = (phone: string) => `+234 0${phone.slice(4, 7)} ${phone.slice(7, 10)} ${phone.slice(10)}`;
   const api = () => request(app.getHttpServer());
   const lastCode = (phone: string) => {
     const msgs = sms.messagesTo(phone);
@@ -56,13 +59,16 @@ describe('Accounts: codes, registration, sign-in and sessions (API)', () => {
   });
 
   describe('one-time codes', () => {
-    it('sends a code for a new number and keeps only its hash', async () => {
+    it('sends a code for a new number and keeps only its hash, made with its own secret', async () => {
       const phone = newPhone();
       await api().post('/v1/auth/otp').send({ phone, purpose: 'REGISTER' }).expect(202);
-      const code = lastCode(phone);
+      const code = lastCode(phone)!;
       expect(code).toMatch(/^\d{6}$/);
       const row = await prisma.otpCode.findFirstOrThrow({ where: { phone } });
-      expect(row.codeHash).not.toContain(code!);
+      expect(row.codeHash).not.toContain(code);
+      // Review finding (d): scrambled with OTP_HASH_SECRET, not the token secret.
+      expect(row.codeHash).toBe(hashCode(TEST_ENV.OTP_HASH_SECRET, phone, 'REGISTER', code));
+      expect(row.codeHash).not.toBe(hashCode(TEST_ENV.JWT_SECRET, phone, 'REGISTER', code));
     });
 
     it('answers the same for a registered number but sends nothing', async () => {
@@ -87,13 +93,20 @@ describe('Accounts: codes, registration, sign-in and sessions (API)', () => {
       expect(res.body).toMatchObject({ statusCode: 429, code: 'TOO_MANY_REQUESTS' });
     });
 
-    it('refuses badly written numbers', async () => {
-      await api().post('/v1/auth/otp').send({ phone: '08031234567', purpose: 'REGISTER' }).expect(400);
+    it('refuses badly written numbers and numbers that cannot exist', async () => {
+      for (const phone of ['08031234567', '+2348031234567x', '+234803123456', '+2349000000001']) {
+        await api().post('/v1/auth/otp').send({ phone, purpose: 'REGISTER' }).expect(400);
+      }
     });
 
-    it('refuses password reset codes until the reset step is designed', async () => {
-      const res = await api().post('/v1/auth/otp').send({ phone: newPhone(), purpose: 'RESET_PASSWORD' }).expect(400);
-      expect(res.body.code).toBe('NOT_AVAILABLE_YET');
+    it('treats one number written two ways as the same number, including for limits', async () => {
+      // Review finding (c).
+      const phone = newPhone();
+      await api().post('/v1/auth/otp').send({ phone: writtenDifferently(phone), purpose: 'REGISTER' }).expect(202);
+      expect(lastCode(phone)).toMatch(/^\d{6}$/);
+      expect(await prisma.otpCode.count({ where: { phone } })).toBe(1);
+      const again = await api().post('/v1/auth/otp').send({ phone, purpose: 'REGISTER' }).expect(429);
+      expect(again.body.code).toBe('TOO_MANY_REQUESTS');
     });
 
     it('stops accepting a code after five wrong guesses', async () => {
@@ -107,6 +120,33 @@ describe('Accounts: codes, registration, sign-in and sessions (API)', () => {
         expect(r.body.code).toBe('INVALID_CODE');
       }
       await api().post('/v1/auth/register').send({ ...body, otp: code }).expect(400);
+    });
+
+    it('counts every guess even when many arrive at the same moment', async () => {
+      // Review finding (a): before the fix, each simultaneous guess read the count before any was added,
+      // so all of them were checked. Now only five can ever be checked.
+      const phone = newPhone();
+      await api().post('/v1/auth/otp').send({ phone, purpose: 'REGISTER' }).expect(202);
+      const code = lastCode(phone)!;
+      const body = { phone, password: 'a good long password', firstName: 'A', lastName: 'B', countryCode: 'NG', types: ['TENANT'], consent };
+      const wrongCodes = Array.from({ length: 30 }, (_, i) => String((Number(code) + 1 + i) % 1_000_000).padStart(6, '0'));
+      const results = await Promise.all(wrongCodes.map((otp) => api().post('/v1/auth/register').send({ ...body, otp })));
+      expect(results.every((r) => r.status === 400 && r.body.code === 'INVALID_CODE')).toBe(true);
+
+      const row = await prisma.otpCode.findFirstOrThrow({ where: { phone } });
+      expect(row.attempts).toBe(5);
+      // The right code no longer works: the attempts are used up.
+      await api().post('/v1/auth/register').send({ ...body, otp: code }).expect(400);
+    });
+
+    it('lets only one of several simultaneous correct guesses use the code', async () => {
+      const phone = newPhone();
+      await api().post('/v1/auth/otp').send({ phone, purpose: 'REGISTER' }).expect(202);
+      const otp = lastCode(phone)!;
+      const body = { phone, otp, password: 'a good long password', firstName: 'A', lastName: 'B', countryCode: 'NG', types: ['TENANT'], consent };
+      const results = await Promise.all(Array.from({ length: 5 }, () => api().post('/v1/auth/register').send(body)));
+      expect(results.filter((r) => r.status === 201)).toHaveLength(1);
+      expect(await prisma.user.count({ where: { phone } })).toBe(1);
     });
   });
 
@@ -221,6 +261,25 @@ describe('Accounts: codes, registration, sign-in and sessions (API)', () => {
       expect(token.tokenHash).not.toBe(res.body.refreshToken);
     });
 
+    it('signs in with the number written another way', async () => {
+      // Review finding (c): registered as +234803..., signs in as +234 0803 ...
+      const { phone, password, session } = await register();
+      expect(session.user.phone).toBe(phone);
+      const res = await api().post('/v1/auth/login').send({ phone: writtenDifferently(phone), password }).expect(200);
+      expect(res.body.user.id).toBe(session.user.id);
+    });
+
+    it('stores the standard form when a user registers with the number written another way', async () => {
+      const phone = newPhone();
+      await api().post('/v1/auth/otp').send({ phone: writtenDifferently(phone), purpose: 'REGISTER' }).expect(202);
+      const res = await api()
+        .post('/v1/auth/register')
+        .send({ phone: writtenDifferently(phone), otp: lastCode(phone), password: 'a good long password', firstName: 'A', lastName: 'B', countryCode: 'NG', types: ['TENANT'], consent })
+        .expect(201);
+      expect(res.body.user.phone).toBe(phone);
+      expect(await prisma.user.count({ where: { phone } })).toBe(1);
+    });
+
     it('signs in with phone and SMS code', async () => {
       const { phone } = await register();
       await api().post('/v1/auth/otp').send({ phone, purpose: 'LOGIN' }).expect(202);
@@ -250,6 +309,39 @@ describe('Accounts: codes, registration, sign-in and sessions (API)', () => {
       expect(await prisma.auditLog.count({ where: { action: 'auth.password_locked' } })).toBeGreaterThan(0);
     });
 
+    it('counts every password attempt even when many arrive at the same moment', async () => {
+      // Review finding (b): before the fix, all simultaneous guesses passed the lock check before any was
+      // counted. Now only five are checked; the rest are refused straight away.
+      const { phone, password } = await register();
+      const results = await Promise.all(
+        Array.from({ length: 20 }, (_, i) => api().post('/v1/auth/login').send({ phone, password: `wrong password ${i}` })),
+      );
+      const statuses = results.map((r) => r.status);
+      expect(statuses.filter((s) => s === 401)).toHaveLength(5);
+      expect(statuses.filter((s) => s === 429)).toHaveLength(15);
+      const locked = await api().post('/v1/auth/login').send({ phone, password }).expect(429);
+      expect(locked.body.code).toBe('PASSWORD_LOCKED');
+    });
+
+    it('starts counting again after a correct password', async () => {
+      const { phone, password } = await register();
+      for (let i = 0; i < 4; i++) await api().post('/v1/auth/login').send({ phone, password: 'wrong password!' }).expect(401);
+      await api().post('/v1/auth/login').send({ phone, password }).expect(200);
+      for (let i = 0; i < 4; i++) await api().post('/v1/auth/login').send({ phone, password: 'wrong password!' }).expect(401);
+      await api().post('/v1/auth/login').send({ phone, password }).expect(200);
+    });
+
+    it('allows password sign-in again once the pause has run out', async () => {
+      const { phone, password } = await register();
+      for (let i = 0; i < 5; i++) await api().post('/v1/auth/login').send({ phone, password: 'wrong password!' }).expect(401);
+      await api().post('/v1/auth/login').send({ phone, password }).expect(429);
+      // Move the end of the pause into the past, as if 15 minutes had gone by.
+      await prisma.$executeRaw`UPDATE "User" SET "passwordLockedUntil" = (now() AT TIME ZONE 'UTC') - interval '1 second' WHERE "phone" = ${phone}`;
+      await api().post('/v1/auth/login').send({ phone, password }).expect(200);
+      const user = await prisma.user.findUniqueOrThrow({ where: { phone } });
+      expect(user).toMatchObject({ failedPasswordCount: 0, passwordLockedUntil: null });
+    });
+
     it('refuses suspended accounts, including sessions already signed in', async () => {
       const { phone, password, session } = await register();
       await prisma.user.update({ where: { phone }, data: { status: 'SUSPENDED' } });
@@ -258,6 +350,56 @@ describe('Accounts: codes, registration, sign-in and sessions (API)', () => {
       const me = await api().get('/v1/me').set('Authorization', `Bearer ${session.accessToken}`).expect(403);
       expect(me.body.code).toBe('ACCOUNT_SUSPENDED');
       await api().post('/v1/auth/refresh').send({ refreshToken: session.refreshToken }).expect(401);
+    });
+  });
+
+  describe('password reset', () => {
+    it('sets a new password with an SMS code and signs out every device', async () => {
+      const { phone, password, session } = await register();
+      const laptop = await api().post('/v1/auth/login').send({ phone, password, device: 'Laptop' }).expect(200);
+
+      await api().post('/v1/auth/otp').send({ phone, purpose: 'RESET_PASSWORD' }).expect(202);
+      await api()
+        .post('/v1/auth/password-reset')
+        .send({ phone, otp: lastCode(phone), newPassword: 'a brand new password' })
+        .expect(204);
+
+      // Both devices are signed out.
+      for (const s of [session, laptop.body]) {
+        const me = await api().get('/v1/me').set('Authorization', `Bearer ${s.accessToken}`).expect(401);
+        expect(me.body.code).toBe('SESSION_INVALID');
+        await api().post('/v1/auth/refresh').send({ refreshToken: s.refreshToken }).expect(401);
+      }
+      // Old password no longer works; the new one does.
+      await api().post('/v1/auth/login').send({ phone, password }).expect(401);
+      await api().post('/v1/auth/login').send({ phone, password: 'a brand new password' }).expect(200);
+      expect(await prisma.auditLog.count({ where: { action: 'auth.password_reset', actorId: session.user.id } })).toBe(1);
+    });
+
+    it('lifts a pause on password sign-in', async () => {
+      const { phone, password } = await register();
+      for (let i = 0; i < 5; i++) await api().post('/v1/auth/login').send({ phone, password: 'wrong password!' }).expect(401);
+      await api().post('/v1/auth/login').send({ phone, password }).expect(429);
+
+      await api().post('/v1/auth/otp').send({ phone, purpose: 'RESET_PASSWORD' }).expect(202);
+      await api().post('/v1/auth/password-reset').send({ phone, otp: lastCode(phone), newPassword: 'another new password' }).expect(204);
+      await api().post('/v1/auth/login').send({ phone, password: 'another new password' }).expect(200);
+    });
+
+    it('refuses a wrong code and leaves the password unchanged', async () => {
+      const { phone, password } = await register();
+      await api().post('/v1/auth/otp').send({ phone, purpose: 'RESET_PASSWORD' }).expect(202);
+      const wrong = lastCode(phone) === '000000' ? '111111' : '000000';
+      const res = await api().post('/v1/auth/password-reset').send({ phone, otp: wrong, newPassword: 'a brand new password' }).expect(400);
+      expect(res.body.code).toBe('INVALID_CODE');
+      await api().post('/v1/auth/login').send({ phone, password }).expect(200);
+    });
+
+    it('does not send reset codes to unregistered numbers, and refuses a short new password', async () => {
+      const phone = newPhone();
+      await api().post('/v1/auth/otp').send({ phone, purpose: 'RESET_PASSWORD' }).expect(202);
+      expect(sms.messagesTo(phone)).toHaveLength(0);
+      await api().post('/v1/auth/password-reset').send({ phone, otp: '123456', newPassword: 'short' }).expect(400);
     });
   });
 
