@@ -52,8 +52,6 @@ Updated: 22 October 2026 (evening). Read this after CLAUDE.md at the start of ev
   country settings, so step 3 can be built before they are settled.
 - Whether to build country switching (`PATCH /admin/countries`, still to do from step 2) as a small step
   before step 3 (suggested 22 October 2026).
-- Email (decisions 35 and 36): when a user who signed up with their phone must confirm their email, and whether
-  staff can be added by confirmed email as well as phone (Decisions Log open points 16 and 17).
 - Decisions Log open points: the five escrow settings, escrow legal structure, launch city, partner API,
   mention of the Agent Emma channel in the launch plan, budget, hiring.
 
@@ -68,9 +66,9 @@ Updated: 22 October 2026 (evening). Read this after CLAUDE.md at the start of ev
 2a. **Check the specification against what is built and designed** (agreed 22 October 2026, after the missing
     email requirement was found): every difference listed for Emmanuel in a Word document, decided once, and
     recorded in the Decisions Log.
-2b. **Email** (decisions 35 and 36): email required at registration; sign-up and sign-in with phone or email;
+2b. **Email** (decisions 35 to 38): email required at registration; sign-up and sign-in with phone or email;
     both confirmed; phone confirmed before any action; email codes for sign-in, the second step and password
-    reset; an email adapter (a development provider that logs emails, then a real one). Needs an email sending
+    reset; level 1 needs both confirmed; staff can be added by confirmed email; an email adapter (a development provider that logs emails, then a real one). Needs an email sending
     account (see `docs/DEPLOYMENT.md`).
 3. **Verification ladder guard** (`VERIFICATION_REQUIRED`), and the identity check flow behind an adapter.
 4. **Reference data endpoints**, then buildings, units and the parts checklist.
