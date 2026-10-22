@@ -64,6 +64,26 @@ describe('Staff: accounts, two-step login and feature rules (API)', () => {
     await api().post('/v1/auth/two-step/verify').set(bearer(p.token)).send({ method: 'SMS', code: lastCode(p.phone) }).expect(204);
   }
 
+  /** Signs the person in on another device with an SMS code instead of a password. */
+  async function smsDevice(p: Person): Promise<Person> {
+    await api().post('/v1/auth/otp').send({ phone: p.phone, purpose: 'LOGIN' }).expect(202);
+    const res = await api().post('/v1/auth/login').send({ phone: p.phone, otp: lastCode(p.phone) }).expect(200);
+    return { ...p, token: res.body.accessToken, refreshToken: res.body.refreshToken };
+  }
+
+  /** Moves this person's second step back in time, as if it had been done `minutes` ago. */
+  async function secondStepDoneAgo(p: Person, minutes: number): Promise<void> {
+    await prisma.$executeRaw`UPDATE "RefreshToken" SET "twoStepAt" = (now() AT TIME ZONE 'UTC') - make_interval(mins => ${minutes}::int)
+      WHERE "userId" = ${p.id}::uuid AND "twoStepAt" IS NOT NULL`;
+  }
+
+  /** Adds an authenticator app for the person (needs a device that has passed the second step); returns its secret. */
+  async function addAuthenticator(p: Person): Promise<string> {
+    const setup = await api().post('/v1/me/two-step/authenticator').set(bearer(p.token)).expect(200);
+    await api().post('/v1/me/two-step/authenticator/confirm').set(bearer(p.token)).send({ code: codeAt(setup.body.secret, timeStep() - 1) }).expect(204);
+    return setup.body.secret;
+  }
+
   /** A staff member, signed in, with two-step login done on that device. */
   async function staff(roles: StaffRole[], countryScopes: string[] = ['*']): Promise<Person> {
     const p = await person();
@@ -216,6 +236,137 @@ describe('Staff: accounts, two-step login and feature rules (API)', () => {
       expect(none.body.code).toBe('NO_AUTHENTICATOR');
       const actions = (await prisma.auditLog.findMany({ where: { actorId: p.id, entityType: 'StaffMember' } })).map((a) => a.action);
       expect(actions).toEqual(expect.arrayContaining(['staff.authenticator_added', 'staff.authenticator_removed']));
+    });
+  });
+
+  describe('second step must be a different factor from the sign-in (decision 34)', () => {
+    it('records how each device signed in, and keeps it when the device renews its tokens', async () => {
+      const p = await person();
+      const bySms = await smsDevice(p);
+      const methods = await prisma.refreshToken.findMany({ where: { userId: p.id }, select: { signInMethod: true }, orderBy: { createdAt: 'asc' } });
+      expect(methods.map((m) => m.signInMethod)).toEqual(['PASSWORD', 'SMS_CODE']);
+
+      const renewed = await api().post('/v1/auth/refresh').send({ refreshToken: bySms.refreshToken }).expect(200);
+      const latest = await prisma.refreshToken.findFirstOrThrow({ where: { userId: p.id }, orderBy: { createdAt: 'desc' } });
+      expect(latest.signInMethod).toBe('SMS_CODE');
+      expect(renewed.body.accessToken).toBeTruthy();
+    });
+
+    it('counts registering as signing in with an SMS code', async () => {
+      const phone = newPhone();
+      await api().post('/v1/auth/otp').send({ phone, purpose: 'REGISTER' }).expect(202);
+      const res = await api()
+        .post('/v1/auth/register')
+        .send({ phone, otp: lastCode(phone), password: PASSWORD, firstName: 'New', lastName: 'Staff', countryCode: 'NG', types: ['TENANT'], consent: { termsVersion: 't', privacyVersion: 'p' } })
+        .expect(201);
+      const token = await prisma.refreshToken.findFirstOrThrow({ where: { userId: res.body.user.id } });
+      expect(token.signInMethod).toBe('SMS_CODE');
+    });
+
+    it('refuses an SMS second step on a device that signed in with an SMS code, without counting an attempt', async () => {
+      // Review finding: before the fix, this device could pass the second step with a second SMS code.
+      const p = await person();
+      await prisma.staffMember.create({ data: { userId: p.id, roles: ['SUPER_ADMIN'], countryScopes: ['*'] } });
+      const bySms = await smsDevice(p);
+
+      const send = await api().post('/v1/auth/two-step/sms').set(bearer(bySms.token)).expect(403);
+      expect(send.body.code).toBe('DIFFERENT_FACTOR_REQUIRED');
+
+      // Even with a real second-step code (sent to the password device), the SMS-signed-in device is refused.
+      await api().post('/v1/auth/two-step/sms').set(bearer(p.token)).expect(202);
+      const code = lastCode(p.phone);
+      const verify = await api().post('/v1/auth/two-step/verify').set(bearer(bySms.token)).send({ method: 'SMS', code }).expect(403);
+      expect(verify.body.code).toBe('DIFFERENT_FACTOR_REQUIRED');
+      expect((await prisma.staffMember.findUniqueOrThrow({ where: { userId: p.id } })).twoStepFailedCount).toBe(0);
+      await api().get('/v1/admin/staff').set(bearer(bySms.token)).expect(403);
+
+      // Renewing the device's tokens does not change how it signed in.
+      const renewed = await api().post('/v1/auth/refresh').send({ refreshToken: bySms.refreshToken }).expect(200);
+      await api().post('/v1/auth/two-step/sms').set(bearer(renewed.body.accessToken)).expect(403);
+
+      // The same code still works on the device that signed in with a password: SMS there is a second factor.
+      await api().post('/v1/auth/two-step/verify').set(bearer(p.token)).send({ method: 'SMS', code }).expect(204);
+      await api().get('/v1/admin/staff').set(bearer(p.token)).expect(200);
+    });
+
+    it('accepts an authenticator code as the second step after an SMS code sign-in', async () => {
+      const admin = await staff(['SUPER_ADMIN']);
+      const secret = await addAuthenticator(admin);
+      const bySms = await smsDevice(admin);
+      await api().post('/v1/auth/two-step/verify').set(bearer(bySms.token)).send({ method: 'AUTHENTICATOR', code: codeAt(secret, timeStep()) }).expect(204);
+      await api().get('/v1/admin/staff').set(bearer(bySms.token)).expect(200);
+    });
+
+    it('lets a device that signed in with a password use either an SMS code or an authenticator code', async () => {
+      const admin = await staff(['SUPER_ADMIN']); // passed by SMS after a password sign-in
+      await api().get('/v1/admin/staff').set(bearer(admin.token)).expect(200);
+      const secret = await addAuthenticator(admin);
+      const laptop = await newDevice(admin);
+      await api().post('/v1/auth/two-step/verify').set(bearer(laptop.token)).send({ method: 'AUTHENTICATOR', code: codeAt(secret, timeStep()) }).expect(204);
+      await api().get('/v1/admin/staff').set(bearer(laptop.token)).expect(200);
+    });
+  });
+
+  describe('second step lasts for the set period (decision 32)', () => {
+    it('lasts 3 hours, then must be done again', async () => {
+      const admin = await staff(['SUPER_ADMIN']);
+      await secondStepDoneAgo(admin, 179);
+      await api().get('/v1/admin/staff').set(bearer(admin.token)).expect(200);
+      await secondStepDoneAgo(admin, 181);
+      // The earlier second-step code was sent then too (otherwise the one-code-a-minute rule applies).
+      await prisma.$executeRaw`UPDATE "OtpCode" SET "createdAt" = "createdAt" - interval '181 minutes' WHERE "phone" = ${admin.phone}`;
+      const expired = await api().get('/v1/admin/staff').set(bearer(admin.token)).expect(403);
+      expect(expired.body.code).toBe('TWO_STEP_REQUIRED');
+
+      await passTwoStepBySms(admin);
+      await api().get('/v1/admin/staff').set(bearer(admin.token)).expect(200);
+    });
+
+    it('lets a super admin change the period, applied at once and recorded', async () => {
+      const admin = await staff(['SUPER_ADMIN']);
+      const other = await staff(['SUPER_ADMIN']);
+      const manager = await staff(['COUNTRY_MANAGER'], ['NG']);
+      try {
+        const current = await api().get('/v1/admin/platform-settings').set(bearer(admin.token)).expect(200);
+        expect(current.body).toEqual({ staffTwoStepMinutes: 180 });
+        await api().get('/v1/admin/platform-settings').set(bearer(manager.token)).expect(403);
+        await api().patch('/v1/admin/platform-settings').set(bearer(manager.token)).send({ settings: { staffTwoStepMinutes: 60 }, reason: 'Test' }).expect(403);
+
+        // The other admin passed the second step 90 minutes ago: fine under 3 hours, too old under 1 hour.
+        await secondStepDoneAgo(other, 90);
+        await api().get('/v1/admin/staff').set(bearer(other.token)).expect(200);
+
+        const changed = await api()
+          .patch('/v1/admin/platform-settings')
+          .set(bearer(admin.token))
+          .send({ settings: { staffTwoStepMinutes: 60 }, reason: 'Tighter for the pilot' })
+          .expect(200);
+        expect(changed.body).toEqual({ staffTwoStepMinutes: 60 });
+        const refused = await api().get('/v1/admin/staff').set(bearer(other.token)).expect(403);
+        expect(refused.body.code).toBe('TWO_STEP_REQUIRED');
+
+        const record = await prisma.controlChange.findFirstOrThrow({ where: { entityType: 'PlatformSettings' }, orderBy: { createdAt: 'desc' } });
+        expect(record).toMatchObject({
+          action: 'SETTINGS_CHANGED',
+          actorId: admin.id,
+          reason: 'Tighter for the pilot',
+          before: { staffTwoStepMinutes: 180 },
+          after: { staffTwoStepMinutes: 60 },
+        });
+      } finally {
+        await api().patch('/v1/admin/platform-settings').set(bearer(admin.token)).send({ settings: { staffTwoStepMinutes: 180 }, reason: 'Back to the agreed 3 hours' }).expect(200);
+      }
+    });
+
+    it('refuses values outside the allowed range, unknown settings and changes without a reason', async () => {
+      const admin = await staff(['SUPER_ADMIN']);
+      for (const settings of [{ staffTwoStepMinutes: 10 }, { staffTwoStepMinutes: 1441 }, { staffTwoStepMinutes: '180' }, { staffTwoStepMinutes: 90.5 }, { somethingElse: 1 }]) {
+        const res = await api().patch('/v1/admin/platform-settings').set(bearer(admin.token)).send({ settings, reason: 'Test' }).expect(400);
+        expect(res.body.code).toBe('INVALID_SETTINGS');
+      }
+      await api().patch('/v1/admin/platform-settings').set(bearer(admin.token)).send({ settings: { staffTwoStepMinutes: 120 } }).expect(400);
+      const unchanged = await api().get('/v1/admin/platform-settings').set(bearer(admin.token)).expect(200);
+      expect(unchanged.body).toEqual({ staffTwoStepMinutes: 180 });
     });
   });
 
