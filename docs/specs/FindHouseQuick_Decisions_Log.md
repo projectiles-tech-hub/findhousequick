@@ -49,25 +49,30 @@ This log records every decision made about FindHouseQuick and every point still 
 | 21      | Additional features   | Approved: commercial rentals, rent financing, fair rent indicator, neighbourhood ratings, customer support channels, launch languages (English, Pidgin, Yoruba, Igbo, Hausa, French), management reports, launch plan. | 22 Oct 2026       |
 | 22      | APIs                  | The platform is built around its own API and connects to outside services through APIs.                                                                                                                                | 22 Oct 2026       |
 | 23      | Way forward           | Ready to build. Work continues in a Claude Project, with code kept in a Projectiles-owned GitHub repository.                                                                                                           | 22 Oct 2026       |
+| 24      | Technology            | Recommended stack adopted: Flutter apps, NestJS (TypeScript) server, PostgreSQL with PostGIS, Redis.                                                                                                                   | 22 Oct 2026       |
+| 25      | Old prototype         | The 2023 PHP prototype is kept for reference only, in the repository findhousequick-legacy. The new build reuses the findhousequick name.                                                                              | 22 Oct 2026       |
+| 26      | Code repository       | Code lives in projectiles-tech-hub/findhousequick, owned by the Projectiles Tech Hub Limited GitHub organisation. Public during the build; production systems will run on private, secure servers.                     | 22 Oct 2026       |
+| 27      | Release 0             | Foundations completed and passing all automatic checks (pull request \#1).                                                                                                                                             | 22 Oct 2026       |
 
 # 3. Open Points
 
-| **No.** | **Open point**                                                          | **Notes**                                                                                             |
-|---------|-------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
-| 1       | Days after key handover before automatic escrow release                 | To be decided                                                                                         |
-| 2       | Days a landlord has to hand over keys after escrow is funded            | To be decided                                                                                         |
-| 3       | Whether the tenant's 1.5% fee is refunded when the landlord is at fault | To be decided                                                                                         |
-| 4       | Who keeps interest earned on money held in escrow                       | To be decided                                                                                         |
-| 5       | Whether yearly rent renewals paid through the platform attract a fee    | To be decided                                                                                         |
-| 6       | Legal structure of the escrow service                                   | To be confirmed with a lawyer before Release 2                                                        |
-| 7       | Launch city and areas                                                   | Benin City was discussed; not yet confirmed                                                           |
-| 8       | Partner API for agencies, developers and lenders                        | Proposed; not yet approved                                                                            |
-| 9       | Mention of the Agent Emma channel in the launch plan                    | Keep or remove                                                                                        |
-| 10      | Technology choices                                                      | Recommended in the Technical Architecture and Execution Plan; to be confirmed with the technical lead |
-| 11      | Budget for development and first 12 to 18 months of running costs       | To be prepared                                                                                        |
-| 12      | Hiring of technical lead and team                                       | To be started                                                                                         |
-| 13      | GitHub account for Projectiles and the FindHouseQuick repository        | To be created and connected                                                                           |
-| 14      | Domain name, trademark and app store name checks for FindHouseQuick     | To be done                                                                                            |
+| **No.** | **Open point**                                                                                                       | **Notes**                                      |
+|---------|----------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
+| 1       | Days after key handover before automatic escrow release                                                              | To be decided                                  |
+| 2       | Days a landlord has to hand over keys after escrow is funded                                                         | To be decided                                  |
+| 3       | Whether the tenant's 1.5% fee is refunded when the landlord is at fault                                              | To be decided                                  |
+| 4       | Who keeps interest earned on money held in escrow                                                                    | To be decided                                  |
+| 5       | Whether yearly rent renewals paid through the platform attract a fee                                                 | To be decided                                  |
+| 6       | Legal structure of the escrow service                                                                                | To be confirmed with a lawyer before Release 2 |
+| 7       | Launch city and areas                                                                                                | Benin City was discussed; not yet confirmed    |
+| 8       | Partner API for agencies, developers and lenders                                                                     | Proposed; not yet approved                     |
+| 9       | Mention of the Agent Emma channel in the launch plan                                                                 | Keep or remove                                 |
+| 10      | Budget for development and first 12 to 18 months of running costs                                                    | To be prepared                                 |
+| 11      | Hiring of technical lead and team                                                                                    | To be started                                  |
+| 12      | Domain name, trademark and app store name checks for FindHouseQuick                                                  | To be done                                     |
+| 13      | Feature controls: up to 30 seconds for a switch change to reach every server                                         | To be confirmed (ADR 0002)                     |
+| 14      | Feature controls: country managers may change non-critical switches in their own countries without a second approval | To be confirmed (ADR 0002)                     |
+| 15      | Whether to make the code repository private again before launch                                                      | To be decided                                  |
 
 # 4. Related Documents
 
@@ -75,3 +80,4 @@ This log records every decision made about FindHouseQuick and every point still 
 |----------------------------------------------------------|----------------------|
 | FindHouseQuick Product Specification                     | 1.3, 22 October 2026 |
 | FindHouseQuick Technical Architecture and Execution Plan | 1.0, 22 October 2026 |
+| Project status (in the code repository)                  | docs/STATUS.md       |
