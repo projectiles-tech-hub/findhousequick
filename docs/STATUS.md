@@ -1,6 +1,6 @@
 # Project status
 
-Updated: 22 October 2026. Read this after CLAUDE.md at the start of every build session, and update it at the end.
+Updated: 22 October 2026 (evening). Read this after CLAUDE.md at the start of every build session, and update it at the end.
 
 ## Where things stand
 
@@ -14,7 +14,7 @@ Updated: 22 October 2026. Read this after CLAUDE.md at the start of every build 
   - Release 1 API design in `docs/api/openapi.yaml`
   - CI on GitHub Actions; one-command setup in `scripts/setup-dev.sh`
 
-- **Release 1 step 1 (accounts)**: built on branch `release-1/accounts`, waiting for approval.
+- **Release 1 step 1 (accounts)**: complete. Merged in pull request #4.
   - SMS codes through an adapter (`log` provider for development), registration with consent, sign-in by
     password or code, password reset by code, single-use refresh tokens, sign-out, `GET` and `PATCH /me`
   - Review fixes: code guesses and password attempts counted in single database statements; phone numbers
@@ -30,6 +30,10 @@ Updated: 22 October 2026. Read this after CLAUDE.md at the start of every build 
 
 ## Waiting for Emmanuel
 
+- Password rules: keep the agreed minimum of 8 characters, or move to at least 10 characters with common and
+  leaked passwords blocked and no character-mix rules (discussed 22 October 2026, not yet decided).
+- Sign in with Google (and Sign in with Apple for the iPhone release): add to Release 1 or not (discussed
+  22 October 2026, not yet decided).
 - ADR 0002: confirm the up-to-30-second delay for switch changes, and that country managers can change
   non-critical switches in their own countries without a second approval.
 - Decisions Log open points: the five escrow settings, escrow legal structure, launch city, partner API,
@@ -37,7 +41,7 @@ Updated: 22 October 2026. Read this after CLAUDE.md at the start of every build 
 
 ## Next: Release 1, in this order
 
-1. ~~**Accounts**~~: built (see above). Still to do from the accounts area: `DELETE /me` (account deletion) and
+1. ~~**Accounts**~~: done (pull request #4). Still to do from the accounts area: `DELETE /me` (account deletion) and
    `POST /me/data-export`; both need background jobs. A real SMS adapter (Termii or Twilio) once an account
    is opened. App sign-in screens.
 2. **Staff accounts and roles**, then expose the admin feature-rule endpoints (`/admin/feature-rules`) using

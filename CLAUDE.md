@@ -89,6 +89,30 @@ flutter run -d chrome
 `docs/api/openapi.yaml` is the agreed Release 1 API. Build endpoints to match it; update it when the design changes.
 Lint it with `npx @redocly/cli lint docs/api/openapi.yaml`.
 
+## Session routine (how steps are tracked)
+
+A step is **done** only when its pull request has been **merged into `main`** by Emmanuel. Approval happens on
+GitHub, outside the session, so every session must check rather than assume.
+
+**At the start of every session:**
+1. Run `git fetch origin` and check which pull requests were merged or closed since `docs/STATUS.md` was last
+   updated (`gh pr list --state merged` and `--state closed`, or `git log origin/main`).
+2. If `STATUS.md` (or the Decisions Log, ADRs or `DEPLOYMENT.md`) is out of date, fix it first, in its own small
+   pull request: move merged steps to "Where things stand", tick them in "Next", and note anything closed
+   without merging.
+3. Read "Waiting for Emmanuel" and remind him, briefly, of any item that blocks the next step.
+
+**At the end of every step, in the same pull request as the work:**
+1. Update `STATUS.md`: describe the step as "in pull request #N, awaiting approval" (never as finished), list
+   what is still to do from that step, and keep "Next" in order.
+2. Record any decision Emmanuel made during the step in the Decisions Log (both the `.docx` and the `.md`) or an
+   ADR, and remove it from "Waiting for Emmanuel".
+3. Record any new setting, secret, account or manual step in `docs/DEPLOYMENT.md`.
+4. Fill in every section of the pull request template.
+
+**Decisions Emmanuel gives in chat** (for example, an answer to a "Waiting for Emmanuel" item) are recorded in
+the files above before any code that depends on them is written.
+
 ## Git
 
 - Work on a branch; open a pull request to `main` for Emmanuel's approval.
