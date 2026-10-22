@@ -18,6 +18,22 @@ export const TWO_STEP_RULES = {
 export type TwoStepMethod = 'SMS' | 'AUTHENTICATOR';
 
 /**
+ * The second step must be a different factor from the sign-in (decision 34). A device that signed in with an
+ * SMS code has already proved the phone, so a second SMS code would prove the same thing twice: it must use an
+ * authenticator app code instead. A device that signed in with a password may use either.
+ */
+function assertSmsAllowed(user: RequestUser): void {
+  if (user.signInMethod === 'SMS_CODE') {
+    throw apiError(
+      403,
+      'DIFFERENT_FACTOR_REQUIRED',
+      'You signed in on this device with an SMS code, so the second step must be a code from your authenticator ' +
+        'app. If you have no authenticator app, sign in with your password instead.',
+    );
+  }
+}
+
+/**
  * Two-step login for staff (ADR 0005). After signing in with a password or SMS code, a staff member proves
  * the second step on that device with either an SMS code or an authenticator app code.
  */
@@ -32,12 +48,15 @@ export class TwoStepService {
 
   /** Sends a second-step code by SMS to the staff member's own confirmed phone number. */
   async sendSms(user: RequestUser): Promise<void> {
+    assertSmsAllowed(user);
     const { phone } = await this.prisma.user.findUniqueOrThrow({ where: { id: user.id }, select: { phone: true } });
     await this.otp.issue(phone, 'TWO_STEP', true);
   }
 
   /** Checks a second-step code and, if right, marks this signed-in device as having passed the second step. */
   async verify(user: RequestUser, method: TwoStepMethod, code: string): Promise<void> {
+    // Checked before an attempt is counted: choosing a method this device may not use is not a wrong guess.
+    if (method === 'SMS') assertSmsAllowed(user);
     let totpSecret: string | null = null;
     if (method === 'AUTHENTICATOR') {
       // Checked before an attempt is counted: choosing a method that is not set up is not a wrong guess.

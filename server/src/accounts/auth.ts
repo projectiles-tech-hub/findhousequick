@@ -10,6 +10,7 @@ import { Reflector } from '@nestjs/core';
 import type { NextFunction, Request, Response } from 'express';
 import { apiError } from '../common/api-error.js';
 import type { RequestUser } from '../controls/request-context.js';
+import type { ControlsService } from '../controls/controls.service.js';
 import type { PrismaService } from '../prisma/prisma.service.js';
 import type { SessionsService } from './sessions.service.js';
 
@@ -37,7 +38,7 @@ export const CurrentUser = createParamDecorator(
   (_: unknown, ctx: ExecutionContext): RequestUser | undefined => ctx.switchToHttp().getRequest<AuthedRequest>().user,
 );
 
-export function authMiddleware(sessions: SessionsService, prisma: PrismaService) {
+export function authMiddleware(sessions: SessionsService, prisma: PrismaService, controls: ControlsService) {
   return async (req: AuthedRequest, _res: Response, next: NextFunction): Promise<void> => {
     const header = req.headers.authorization;
     if (!header) return next();
@@ -60,7 +61,7 @@ export function authMiddleware(sessions: SessionsService, prisma: PrismaService)
           staff: { select: { roles: true, countryScopes: true, active: true } },
           refreshTokens: {
             where: { familyId: claims.sessionId, revokedAt: null, expiresAt: { gt: new Date() } },
-            select: { id: true, twoStepAt: true },
+            select: { id: true, signInMethod: true, twoStepAt: true },
             orderBy: { createdAt: 'desc' },
             take: 1,
           },
@@ -71,12 +72,22 @@ export function authMiddleware(sessions: SessionsService, prisma: PrismaService)
       } else if (user.status !== 'ACTIVE') {
         req.authError = apiError(403, 'ACCOUNT_SUSPENDED', 'This account has been suspended. Please contact support.');
       } else {
-        req.user = { id: user.id, types: user.types, countryCode: user.countryCode, sessionId: claims.sessionId };
+        const device = user.refreshTokens[0];
+        req.user = {
+          id: user.id,
+          types: user.types,
+          countryCode: user.countryCode,
+          sessionId: claims.sessionId,
+          signInMethod: device.signInMethod,
+        };
         if (user.staff?.active) {
+          // The second step counts for a set period (decision 32), then must be done again.
+          const { staffTwoStepMinutes } = await controls.getPlatformSettings();
+          const passedAt = device.twoStepAt?.getTime();
           req.user.staff = {
             roles: user.staff.roles,
             countryScopes: user.staff.countryScopes,
-            twoStepVerified: user.refreshTokens[0].twoStepAt !== null,
+            twoStepVerified: passedAt !== undefined && Date.now() - passedAt < staffTwoStepMinutes * 60_000,
           };
         }
       }

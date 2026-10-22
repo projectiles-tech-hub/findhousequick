@@ -116,7 +116,8 @@ export class AccountsService {
     } catch (err) {
       throw this.duplicateError(err) ?? err;
     }
-    return this.session(user, await this.sessions.start(user.id, null));
+    // Registering uses an SMS code, so the new device counts as signed in by SMS code.
+    return this.session(user, await this.sessions.start(user.id, null, 'SMS_CODE'));
   }
 
   async login(dto: LoginDto): Promise<Session> {
@@ -163,7 +164,7 @@ export class AccountsService {
     if (user.status !== 'ACTIVE') {
       throw apiError(403, 'ACCOUNT_SUSPENDED', 'This account has been suspended. Please contact support.');
     }
-    return this.session(user, await this.sessions.start(user.id, dto.device ?? null));
+    return this.session(user, await this.sessions.start(user.id, dto.device ?? null, dto.otp ? 'SMS_CODE' : 'PASSWORD'));
   }
 
   /**

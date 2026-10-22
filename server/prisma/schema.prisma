@@ -178,6 +178,14 @@ model FeatureRule {
 }
 
 /// Permanent record of every change to country settings and feature controls.
+/// Settings that apply across the whole platform rather than one country (one row, id 1). Validated in code
+/// (src/controls/platform-settings.schema.ts). Changed by super admins; every change is in ControlChange.
+model PlatformSettings {
+  id        Int      @id @default(1)
+  settings  Json     @default("{}")
+  updatedAt DateTime @updatedAt
+}
+
 model ControlChange {
   id           String   @id @default(uuid(7)) @db.Uuid
   entityType   String
@@ -317,19 +325,29 @@ model BankAccount {
 /// One row per refresh token. Tokens are single-use: each refresh marks the old token used and issues a new
 /// one in the same family (one family per signed-in device). Presenting a used token again means it was
 /// copied, so the whole family is revoked and that device must sign in again.
+enum SignInMethod {
+  PASSWORD
+  /// An SMS code, at sign-in or at registration.
+  SMS_CODE
+}
+
 model RefreshToken {
-  id        String    @id @default(uuid(7)) @db.Uuid
-  userId    String    @db.Uuid
+  id           String       @id @default(uuid(7)) @db.Uuid
+  userId       String       @db.Uuid
   /// Shared by every token issued to one signed-in device. Also carried in access tokens as the session id.
-  familyId  String    @db.Uuid
-  tokenHash String    @unique
-  device    String?
-  expiresAt DateTime
-  usedAt    DateTime?
-  revokedAt DateTime?
+  familyId     String       @db.Uuid
+  tokenHash    String       @unique
+  device       String?
+  expiresAt    DateTime
+  usedAt       DateTime?
+  revokedAt    DateTime?
+  /// How this device signed in. Carried over to each new token in the family. Decides which second step a staff
+  /// member may use: after an SMS code sign-in, only an authenticator code (decision 34, ADR 0005).
+  signInMethod SignInMethod
   /// When this signed-in device passed the second step (staff). Carried over to each new token in the family.
-  twoStepAt DateTime?
-  createdAt DateTime  @default(now())
+  /// It counts for the period in the platform settings (staffTwoStepMinutes), then must be done again.
+  twoStepAt    DateTime?
+  createdAt    DateTime     @default(now())
 
   user User @relation(fields: [userId], references: [id])
 

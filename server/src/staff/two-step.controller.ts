@@ -19,8 +19,12 @@ export class TwoStepController {
   @HttpCode(202)
   @PER_MINUTE(10)
   @StaffOnly({ twoStep: false })
-  @ApiOperation({ summary: 'Send a second-step code by SMS to the signed-in staff member' })
+  @ApiOperation({
+    summary: 'Send a second-step code by SMS to the signed-in staff member',
+    description: 'Only on a device that signed in with a password (decision 34); otherwise DIFFERENT_FACTOR_REQUIRED.',
+  })
   @ApiAcceptedResponse({ description: 'Code sent' })
+  @ApiResponse({ status: 403, description: 'Device signed in with an SMS code (DIFFERENT_FACTOR_REQUIRED)' })
   @ApiResponse({ status: 429, description: 'Too many codes requested' })
   async sendSms(@CurrentUser() user: RequestUser): Promise<void> {
     await this.twoStep.sendSms(user);
@@ -32,8 +36,12 @@ export class TwoStepController {
   @StaffOnly({ twoStep: false })
   @ApiOperation({
     summary: 'Complete two-step login on this device with an SMS code or an authenticator app code',
-    description: 'After 5 wrong codes the second step pauses for 15 minutes (code TWO_STEP_LOCKED).',
+    description:
+      'The second step lasts for the period in the platform settings (3 hours by default), then must be done ' +
+      'again. A device that signed in with an SMS code must use AUTHENTICATOR (decision 34). After 5 wrong ' +
+      'codes the second step pauses for 15 minutes (code TWO_STEP_LOCKED).',
   })
+  @ApiResponse({ status: 403, description: 'SMS chosen on a device that signed in with an SMS code (DIFFERENT_FACTOR_REQUIRED)' })
   @ApiNoContentResponse({ description: 'This device has passed the second step' })
   @ApiResponse({ status: 400, description: 'Wrong code (INVALID_CODE) or no authenticator set up (NO_AUTHENTICATOR)' })
   @ApiResponse({ status: 429, description: 'Second step paused (TWO_STEP_LOCKED)' })
