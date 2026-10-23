@@ -2,6 +2,8 @@
 
 - Status: Accepted by Emmanuel on 22 October 2026, with one change to what country managers may do
   (Decisions Log, decision 28)
+- **Added by decision 53 (23 October 2026):** a switch rule can carry an optional message and return time shown to
+  users, and the admin panel warns when switching off a feature that others depend on. Built with the admin screens.
 - Context: Product Specification, Section 17 (Feature Controls).
 
 ## Decision

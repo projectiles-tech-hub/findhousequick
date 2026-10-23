@@ -51,10 +51,12 @@ login. Most need the CAC certificate (RC 7987623).
 | Hosting (VPS, e.g. DigitalOcean or Hetzner) | Runs the API, database and Redis | Test system and pilot | Not yet (needs a company dollar card) |
 | Cloudflare | Domain DNS, web app hosting (Pages), file storage (R2) | Test system and pilot | Not yet |
 | Domain name (findhousequick.com and/or .com.ng) | Web addresses | Pilot | Not yet |
-| Google Cloud project | Maps; Sign in with Google | Release 1 | Not yet |
+| Google Cloud project (with Firebase) | Maps; push notifications (decision 46); Sign in with Google if adopted | Release 1 | Not yet |
+| Calling service (a self-hosted relay, or a provider such as LiveKit or Agora) | Voice calls inside the app (decision 44) | Release 1 | Not yet; to be chosen when calls are built |
+| Figma | Screen designs (decision 42) | Now | Connected; the account has a View seat on the free Starter plan, which may need upgrading to an editing seat (to be tested at the design step) |
 | Identity check provider (Smile ID, Dojah, Prembly or similar) | NIN, selfie and liveness checks | Release 1 | Not yet |
 | Google Play developer account | Android app distribution and testing | Pilot | Not yet |
-| Apple developer account | iPhone app (TestFlight) and Sign in with Apple | iPhone release | Not yet |
+| Apple developer account | iPhone app (TestFlight), push notifications and incoming-call alerts on iPhone, Sign in with Apple if adopted | iPhone release | Not yet |
 
 ## 3. Handling secrets
 
