@@ -70,8 +70,11 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
 - Before step 3 (identity checks) goes live: how long identity images are kept after verification, after legal
   advice (Decisions Log open point 15). It will be a country setting (decision 55), so step 3 can be built first.
 - A company dollar card, so the hosting account (and the test system) can be opened (decision 42).
-- Figma: the connector works, but the account has a View seat on the free Starter plan, which may not allow
-  creating designs. To be tested at the start of step 2c; an editing seat may be needed.
+- Figma (blocks step 2c): tested 23 October 2026. The connector can create and edit files on the free Starter
+  plan, but Figma limits a Starter View seat to 20 connector calls a month, and designing and checking every
+  Release 1 screen needs several hundred. A Professional plan Full seat (200 calls a day) is needed; it is paid
+  by card, so it may wait for the company dollar card. The test file "FindHouseQuick Release 1 Screens" is in
+  Emmanuel's Figma drafts.
 - Whether to build country switching (`PATCH /admin/countries`, still to do from step 2) as a small step
   before step 3 (suggested 22 October 2026).
 - Decisions Log open points: the five escrow settings, escrow legal structure, launch city, partner API,
