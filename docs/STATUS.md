@@ -55,9 +55,9 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
   map pins, and a Pidgin length check. Merging #16 recorded the decision and the files; it is not the approval of
   the designs. Colours approved by Emmanuel on 23 October 2026. Icons redrawn the same day as the app's own set,
   to a standard above Font Awesome Pro, with outline and filled styles (decision 68). Font changed to Source Sans 3
-  (decision 69), because Roboto lacks the Yoruba letter ṣ. The rest of the design
-  system is still **to review** by Emmanuel (review states are kept in `docs/designs.md`). No screens yet; no app
-  screen built.
+  (decision 69), because Roboto lacks the Yoruba letter ṣ. On 23 October 2026 Emmanuel
+  approved the whole design system and asked for the screens to start (review states are kept in
+  `docs/designs.md`). Screens begin with sign-up and sign-in; no app screen built.
 
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
   #13. The server refuses actions above the user's level (`VERIFICATION_REQUIRED`, decision 64); identity
@@ -85,8 +85,7 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
 
 ## Waiting for Emmanuel
 
-- Review of the design system in Penpot (page "00 Design system"): approve it or ask for changes. **Blocks the
-  screens in step 2c.**
+- Review of each group of screens as it is sent (step 2c); each group waits for approval before the next starts.
 - Before identity checks go live: how long identity images are kept after verification, after legal advice
   (Decisions Log open point 15). Step 3 is built with this as a country setting (decision 55) that is not yet set.
 - A company dollar card, so the hosting account (and the test system) can be opened (decision 42).
@@ -116,8 +115,9 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
     is built until its design is approved.**
     Done after the email step, so the sign-up and sign-in designs match what is built; the server steps below
     continue in other sessions while the designs are reviewed.
-    Progress: decision 67 and the design system merged in pull request #16. Colours approved; icons redrawn under
-    decision 68 and font changed under decision 69, in pull request #19, awaiting approval; the other parts are waiting for Emmanuel's review. Still to do: the screens, group by group, once the design system is approved.
+    Progress: decision 67 and the design system merged in pull request #16. Icons redrawn (decision 68) and font
+    changed to Source Sans 3 (decision 69) in pull request #19; the whole design system approved by Emmanuel on
+    23 October 2026. Now: the screens, group by group, starting with sign-up and sign-in.
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
 4. **Reference data endpoints**, then buildings, units and the parts checklist, with the distance to the main
