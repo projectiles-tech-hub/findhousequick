@@ -26,6 +26,14 @@ info:
       `code: FEATURE_UNAVAILABLE`.
     - **Verification ladder**: a route needing a higher verification level returns `403` with
       `code: VERIFICATION_REQUIRED` and the level needed, so the app can guide the user.
+    - **Signed-out visitors** (decision 39) see a summary of each listing only (`ListingSummary`: cover
+      photo, rent, area, number of rooms, badges). Everything else needs an account.
+    - **Live connection** (decision 47): signed-in apps open `wss://<server>/v1/live`, sending the access
+      token as the first message. The server pushes events: `message.created`, `conversation.read`,
+      `inspection.updated`, and the call events `call.ringing`, `call.answered`, `call.ended`. When the
+      app is closed, the same events arrive as push notifications (decision 46).
+    - **Viewing limits** (decision 52): viewing listings and photos is limited per account as well as per
+      address, counted across all servers; over the limit the answer is `429`.
     - **Idempotency**: requests that create money movements or uploads accept an `Idempotency-Key`
       header; repeating a request with the same key returns the original result.
 
@@ -59,6 +67,7 @@ tags:
   - name: Saved
   - name: Messaging
   - name: Inspections
+  - name: Notifications
   - name: Reports
   - name: Staff two-step login
   - name: Admin
@@ -363,7 +372,9 @@ paths:
               type: object
               properties:
                 email: { type: string, format: email }
-                language: { type: string }
+                language:
+                  type: string
+                  description: One of the languages switched on for the user's country (decision 40).
                 types:
                   type: array
                   items: { $ref: "#/components/schemas/UserType" }
@@ -390,6 +401,66 @@ paths:
       description: Personal data is deleted except records the law requires to be kept (e.g. payment records), which are retained for the legal period only.
       responses:
         "202": { description: Deletion scheduled. }
+
+  /me/devices:
+    post:
+      tags: [Notifications]
+      summary: Register this phone or computer for push notifications (decision 46)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [platform, pushToken]
+              properties:
+                platform: { type: string, enum: [ANDROID, IOS, WEB, DESKTOP] }
+                pushToken: { type: string, maxLength: 4096 }
+                voipPushToken: { type: string, maxLength: 4096, description: "iPhone only, for incoming-call alerts (decision 44)" }
+      responses:
+        "201":
+          description: Registered.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { $ref: "#/components/schemas/Id" }
+
+  /me/devices/{deviceId}:
+    delete:
+      tags: [Notifications]
+      summary: Stop push notifications to a device (also done on sign-out)
+      parameters:
+        - { name: deviceId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+      responses:
+        "204": { description: Removed. }
+
+  /me/notification-settings:
+    get:
+      tags: [Notifications]
+      summary: Which notifications the user receives, and by which channel (decision 46)
+      responses:
+        "200":
+          description: Settings.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NotificationSettings" }
+    patch:
+      tags: [Notifications]
+      summary: Change notification settings
+      description: Security messages (codes and sign-in alerts) cannot be switched off; trying returns 400.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/NotificationSettings" }
+      responses:
+        "200":
+          description: Updated settings.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NotificationSettings" }
 
   /me/data-export:
     post:
@@ -446,6 +517,62 @@ paths:
               schema:
                 type: array
                 items: { $ref: "#/components/schemas/IdentityCheck" }
+
+  /identity/checks/{checkId}/document:
+    post:
+      tags: [Identity]
+      summary: Add an identity document photo after the NIN check failed or did not match
+      description: |
+        Decision 49: no document photo is asked for by default. Only when a check ends FAILED or
+        MANUAL_REVIEW with `nextAction: UPLOAD_ID_DOCUMENT` may the user add one, uploaded first
+        through `/documents` with purpose IDENTITY. Accepted in Nigeria: driver's licence,
+        international passport, NIN slip (from the country's document types). The verification team
+        reviews it.
+      parameters: [{ $ref: "#/components/parameters/CheckId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [documentId]
+              properties:
+                documentId: { $ref: "#/components/schemas/Id" }
+      responses:
+        "200":
+          description: Document attached; check sent to the verification team.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IdentityCheck" }
+        "409": { description: "This check does not need a document (`code` DOCUMENT_NOT_REQUESTED)." }
+
+  /me/agent-profile:
+    put:
+      tags: [Identity]
+      summary: Agent company details (decision 50)
+      description: Business name and registration number, for agents who work through a firm. Checked by the verification team.
+      x-verification-level: 2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [businessName]
+              properties:
+                businessName: { type: string, maxLength: 200 }
+                registrationNumber: { type: string, maxLength: 50 }
+      responses:
+        "200":
+          description: Saved; status PENDING until checked.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  businessName: { type: string }
+                  registrationNumber: { type: [string, "null"] }
+                  status: { type: string, enum: [PENDING, PASSED, FAILED] }
 
   /identity/checks/{checkId}:
     get:
@@ -570,6 +697,7 @@ paths:
                 street: { type: string }
                 houseNumber: { type: string }
                 landmark: { type: string }
+                distanceToMainRoadM: { type: integer, minimum: 0, description: Distance to the main road in metres (decision 56) }
                 location: { $ref: "#/components/schemas/LatLng" }
                 locationAccuracyM: { type: integer, minimum: 0 }
                 offPlatformOwner:
@@ -665,6 +793,28 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Unit" }
 
+  /units/{unitId}/parts/{partCode}:
+    patch:
+      tags: [Properties]
+      summary: Add or change the note on one part of a unit, e.g. "newly tiled" (decision 56)
+      parameters:
+        - { $ref: "#/components/parameters/UnitId" }
+        - { name: partCode, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note: { type: [string, "null"], maxLength: 300 }
+      responses:
+        "200":
+          description: Updated unit.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Unit" }
+
   # ------------------------------------------------------------------
   # Agent authority
   # ------------------------------------------------------------------
@@ -751,7 +901,7 @@ paths:
               required: [documentTypeCode, purpose, contentType, sizeBytes, sha256]
               properties:
                 documentTypeCode: { type: string, example: CERTIFICATE_OF_OCCUPANCY }
-                purpose: { type: string, enum: [OWNERSHIP, AUTHORITY_LETTER, DISPUTE_EVIDENCE, OTHER] }
+                purpose: { type: string, enum: [IDENTITY, OWNERSHIP, AUTHORITY_LETTER, DISPUTE_EVIDENCE, OTHER] }
                 buildingId: { $ref: "#/components/schemas/Id" }
                 contentType: { type: string, enum: [application/pdf, image/jpeg, image/png] }
                 sizeBytes: { type: integer, maximum: 20971520 }
@@ -879,18 +1029,22 @@ paths:
   /listings/{listingId}:
     get:
       tags: [Listings]
-      summary: Public property page
+      summary: Property page
       description: |
-        Gallery, walkthrough and exact location are returned only to signed-in users. The location is
-        approximate (`approximateArea`) until an inspection is confirmed.
+        Signed-out visitors get the `ListingSummary` only (decision 39). Signed-in users get the full
+        page; the exact location is returned only after an inspection is confirmed. Viewing is limited
+        per account (decision 52).
       security: [{}, { bearer: [] }]
       parameters: [{ $ref: "#/components/parameters/ListingId" }]
       responses:
         "200":
-          description: Property page.
+          description: Property page (full when signed in, summary when signed out).
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ListingPublicView" }
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ListingPublicView"
+                  - $ref: "#/components/schemas/ListingSummary"
         "404": { description: Not found or not live. }
     patch:
       tags: [Listings]
@@ -1005,6 +1159,8 @@ paths:
         Exactly one of: `near` (with `radiusM`) for "around me" and landmark search, or `bbox` for
         map search. Results include distance when `near` is used. Pins for the map are returned
         grouped when zoomed out (`clusters`).
+        **Signed-out callers** (decision 39) get `ListingSummary` items only: no map positions, no
+        distance and no `clusters`. The "around me" location is never stored or logged (Specification 15.2).
       security: [{}, { bearer: [] }]
       parameters:
         - name: near
@@ -1058,7 +1214,13 @@ paths:
               schema:
                 type: object
                 properties:
-                  items: { type: array, items: { $ref: "#/components/schemas/ListingCard" } }
+                  items:
+                    type: array
+                    description: ListingCard when signed in; ListingSummary when signed out.
+                    items:
+                      oneOf:
+                        - $ref: "#/components/schemas/ListingCard"
+                        - $ref: "#/components/schemas/ListingSummary"
                   clusters:
                     type: array
                     items:
@@ -1130,6 +1292,41 @@ paths:
           in: path
           required: true
           schema: { $ref: "#/components/schemas/Id" }
+      responses:
+        "204": { description: Deleted. }
+
+  /me/saved-places:
+    get:
+      tags: [Saved]
+      summary: Places the tenant saved, such as an office or school (decision 48)
+      description: A tenant's location is never stored unless they choose to save a place (Specification 15.2).
+      responses:
+        "200":
+          description: Saved places.
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/SavedPlace" } }
+    post:
+      tags: [Saved]
+      summary: Save a place
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SavedPlace" }
+      responses:
+        "201":
+          description: Saved.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SavedPlace" }
+
+  /me/saved-places/{savedPlaceId}:
+    delete:
+      tags: [Saved]
+      summary: Delete a saved place
+      parameters:
+        - { name: savedPlaceId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
       responses:
         "204": { description: Deleted. }
 
@@ -1258,13 +1455,95 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Conversation" }
 
+  /conversations/{conversationId}/calls:
+    post:
+      tags: [Messaging]
+      summary: Start a voice call inside the app with the other party (decision 44)
+      description: |
+        Voice over the internet; neither side sees the other's phone number. Allowed between the two
+        parties of a conversation, under the same rules as chat. The other party is alerted through the
+        live connection, or a push notification (incoming-call alert) when the app is closed. The
+        response carries the values the app passes to the calling service, reached through an adapter.
+      x-verification-level: 2
+      x-feature: contact.in_app_call
+      parameters: [{ $ref: "#/components/parameters/ConversationId" }]
+      responses:
+        "201":
+          description: Call started (ringing).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Call" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /calls/{callId}/status:
+    post:
+      tags: [Messaging]
+      summary: Answer, decline or end a call
+      parameters:
+        - { name: callId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action: { type: string, enum: [ANSWER, DECLINE, END] }
+      responses:
+        "200":
+          description: Updated call.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Call" }
+
   # ------------------------------------------------------------------
   # Inspections
   # ------------------------------------------------------------------
+  /listings/{listingId}/inspection-availability:
+    put:
+      tags: [Inspections]
+      summary: Set the times the lister is available for inspections (decision 45)
+      description: Landlord or authorised agent only. Weekly windows, with the slot length; dates can be blocked.
+      parameters: [{ $ref: "#/components/parameters/ListingId" }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InspectionAvailability" }
+      responses:
+        "200":
+          description: Saved.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InspectionAvailability" }
+
+  /listings/{listingId}/inspection-slots:
+    get:
+      tags: [Inspections]
+      summary: Free inspection time slots for a listing (decision 45)
+      parameters:
+        - { $ref: "#/components/parameters/ListingId" }
+        - { name: from, in: query, required: true, schema: { type: string, format: date } }
+        - { name: to, in: query, required: true, schema: { type: string, format: date, description: At most 14 days after from } }
+      responses:
+        "200":
+          description: Free slots, in the listing's local time zone and as UTC start times.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    startsAt: { type: string, format: date-time }
+                    endsAt: { type: string, format: date-time }
+
   /listings/{listingId}/inspections:
     post:
       tags: [Inspections]
       summary: Book an inspection (always free)
+      description: The time must be one of the free slots from `/listings/{listingId}/inspection-slots` (decision 45).
       x-verification-level: 2
       x-feature: contact.inspection_booking
       parameters: [{ $ref: "#/components/parameters/ListingId" }]
@@ -1276,7 +1555,7 @@ paths:
               type: object
               required: [scheduledAt]
               properties:
-                scheduledAt: { type: string, format: date-time }
+                scheduledAt: { type: string, format: date-time, description: Start time of a free slot }
                 note: { type: string, maxLength: 500 }
       responses:
         "201":
@@ -1434,7 +1713,10 @@ paths:
               type: object
               required: [outcome, notes]
               properties:
-                outcome: { type: string, enum: [APPROVE, REJECT, NEEDS_SITE_VISIT, MERGE_DUPLICATE, WARN_USER, SUSPEND_USER, NO_ACTION] }
+                outcome:
+                  type: string
+                  description: REMOVE_BADGE and BAN_USER are recorded against the user's verified identity (decision 51).
+                  enum: [APPROVE, REJECT, NEEDS_SITE_VISIT, MERGE_DUPLICATE, WARN_USER, REMOVE_BADGE, SUSPEND_USER, BAN_USER, NO_ACTION]
                 notes: { type: string }
       responses:
         "200":
@@ -1588,7 +1870,9 @@ paths:
             schema: { $ref: "#/components/schemas/FeatureRuleInput" }
       responses:
         "201":
-          description: Rule created (ACTIVE or PENDING_APPROVAL).
+          description: |
+            Rule created (ACTIVE or PENDING_APPROVAL). When switching a feature off, the response also lists
+            `dependentFeatures` that rely on it, as a warning (decision 53).
           content:
             application/json:
               schema: { $ref: "#/components/schemas/FeatureRule" }
@@ -1783,6 +2067,7 @@ components:
         code: { type: string, description: "Machine-readable reason, e.g. FEATURE_UNAVAILABLE" }
         message: { type: string, description: Plain-language message safe to show users }
         feature: { type: string }
+        returnsAt: { type: [string, "null"], format: date-time, description: "With FEATURE_UNAVAILABLE, when the feature is expected back (decision 53)" }
         requiredLevel: { type: integer, minimum: 1, maximum: 3 }
 
     Session:
@@ -1827,6 +2112,10 @@ components:
         idType: { type: string }
         idNumberLast4: { type: string }
         status: { type: string, enum: [PENDING, PASSED, FAILED, MANUAL_REVIEW] }
+        nextAction:
+          type: [string, "null"]
+          enum: [UPLOAD_ID_DOCUMENT, null]
+          description: Set when the NIN check failed or did not match, so the user may add a document (decision 49).
         createdAt: { type: string, format: date-time }
         completedAt: { type: [string, "null"], format: date-time }
 
@@ -1877,6 +2166,7 @@ components:
         street: { type: string }
         houseNumber: { type: [string, "null"] }
         landmark: { type: [string, "null"] }
+        distanceToMainRoadM: { type: [integer, "null"] }
         location: { $ref: "#/components/schemas/LatLng" }
         ownerVerified: { type: boolean }
         units: { type: array, items: { $ref: "#/components/schemas/Unit" } }
@@ -1915,6 +2205,7 @@ components:
               required: { type: boolean }
               minPhotos: { type: integer }
               mediaKind: { type: string, enum: [PHOTO, VIDEO] }
+              note: { type: [string, "null"], description: "e.g. newly tiled (decision 56)" }
               captured: { type: integer, description: Ready photos or videos for this part }
               complete: { type: boolean }
 
@@ -2002,6 +2293,69 @@ components:
         total: { $ref: "#/components/schemas/Money" }
         inspectionFee: { type: string, const: FREE }
 
+    ListingSummary:
+      type: object
+      description: What signed-out visitors see of a listing (decision 39).
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        coverImage: { type: string, format: uri }
+        rent: { $ref: "#/components/schemas/Money" }
+        rentPeriod: { type: string }
+        area: { type: string }
+        bedrooms: { type: integer }
+        bathrooms: { type: integer }
+        badges: { type: array, items: { type: string, enum: [OWNER_VERIFIED, AUTHORITY_VERIFIED, SITE_INSPECTED, ESCROW_PROTECTED] } }
+
+    SavedPlace:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Id", readOnly: true }
+        name: { type: string, maxLength: 60, example: Office }
+        location: { $ref: "#/components/schemas/LatLng" }
+
+    Call:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        conversationId: { $ref: "#/components/schemas/Id" }
+        callerId: { $ref: "#/components/schemas/Id" }
+        status: { type: string, enum: [RINGING, ANSWERED, DECLINED, MISSED, ENDED] }
+        startedAt: { type: string, format: date-time }
+        answeredAt: { type: [string, "null"], format: date-time }
+        endedAt: { type: [string, "null"], format: date-time }
+        connection:
+          type: object
+          description: Values the app passes to the calling service. Short-lived.
+          additionalProperties: true
+
+    InspectionAvailability:
+      type: object
+      properties:
+        slotMinutes: { type: integer, minimum: 15, maximum: 120, default: 30 }
+        weekly:
+          type: array
+          items:
+            type: object
+            required: [weekday, from, to]
+            properties:
+              weekday: { type: integer, minimum: 1, maximum: 7, description: "1 is Monday" }
+              from: { type: string, pattern: "^[0-2][0-9]:[0-5][0-9]$", example: "10:00" }
+              to: { type: string, pattern: "^[0-2][0-9]:[0-5][0-9]$", example: "16:00" }
+        blockedDates: { type: array, items: { type: string, format: date } }
+
+    NotificationSettings:
+      type: object
+      description: |
+        For each kind of notification, the channels it may use. Kinds: NEW_MESSAGE, INCOMING_CALL,
+        INSPECTION_UPDATE, SAVED_SEARCH_ALERT, LISTING_UPDATE, VERIFICATION_UPDATE, REMINDER. Security
+        messages (codes and sign-in alerts) are always sent and are not listed here.
+      additionalProperties:
+        type: array
+        items: { type: string, enum: [PUSH, EMAIL, SMS] }
+      example:
+        NEW_MESSAGE: [PUSH]
+        SAVED_SEARCH_ALERT: [PUSH, EMAIL]
+
     ListingCard:
       type: object
       properties:
@@ -2039,6 +2393,16 @@ components:
                   partLabel: { type: string }
                   media: { type: array, items: { $ref: "#/components/schemas/MediaItem" } }
             walkthrough: { $ref: "#/components/schemas/MediaItem" }
+            savedPlaceDistances:
+              type: array
+              description: Travel distance to the viewer's saved places (decision 48).
+              items:
+                type: object
+                properties:
+                  savedPlaceId: { $ref: "#/components/schemas/Id" }
+                  name: { type: string }
+                  distanceM: { type: integer }
+                  travelMinutes: { type: [integer, "null"] }
             nearbyAmenities:
               type: array
               items:
@@ -2148,6 +2512,8 @@ components:
         startsAt: { type: [string, "null"], format: date-time }
         endsAt: { type: [string, "null"], format: date-time }
         emergency: { type: boolean }
+        userMessage: { type: [string, "null"], maxLength: 300, description: "Shown to users while the feature is off (decision 53)" }
+        returnsAt: { type: [string, "null"], format: date-time, description: "When the feature is expected back, shown to users (decision 53)" }
         reason: { type: string }
 
     PlatformSettings:

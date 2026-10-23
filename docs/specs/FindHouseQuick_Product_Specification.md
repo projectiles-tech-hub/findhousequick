@@ -6,7 +6,7 @@ Projectiles Tech Hub Limited
 
 Emmanuel Chukwuka Oraegbu, Managing Director
 
-Version 1.3 \| 22 October 2026
+Version 1.4 \| 23 October 2026
 
 # Contents
 
@@ -51,6 +51,8 @@ Version 1.3 \| 22 October 2026
 20\. Launch Plan
 
 21\. Explanation of Terms
+
+22\. Version History
 
 # 1. Product Overview
 
@@ -106,13 +108,21 @@ The platform is delivered on three platforms sharing one central system, so that
 
 ## 3.1 General Rules
 
-- Every user must register to use the platform. Registration is free of charge.
+- Every user must register to use the platform; visitors without an account see only a summary of each listing: cover photo, rent, area, number of rooms and badges (decision 39). Registration is free of charge.
+
+- Registration needs both a phone number and an email address. The user signs up with either one: a code sent to it confirms it at once, and the other is confirmed afterwards with a code sent to it (decision 35).
+
+- Until the phone number is confirmed, the user can only browse; any action or progress needs a confirmed phone number (decision 35). Level 1 is reached once both the phone number and the email address are confirmed (decision 37).
+
+- Users sign in with their phone number or email address, by password or by a code sent to it. Password reset codes go by SMS or email, as the user chooses (decisions 35 and 36).
 
 - Verification is enforced by limiting what a user can do until each level of verification is completed.
 
 - In this document, "NIN" means the National Identification Number in Nigeria, or the equivalent national identity number or document in any other country.
 
 - Identity checks (NIN, selfie and liveness) are automated through a licensed identity verification provider for each country and should complete within minutes, so that users are not lost to delays.
+
+- A photo of an identity document is asked for only when the NIN check fails or the details do not match. Accepted in Nigeria: driver's licence, international passport and NIN slip (decision 49).
 
 - The name on the NIN, the bank account and any ownership documents must match. Any mismatch sends the case to the platform team for review.
 
@@ -124,29 +134,29 @@ The platform is delivered on three platforms sharing one central system, so that
 
 ## 3.2 Tenant Verification Levels
 
-| **Level**         | **Requirements**                                        | **What it unlocks**                                                  |
-|-------------------|---------------------------------------------------------|----------------------------------------------------------------------|
-| 1\. Basic         | Name, phone number confirmed by SMS code, email address | Browse listings, use the map, save favourites, set saved area alerts |
-| 2\. Verified      | NIN, selfie with liveness check, identity document      | Contact landlords and agents, chat, book inspections                 |
-| 3\. Payment ready | Bank account confirmed in the tenant's own name         | Pay through escrow, sign tenancy agreements, book short lets         |
+| **Level**         | **Requirements**                                                                                                  | **What it unlocks**                                                  |
+|-------------------|-------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
+| 1\. Basic         | Name, phone number confirmed by SMS code, email address confirmed by email code (decisions 35 and 37)             | Browse listings, use the map, save favourites, set saved area alerts |
+| 2\. Verified      | NIN, selfie with liveness check; an identity document only if the NIN check fails or does not match (decision 49) | Contact landlords and agents, chat, book inspections                 |
+| 3\. Payment ready | Bank account confirmed in the tenant's own name                                                                   | Pay through escrow, sign tenancy agreements, book short lets         |
 
 ## 3.3 Landlord Verification Levels
 
-| **Level**          | **Requirements**                                                       | **What it unlocks**                                |
-|--------------------|------------------------------------------------------------------------|----------------------------------------------------|
-| 1\. Basic          | Phone number, email address                                            | Browse and explore the platform                    |
-| 2\. Verified       | NIN, selfie with liveness check, identity document                     | Add properties as drafts, approve or reject agents |
-| 3\. Owner verified | Proof of ownership for each property, verified as set out in Section 6 | Listings go live; property management features     |
-| 4\. Payout ready   | Bank account in the landlord's own name                                | Receive escrow payments and rent                   |
+| **Level**          | **Requirements**                                                                                                  | **What it unlocks**                                |
+|--------------------|-------------------------------------------------------------------------------------------------------------------|----------------------------------------------------|
+| 1\. Basic          | Phone number confirmed by SMS code, email address confirmed by email code (decisions 35 and 37)                   | Browse and explore the platform                    |
+| 2\. Verified       | NIN, selfie with liveness check; an identity document only if the NIN check fails or does not match (decision 49) | Add properties as drafts, approve or reject agents |
+| 3\. Owner verified | Proof of ownership for each property, verified as set out in Section 6                                            | Listings go live; property management features     |
+| 4\. Payout ready   | Bank account in the landlord's own name                                                                           | Receive escrow payments and rent                   |
 
 ## 3.4 Agent Verification Levels
 
-| **Level**        | **Requirements**                                                                     | **What it unlocks**                       |
-|------------------|--------------------------------------------------------------------------------------|-------------------------------------------|
-| 1\. Basic        | Phone number, email address                                                          | Browse and explore the platform           |
-| 2\. Verified     | NIN, selfie with liveness check, identity document, company details where applicable | Request authority over properties         |
-| 3\. Authorised   | Proof of the landlord's authority for each property, verified by the platform team   | List and manage that specific property    |
-| 4\. Payout ready | Bank account in the agent's own name                                                 | Receive agreed agency fees through escrow |
+| **Level**        | **Requirements**                                                                                                                                    | **What it unlocks**                       |
+|------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------|
+| 1\. Basic        | Phone number confirmed by SMS code, email address confirmed by email code (decisions 35 and 37)                                                     | Browse and explore the platform           |
+| 2\. Verified     | NIN, selfie with liveness check; an identity document only if the NIN check fails or does not match (decision 49), company details where applicable | Request authority over properties         |
+| 3\. Authorised   | Proof of the landlord's authority for each property, verified by the platform team                                                                  | List and manage that specific property    |
+| 4\. Payout ready | Bank account in the agent's own name                                                                                                                | Receive agreed agency fees through escrow |
 
 ## 3.5 Agent Authority Process
 
@@ -373,7 +383,7 @@ When a duplicate is flagged:
 
 ## 7.1 Direct Contact
 
-- Verified tenants can chat with and call landlords and authorised agents within the app.
+- Verified tenants can chat with and call landlords and authorised agents within the app. Calls are voice calls over the internet inside the app, so phone numbers stay hidden; calling is part of Release 1 (decision 44).
 
 - Phone numbers stay hidden until an inspection is booked and both sides agree to share them.
 
@@ -394,6 +404,12 @@ When a duplicate is flagged:
 - Ratings and reviews after a tenancy or short let completed through the platform, for both sides.
 
 - "Report this listing" button, with fast removal of fake listings.
+
+## 7.4 Notifications
+
+- Users receive notifications on their phones (push notifications), by email or by SMS, and choose in their settings which notifications they receive and by which channel. Security messages, such as codes and sign-in alerts, cannot be switched off (decision 46).
+
+- Messages, inspection updates and call alerts arrive instantly while the app is open, and as push notifications when it is closed (decision 47).
 
 # 8. Fees and Charges
 
@@ -753,7 +769,11 @@ No technical measure can stop someone photographing a screen with a second phone
 
 - All information is encrypted when stored and when sent between the apps and the server.
 
-- Staff accounts require two-step login; users can turn it on for their own accounts.
+- Staff accounts require two-step login. The second step never uses the channel used to sign in. After a password it is offered as an authenticator app code (if set up), then an email code, then an SMS code; after an SMS code, an email code or an authenticator app code; after an email code, an SMS code or an authenticator app code (decisions 29, 34 and 36).
+
+- The staff second step lasts 3 hours, a period super admins can change, and then must be done again. After 5 wrong codes the second step pauses for 15 minutes (decisions 31 and 32).
+
+- Ordinary users will be able to turn on two-step login for their own accounts in a later release (decision 31).
 
 - Staff access is limited by role and by country, as set out in Section 16.
 
@@ -854,7 +874,9 @@ A feature can be switched on or off at any of these levels:
 
 - **User messages:** when a feature is off, users see a clear message rather than an error.
 
-- **Approvals:** switches for payments, escrow and verification need approval from two authorised staff members, one of them the Managing Director or a person he appoints.
+- **Approvals:** switching a feature off applies at once, so an emergency pause is never delayed; this means an off rule with no start time, end time or percentage (decision 33). Country managers may switch features off in their own countries at once; every other change they make (switching on, scheduling, gradual release, withdrawing a rule) needs a super admin's approval. Switching a critical feature on (payments, escrow, verification, and platform-wide registrations and listings) always needs a second person, one of them a super admin: the Managing Director or a person he appoints (decision 28).
+
+- **Timing:** a switch change reaches every part of the platform within 30 seconds (decision 28).
 
 - **Record of changes:** every switch change is recorded with the staff member, date, time and reason.
 
@@ -872,13 +894,15 @@ A feature can be switched on or off at any of these levels:
 
 - Every enquiry becomes a support ticket with a reference number, so it can be tracked until it is resolved. Response times are set per channel and monitored.
 
+- **At launch:** a help page in the apps and on the website, plus the WhatsApp line and the phone line, run by the support team. In-app support chat and support tickets come in Release 2 (decision 41).
+
 ## 18.2 Languages
 
-- **At launch:** English, Nigerian Pidgin, Yoruba, Igbo, Hausa and French.
+- **At launch:** English and Nigerian Pidgin are switched on. Yoruba, Igbo, Hausa and French are added to a country's list as their translations are ready and checked (decision 40).
 
 - Further languages are added per country through the country controls.
 
-- Users choose their language in their settings; legal documents are also provided in English.
+- Users choose their language in their settings, from the languages switched on for their country; legal documents are also provided in English (decision 40).
 
 # 19. Platform Administration and Reports
 
@@ -901,6 +925,10 @@ The platform team works through an administration panel, available on the deskto
 - Monitor fees due and collected.
 
 - Manage country controls and feature controls.
+
+- Manage staff accounts: super admins add staff by confirmed phone number or confirmed email address, set their roles and countries, and deactivate them, with every change recorded. The first super admin is created with a one-time server command (decisions 30 and 38).
+
+- Change platform-wide settings, such as how long the staff second step lasts (decision 32).
 
 - Handle customer support tickets.
 
@@ -927,7 +955,7 @@ Tenants only come to a platform that already has listings, so landlords and agen
 
 1.  **Choose the launch city** and the areas within it to cover first.
 
-2.  **Field team:** Projectiles staff visit landlords and agents, register them, and capture properties on site through the app.
+2.  **Field team:** field officers carry out verification checks only, such as site visits and random audits. Landlords register their own buildings and capture their own properties in the app; the platform does not do this for them, because the manpower needed is not realistic (decision 43).
 
 3.  **Agent onboarding sessions:** group sessions where agents are trained on registration, authority letters and listing.
 
@@ -941,30 +969,86 @@ Tenants only come to a platform that already has listings, so landlords and agen
 
 # 21. Explanation of Terms
 
-| **Term**                          | **Meaning**                                                                                                                      |
-|-----------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
-| App / platform                    | The full system, including mobile app, web app and desktop software.                                                             |
-| Boundary beacons                  | Concrete markers placed at the corners of a surveyed plot, whose coordinates are written on the survey plan.                     |
-| Coordinate conversion             | Survey plans in Nigeria often use a different mapping system from phone GPS, so coordinates must be converted before comparison. |
-| Desk review                       | A team member checks documents from the office without visiting the property.                                                    |
-| Escrow                            | A neutral holding arrangement in which money is kept safe and only released when agreed conditions are met.                      |
-| GPS                               | The phone's satellite location feature, which records exactly where the user is standing.                                        |
-| KYC (Know Your Customer)          | The process of confirming a user's identity with official documents.                                                             |
-| Licensed payment provider         | A company approved by the Central Bank of Nigeria, or the equivalent authority in another country, to hold and move money.       |
-| Liveness check                    | The app asks the user to blink or turn their head on camera, proving a real person is present.                                   |
-| NIN                               | National Identification Number in Nigeria; in this document, also the equivalent national identity number in other countries.    |
-| Feature controls                  | Switches managed by authorised staff that turn individual features on or off, for everyone or for selected places or users.      |
-| Gradual release                   | Switching a feature on for a small share of users first, then increasing it step by step.                                        |
-| Emergency switch                  | A control that instantly pauses an activity, such as payments, across the platform or a country.                                 |
-| Fair rent indicator               | A label showing whether a rent is below, about or above the average for similar properties in the area.                          |
-| Support ticket                    | A record of a user's enquiry, with a reference number, kept until the matter is resolved.                                        |
-| Country controls                  | Settings managed by the platform team that decide how the platform works in each country.                                        |
-| Photo fingerprint                 | A short digital code made from an image, allowing the system to spot the same picture even if resized or cropped.                |
-| Data Protection Officer           | The person responsible for making sure the company handles personal information lawfully.                                        |
-| Data protection impact assessment | A written review of the risks to users' personal information, carried out before launching a system.                             |
-| Ledger                            | The app's own detailed record of every amount held, paid in and paid out.                                                        |
-| Reconciliation                    | Checking that the money in the bank account matches the app's ledger exactly.                                                    |
-| Watermark                         | A mark placed on an image or video to show where it came from; it can be visible or hidden.                                      |
-| 360-degree photo                  | A photo that lets the viewer look all around a room by dragging or turning the phone.                                            |
-| Expiring link                     | A web address for an image or video that stops working after a short time.                                                       |
-| Risk score                        | A single rating calculated from all verification checks, used to decide whether a listing is approved, reviewed or visited.      |
+| **Term**                          | **Meaning**                                                                                                                         |
+|-----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| App / platform                    | The full system, including mobile app, web app and desktop software.                                                                |
+| Boundary beacons                  | Concrete markers placed at the corners of a surveyed plot, whose coordinates are written on the survey plan.                        |
+| Coordinate conversion             | Survey plans in Nigeria often use a different mapping system from phone GPS, so coordinates must be converted before comparison.    |
+| Desk review                       | A team member checks documents from the office without visiting the property.                                                       |
+| Escrow                            | A neutral holding arrangement in which money is kept safe and only released when agreed conditions are met.                         |
+| GPS                               | The phone's satellite location feature, which records exactly where the user is standing.                                           |
+| KYC (Know Your Customer)          | The process of confirming a user's identity with official documents.                                                                |
+| Licensed payment provider         | A company approved by the Central Bank of Nigeria, or the equivalent authority in another country, to hold and move money.          |
+| Liveness check                    | The app asks the user to blink or turn their head on camera, proving a real person is present.                                      |
+| NIN                               | National Identification Number in Nigeria; in this document, also the equivalent national identity number in other countries.       |
+| Feature controls                  | Switches managed by authorised staff that turn individual features on or off, for everyone or for selected places or users.         |
+| Gradual release                   | Switching a feature on for a small share of users first, then increasing it step by step.                                           |
+| Emergency switch                  | A control that instantly pauses an activity, such as payments, across the platform or a country.                                    |
+| Fair rent indicator               | A label showing whether a rent is below, about or above the average for similar properties in the area.                             |
+| Support ticket                    | A record of a user's enquiry, with a reference number, kept until the matter is resolved.                                           |
+| Country controls                  | Settings managed by the platform team that decide how the platform works in each country.                                           |
+| Photo fingerprint                 | A short digital code made from an image, allowing the system to spot the same picture even if resized or cropped.                   |
+| Data Protection Officer           | The person responsible for making sure the company handles personal information lawfully.                                           |
+| Data protection impact assessment | A written review of the risks to users' personal information, carried out before launching a system.                                |
+| Ledger                            | The app's own detailed record of every amount held, paid in and paid out.                                                           |
+| Reconciliation                    | Checking that the money in the bank account matches the app's ledger exactly.                                                       |
+| Watermark                         | A mark placed on an image or video to show where it came from; it can be visible or hidden.                                         |
+| 360-degree photo                  | A photo that lets the viewer look all around a room by dragging or turning the phone.                                               |
+| Expiring link                     | A web address for an image or video that stops working after a short time.                                                          |
+| Risk score                        | A single rating calculated from all verification checks, used to decide whether a listing is approved, reviewed or visited.         |
+| Authenticator app                 | A phone app, such as Google Authenticator, that shows a new six-digit code every 30 seconds, used as a second step when signing in. |
+| Push notification                 | A message that appears on the phone's screen even when the app is closed.                                                           |
+
+# 22. Version History
+
+This specification is kept as one document and updated in place; earlier versions remain in the code repository history (decision 60). Every decision recorded in the Decisions Log that changes what the platform does is written into this document, with the decision number.
+
+| Version              | What changed                                                                                     |
+|----------------------|--------------------------------------------------------------------------------------------------|
+| 1.3, 22 October 2026 | The version given at the start of the build. It reflects decisions 1 to 23 of the Decisions Log. |
+| 1.4, 23 October 2026 | Includes decisions 24 to 63, listed below with where each appears.                               |
+
+Decisions 24 to 63 in this version. Some confirm what this specification already said, or only set when something is built; they are listed so that every decision can be traced. Decisions about how the platform is built, rather than what it does, are in the Technical Architecture and the architecture decision records.
+
+| Decision                                                                                        | Where in this specification                                              |
+|-------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
+| 24\. Technology stack                                                                           | How the platform is built (Technical Architecture); not a product change |
+| 25\. Old prototype kept for reference                                                           | Not a product change                                                     |
+| 26\. Code repository                                                                            | Not a product change                                                     |
+| 27\. Release 0 completed                                                                        | Not a product change                                                     |
+| 28\. Feature control approvals; changes reach every server within 30 seconds                    | Section 17.3                                                             |
+| 29\. Staff two-step login by SMS code or authenticator app                                      | Section 15.4                                                             |
+| 30\. Staff accounts managed by super admins; first super admin by one-time command              | Section 19.1                                                             |
+| 31\. 15-minute pause after 5 wrong second-step codes; two-step login for ordinary users later   | Section 15.4                                                             |
+| 32\. Staff second step lasts 3 hours, changeable by super admins                                | Sections 15.4 and 19.1                                                   |
+| 33\. Meaning of "switching off at once"                                                         | Section 17.3                                                             |
+| 34\. Second step a different factor from the sign-in                                            | Section 15.4, as refined by decision 36                                  |
+| 35\. Email required; sign up and sign in with phone or email; phone confirmed before any action | Section 3.1 and the level tables in Sections 3.2 to 3.4                  |
+| 36\. Second step never uses the sign-in channel, in a set order; password reset by SMS or email | Sections 3.1 and 15.4                                                    |
+| 37\. Level 1 needs both phone and email confirmed                                               | Section 3.1 and the level tables                                         |
+| 38\. Staff added by confirmed email as well as phone                                            | Section 19.1                                                             |
+| 39\. Signed-out visitors see a listing summary only                                             | Section 3.1                                                              |
+| 40\. English and Pidgin at launch; users choose their language                                  | Section 18.2                                                             |
+| 41\. Customer support at launch; in-app support in Release 2                                    | Section 18.1                                                             |
+| 42\. Screen designs in Figma; hosting after a company dollar card                               | How the platform is built; not a product change                          |
+| 43\. Landlords register their own buildings; field officers only verify                         | Section 20                                                               |
+| 44\. Calls inside the app in Release 1                                                          | Section 7.1                                                              |
+| 45\. Inspection time slots                                                                      | Section 7.2, already as specified                                        |
+| 46\. Notifications and notification settings                                                    | Section 7.4                                                              |
+| 47\. Live updates for chat and inspection status                                                | Section 7.4 (and Section 1.4, already as specified)                      |
+| 48\. Saved places and travel distance                                                           | Section 5.4, already as specified                                        |
+| 49\. Identity document only when the NIN check fails; accepted documents                        | Section 3.1 and the level tables                                         |
+| 50\. Agent company details                                                                      | Section 3.4, already as specified                                        |
+| 51\. Badge removal and bans                                                                     | Sections 6.5, 7.2 and 19.1, already as specified                         |
+| 52\. Viewing limits per account                                                                 | Section 15.3, already as specified                                       |
+| 53\. Switch messages, return times and dependency warnings                                      | Section 17.3, already as specified                                       |
+| 54\. Blocking restricted countries before a second country                                      | Section 16.2, already as specified; sets the timing                      |
+| 55\. Country settings, including data retention                                                 | Section 16.1, already as specified; sets the timing                      |
+| 56\. Distance to the main road, toilets in the checklist, a note per part                       | Sections 5.2 and 5.3, already as specified                               |
+| 57\. Ratings and reviews in Release 2                                                           | Section 7.3, already as specified; sets the timing                       |
+| 58\. Which automatic checks are in Release 1                                                    | Section 6.3, already as specified; sets the timing                       |
+| 59\. Technical points                                                                           | Not a product change                                                     |
+| 60\. Documents updated in place                                                                 | Not a product change                                                     |
+| 61\. Specification file name without version number                                             | The cover shows the version; not a product change                        |
+| 62\. Index of documents                                                                         | Not a product change                                                     |
+| 63\. Decision procedure                                                                         | Not a product change                                                     |

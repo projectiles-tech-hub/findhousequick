@@ -7,6 +7,7 @@ landlords and authorised agents responsible for them. Built by Projectiles Tech 
 
 | Folder | Contents |
 | --- | --- |
+| `docs/` | Project documents; `docs/README.md` lists each one, what it is for and when to read it |
 | `docs/specs/` | Product Specification, Technical Architecture and Execution Plan, Decisions Log |
 | `docs/adr/` | Architecture decision records made during the build |
 | `docs/api/` | API design (OpenAPI) |
