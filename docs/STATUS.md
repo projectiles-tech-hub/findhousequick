@@ -101,7 +101,10 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
     first (for approval before any screen), then the screens in groups, phone layouts first, then desktop and the
     signed-in website. Every screen, its Penpot link, its group and its review state are listed in
     `docs/designs.md`. Emmanuel is told before each design session so he can keep the file open. **No app screen
-    is built until its design is approved.** Done after the email step, so the sign-up and sign-in designs match
+    is built until its design is approved.**
+    Progress: the design system (colours, text styles, spacing and touch size, icons, buttons and chips, form
+    fields, cards and notices, map pins, and a Pidgin length check) is in pull request #16, awaiting Emmanuel's
+    review. Still to do: the screens, group by group, once the design system is approved. Done after the email step, so the sign-up and sign-in designs match
     what is built; the server steps below continue while the designs are reviewed.
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
