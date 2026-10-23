@@ -65,13 +65,30 @@ export const countrySettingsSchema = z.object({
 
   verification: z
     .object({
+      /** Which identity provider runs NIN, selfie and liveness checks (ADR 0007). Null: checks unavailable. */
       identityProvider: z.string().nullable().default(null),
+      /** ID types accepted for the identity check, e.g. ["NIN"]. */
       acceptedIdTypes: z.array(z.string()).default([]),
+      /**
+       * Pattern each ID number must match, per ID type, checked after spaces and dashes are removed and letters
+       * are made capitals. An ID type without a pattern is accepted if it has 4 to 30 letters and digits.
+       */
+      idNumberPatterns: z.record(z.string(), z.string()).default({}),
+      /** Identity checks one user may start in 24 hours; each one costs money with the provider. */
+      maxIdentityChecksPerDay: z.number().int().min(1).max(20).default(3),
       /** Percentage of green listings picked for a random site visit. */
       randomAuditPercent: z.number().min(0).max(100).default(2),
       riskBands: z
         .object({ amberFrom: z.number().int().default(30), redFrom: z.number().int().default(60) })
         .prefault({}),
+    })
+    .prefault({}),
+
+  /** How long personal data is kept (decision 55). Null means not yet set (open point 15). */
+  retention: z
+    .object({
+      /** Days identity document photos are kept after the check they belong to is closed. Set after legal advice. */
+      identityImagesDays: z.number().int().positive().nullable().default(null),
     })
     .prefault({}),
 

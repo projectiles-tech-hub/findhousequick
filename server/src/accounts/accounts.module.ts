@@ -6,6 +6,7 @@ import { AuthGuard } from './auth.js';
 import { MeController } from './me.controller.js';
 import { OtpService } from './otp.service.js';
 import { SessionsService } from './sessions.service.js';
+import { VerificationGuard } from './verification.guard.js';
 
 /**
  * Accounts: one-time codes, registration, sign-in, sessions and the user's own profile.
@@ -14,7 +15,11 @@ import { SessionsService } from './sessions.service.js';
 @Global()
 @Module({
   controllers: [AuthController, MeController],
-  providers: [AccountsService, OtpService, SessionsService, { provide: APP_GUARD, useClass: AuthGuard }],
+  providers: [
+    AccountsService, OtpService, SessionsService, { provide: APP_GUARD, useClass: AuthGuard },
+    // After the sign-in check, so it knows who the user is.
+    { provide: APP_GUARD, useClass: VerificationGuard },
+  ],
   exports: [SessionsService, OtpService],
 })
 export class AccountsModule {}

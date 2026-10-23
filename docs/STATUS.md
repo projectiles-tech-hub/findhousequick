@@ -38,6 +38,12 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
   `docs/adr/0006-email-and-contacts.md`. Still to do from this step: a real email provider adapter once the
   account is opened.
 
+- **Release 1 step 3, first part (verification ladder and identity checks)**: in pull request #13, awaiting
+  approval. The server refuses actions above the user's level (`VERIFICATION_REQUIRED`, decision 64); identity
+  checks (NIN, selfie, liveness) through a provider adapter, with a test provider for development; one ID on two
+  accounts sent to the verification team; agent company details (decision 50); data retention country setting
+  (decision 55). Design in `docs/adr/0007-verification-ladder-and-identity-checks.md`.
+
 - **Release 1 step 2 (staff accounts and roles)**: complete. Merged in pull request #7.
   - Staff management by super admins (`/admin/staff`), with every change in the audit log; the first super
     admin is made with `pnpm staff:make-super-admin` (see `docs/DEPLOYMENT.md`)
@@ -61,10 +67,6 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
 
 ## Waiting for Emmanuel
 
-- Password rules: keep the agreed minimum of 8 characters, or move to at least 10 characters with common and
-  leaked passwords blocked and no character-mix rules (discussed 22 October 2026, not yet decided).
-- Sign in with Google (and Sign in with Apple for the iPhone release): add to Release 1 or not (discussed
-  22 October 2026, not yet decided).
 - Before step 3 (identity checks) goes live: how long identity images are kept after verification, after legal
   advice (Decisions Log open point 15). It will be a country setting (decision 55), so step 3 can be built first.
 - A company dollar card, so the hosting account (and the test system) can be opened (decision 42).
@@ -93,10 +95,10 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
     produced in the build sessions with the Figma connector, for Emmanuel's review and approval. **No app screen
     is built until its design is approved.** Done after the email step, so the sign-up and sign-in designs match
     what is built; the server steps below continue while the designs are reviewed.
-3. **Verification ladder guard** (`VERIFICATION_REQUIRED`), and the identity check flow behind an adapter. Also:
-   a document photo only when the NIN check fails or does not match, accepting driver's licence, international
-   passport and NIN slip (decision 49); agent company details (decision 50); data retention as a country setting
-   (decision 55).
+3. **Verification ladder and identity checks**: first part in pull request #13. Second part, next: private document
+   upload and the document photo when the NIN check fails or does not match (decision 49); the verification team's
+   queue and decisions (`/admin/review-tasks`) and document viewing; deleting identity photos when their retention
+   period ends (first background job, BullMQ). A real identity provider adapter once the account is opened.
 4. **Reference data endpoints**, then buildings, units and the parts checklist, with the distance to the main
    road, separate toilets in the checklist and a note per part (decision 56).
 5. Documents and media upload (private storage adapter), listings and submission, search and the property page
@@ -115,6 +117,7 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
 
 - **Release 2**: in-app support chat and tickets (decision 41); ratings and reviews (decision 57); satellite and
   stolen photo checks (decision 58).
+- **A later release** (not Release 1): Sign in with Google and Sign in with Apple (decision 66).
 - **Release 3**: other languages switched on as their translations are ready and checked (decision 40, may be
   sooner); blocking restricted countries before a second country (decision 54); further country settings
   (decision 55).

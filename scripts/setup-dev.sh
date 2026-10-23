@@ -35,11 +35,13 @@ pnpm install --frozen-lockfile
 if [ ! -f .env ]; then
   sed -e "s|REPLACE_WITH_BASE64_32_BYTE_KEY|$(openssl rand -base64 32)|" \
       -e "s|change-me-to-a-long-random-string|$(openssl rand -hex 32)|" \
-      -e "s|change-me-to-a-different-long-random-string|$(openssl rand -hex 32)|" .env.example > .env
+      -e "s|change-me-to-a-different-long-random-string|$(openssl rand -hex 32)|" \
+      -e "s|change-me-to-a-third-long-random-string|$(openssl rand -hex 32)|" .env.example > .env
   echo "Created server/.env with fresh secrets"
 fi
 # Settings added after a workspace was first set up.
 grep -q '^OTP_HASH_SECRET=' .env || { echo "OTP_HASH_SECRET=\"$(openssl rand -hex 32)\"" >> .env; echo "Added OTP_HASH_SECRET to server/.env"; }
+grep -q '^LOOKUP_HASH_SECRET=' .env || { echo "LOOKUP_HASH_SECRET=\"$(openssl rand -hex 32)\"" >> .env; echo "Added LOOKUP_HASH_SECRET to server/.env"; }
 pnpm db:generate >/dev/null
 npx prisma migrate deploy
 pnpm db:seed

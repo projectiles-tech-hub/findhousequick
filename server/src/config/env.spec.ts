@@ -4,6 +4,7 @@ const base = {
   DATABASE_URL: 'postgresql://u:p@localhost:5432/db',
   JWT_SECRET: 'j'.repeat(40),
   OTP_HASH_SECRET: 'o'.repeat(40),
+  LOOKUP_HASH_SECRET: 'l'.repeat(40),
   FIELD_ENCRYPTION_KEY: Buffer.alloc(32, 1).toString('base64'),
 };
 
@@ -17,6 +18,13 @@ describe('configuration', () => {
     expect(() => validateEnv(missing)).toThrow(/OTP_HASH_SECRET/);
     expect(() => validateEnv({ ...base, OTP_HASH_SECRET: 'short' })).toThrow(/at least 32/);
     expect(() => validateEnv({ ...base, OTP_HASH_SECRET: base.JWT_SECRET })).toThrow(/different from JWT_SECRET/);
+  });
+
+  it('requires a separate secret for ID number fingerprints', () => {
+    const { LOOKUP_HASH_SECRET: _omit, ...missing } = base;
+    expect(() => validateEnv(missing)).toThrow(/LOOKUP_HASH_SECRET/);
+    expect(() => validateEnv({ ...base, LOOKUP_HASH_SECRET: base.JWT_SECRET })).toThrow(/different from the other secrets/);
+    expect(() => validateEnv({ ...base, LOOKUP_HASH_SECRET: base.OTP_HASH_SECRET })).toThrow(/different from the other secrets/);
   });
 
   it('refuses the development SMS and email providers in production', () => {

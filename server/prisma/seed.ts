@@ -46,6 +46,10 @@ const NG_PROPERTY_TYPES = [
 
 const NG_DOCUMENT_TYPES = [
   ['IDENTITY', 'NIN', 'National Identification Number (NIN)'],
+  // Document photos, asked for only when the NIN check fails or does not match (decision 49).
+  ['IDENTITY', 'DRIVERS_LICENCE', "Driver's licence"],
+  ['IDENTITY', 'INTERNATIONAL_PASSPORT', 'International passport'],
+  ['IDENTITY', 'NIN_SLIP', 'NIN slip'],
   ['OWNERSHIP', 'CERTIFICATE_OF_OCCUPANCY', 'Certificate of Occupancy'],
   ['OWNERSHIP', 'DEED_OF_ASSIGNMENT', 'Deed of assignment'],
   ['OWNERSHIP', 'SURVEY_PLAN', 'Survey plan'],
@@ -64,8 +68,11 @@ async function main() {
   }
 
   // Nigeria. Settings are validated so a typo cannot be saved.
+  // Outside production, identity checks use the built-in test provider (ADR 0007); in production the provider is
+  // chosen by the platform team once an account is opened.
+  const testIdentityProvider = process.env.NODE_ENV === 'production' ? null : 'test';
   const settings = countrySettingsSchema.parse({
-    verification: { acceptedIdTypes: ['NIN'] },
+    verification: { acceptedIdTypes: ['NIN'], idNumberPatterns: { NIN: '^[0-9]{11}$' }, identityProvider: testIdentityProvider },
   });
   await prisma.country.upsert({
     where: { code: 'NG' },
@@ -80,6 +87,16 @@ async function main() {
       settings,
     },
     update: {},
+  });
+  // Fill in settings added since a database was first seeded, without overwriting anything already set.
+  const ng = await prisma.country.findUniqueOrThrow({ where: { code: 'NG' } });
+  const current = (ng.settings ?? {}) as { verification?: Record<string, unknown> };
+  const verification = { ...current.verification };
+  verification.idNumberPatterns ??= settings.verification.idNumberPatterns;
+  verification.identityProvider ??= testIdentityProvider;
+  await prisma.country.update({
+    where: { code: 'NG' },
+    data: { settings: countrySettingsSchema.parse({ ...current, verification }) },
   });
 
   for (const [code, name] of NIGERIA_STATES) {

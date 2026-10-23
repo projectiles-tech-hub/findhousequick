@@ -25,7 +25,9 @@ info:
     - **Feature switches**: a route belonging to a switched-off feature returns `403` with
       `code: FEATURE_UNAVAILABLE`.
     - **Verification ladder**: a route needing a higher verification level returns `403` with
-      `code: VERIFICATION_REQUIRED` and the level needed, so the app can guide the user.
+      `code: VERIFICATION_REQUIRED`, `requiredLevel`, `currentLevel` and `next` (as in `Me`), so the app can
+      guide the user. Every action beyond browsing needs at least level 1 (decision 64). Routes show the
+      level they need as `x-verification-level`.
     - **Signed-out visitors** (decision 39) see a summary of each listing only (`ListingSummary`: cover
       photo, rent, area, number of rooms, badges). Everything else needs an account.
     - **Live connection** (decision 47): signed-in apps open `wss://<server>/v1/live`, sending the access
@@ -593,11 +595,12 @@ paths:
   /identity/checks:
     post:
       tags: [Identity]
-      summary: Start an identity check (NIN or national equivalent, selfie, liveness)
+      summary: Start an identity check (NIN or national equivalent, selfie, liveness) (built)
       description: |
         Returns a session for the identity provider's camera flow inside the app. The ID number is
         encrypted on arrival; only the last four digits are ever shown again. Reaching a PASSED result
-        moves the user to verification level 2.
+        moves the user to verification level 2. Starting again replaces an unfinished check. See ADR 0007.
+      x-verification-level: 1
       requestBody:
         required: true
         content:
@@ -623,10 +626,18 @@ paths:
                         type: object
                         description: Values the app passes to the provider's camera component.
                         additionalProperties: true
-        "409": { description: This ID is already linked to another account; the case is sent for review. }
+        "400": { description: "`code` ID_TYPE_NOT_ACCEPTED (with `acceptedIdTypes`) or INVALID_ID_NUMBER." }
+        "403": { description: "`code` IDENTITY_CHECK_UNAVAILABLE (no provider in the country), FEATURE_UNAVAILABLE or VERIFICATION_REQUIRED." }
+        "409":
+          description: |
+            `code` ALREADY_VERIFIED, CHECK_UNDER_REVIEW (a check is with the verification team), or
+            ID_ALREADY_LINKED: the ID is held by another account, the check (in `check`) is sent to the
+            verification team and nothing is sent to the provider.
+        "429": { description: "`code` TOO_MANY_CHECKS: the country's daily limit per user is reached." }
+        "503": { description: "`code` IDENTITY_PROVIDER_UNAVAILABLE." }
     get:
       tags: [Identity]
-      summary: The user's identity checks
+      summary: The user's identity checks (built)
       responses:
         "200":
           description: Checks, newest first.
@@ -635,6 +646,36 @@ paths:
               schema:
                 type: array
                 items: { $ref: "#/components/schemas/IdentityCheck" }
+
+  /identity/provider-results/{provider}:
+    post:
+      tags: [Identity]
+      summary: Results address for identity providers (called by the provider, not the apps) (built)
+      description: |
+        The provider sends each check's result here. The provider's adapter checks the result is genuine
+        (normally a signature) before anything is recorded. A result for a check that is no longer pending
+        (already decided, or replaced by a newer check) is ignored. The server, not the provider, decides
+        what the result means (ADR 0007). The `test` provider, available only outside production, accepts
+        `{reference, idFound, nameOnId, livenessPassed, faceMatched, faceMatchScore}`.
+      security: []
+      parameters:
+        - { name: provider, in: path, required: true, schema: { type: string, example: test } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, description: The provider's own format. }
+      responses:
+        "200":
+          description: Received.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recorded: { type: boolean, description: False if the check was already decided or replaced }
+        "401": { description: "`code` UNTRUSTED_RESULT: the result could not be verified." }
+        "404": { description: Unknown provider or check. }
 
   /identity/checks/{checkId}/document:
     post:
@@ -665,9 +706,19 @@ paths:
         "409": { description: "This check does not need a document (`code` DOCUMENT_NOT_REQUESTED)." }
 
   /me/agent-profile:
+    get:
+      tags: [Identity]
+      summary: The agent's saved company details (built)
+      responses:
+        "200":
+          description: Company details and their check status.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AgentProfile" }
+        "404": { description: None saved yet. }
     put:
       tags: [Identity]
-      summary: Agent company details (decision 50)
+      summary: Agent company details (decision 50) (built)
       description: Business name and registration number, for agents who work through a firm. Checked by the verification team.
       x-verification-level: 2
       requestBody:
@@ -682,20 +733,16 @@ paths:
                 registrationNumber: { type: string, maxLength: 50 }
       responses:
         "200":
-          description: Saved; status PENDING until checked.
+          description: Saved; status PENDING until checked. Sent to the verification team.
           content:
             application/json:
-              schema:
-                type: object
-                properties:
-                  businessName: { type: string }
-                  registrationNumber: { type: [string, "null"] }
-                  status: { type: string, enum: [PENDING, PASSED, FAILED] }
+              schema: { $ref: "#/components/schemas/AgentProfile" }
+        "403": { description: "`code` NOT_AN_AGENT or VERIFICATION_REQUIRED." }
 
   /identity/checks/{checkId}:
     get:
       tags: [Identity]
-      summary: Status of one identity check
+      summary: Status of one identity check (built)
       parameters: [{ $ref: "#/components/parameters/CheckId" }]
       responses:
         "200":
@@ -1798,7 +1845,7 @@ paths:
           in: query
           schema:
             type: string
-            enum: [LISTING_REVIEW, IDENTITY_REVIEW, AUTHORITY_CONFIRMATION, DUPLICATE_RESOLUTION, SITE_VISIT, RANDOM_AUDIT, REPORT]
+            enum: [LISTING_REVIEW, IDENTITY_REVIEW, AGENT_PROFILE_REVIEW, AUTHORITY_CONFIRMATION, DUPLICATE_RESOLUTION, SITE_VISIT, RANDOM_AUDIT, REPORT]
         - name: status
           in: query
           schema: { type: string, enum: [OPEN, ASSIGNED, DONE, CANCELLED] }
@@ -2188,7 +2235,9 @@ components:
         message: { type: string, description: Plain-language message safe to show users }
         feature: { type: string }
         returnsAt: { type: [string, "null"], format: date-time, description: "With FEATURE_UNAVAILABLE, when the feature is expected back (decision 53)" }
-        requiredLevel: { type: integer, minimum: 1, maximum: 3 }
+        requiredLevel: { type: integer, minimum: 1, maximum: 3, description: With VERIFICATION_REQUIRED }
+        currentLevel: { type: integer, minimum: 0, maximum: 3, description: With VERIFICATION_REQUIRED }
+        next: { type: [object, "null"], description: "With VERIFICATION_REQUIRED: what to do next, as `Me.next`" }
 
     Session:
       type: object
@@ -2235,12 +2284,26 @@ components:
         idType: { type: string }
         idNumberLast4: { type: string }
         status: { type: string, enum: [PENDING, PASSED, FAILED, MANUAL_REVIEW] }
+        failureReason:
+          type: [string, "null"]
+          enum: [LIVENESS_FAILED, ID_NOT_FOUND, FACE_MISMATCH, NAME_MISMATCH, DUPLICATE_ID, REPLACED, PROVIDER_ERROR, null]
+          description: |
+            Why the check did not pass. LIVENESS_FAILED: try again (no document helps). ID_NOT_FOUND and
+            FACE_MISMATCH: failed, a document photo may be added. NAME_MISMATCH and DUPLICATE_ID: with the
+            verification team. REPLACED: a newer check was started. PROVIDER_ERROR: try again later.
         nextAction:
           type: [string, "null"]
           enum: [UPLOAD_ID_DOCUMENT, null]
           description: Set when the NIN check failed or did not match, so the user may add a document (decision 49).
         createdAt: { type: string, format: date-time }
         completedAt: { type: [string, "null"], format: date-time }
+
+    AgentProfile:
+      type: object
+      properties:
+        businessName: { type: string }
+        registrationNumber: { type: [string, "null"] }
+        status: { type: string, enum: [PENDING, PASSED, FAILED] }
 
     Controls:
       type: object

@@ -34,6 +34,7 @@ How particular parts are built, and why. Read the one for the area you are worki
 | `0004-sign-in-and-sessions.md` | Sign-in, access and refresh tokens, sessions and password protection. |
 | `0005-staff-accounts-and-two-step-login.md` | Staff roles, the first super admin, and the staff second step. |
 | `0006-email-and-contacts.md` | Email as a second contact: confirming phone and email, sign-in and codes by either, and replacing a contact. |
+| `0007-verification-ladder-and-identity-checks.md` | How the server enforces verification levels, how identity checks run and what each result means, and agent company details. |
 
 ## Reviews (`docs/reviews/`)
 
