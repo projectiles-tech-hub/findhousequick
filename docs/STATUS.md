@@ -54,7 +54,8 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
   system": colours, text styles, spacing and touch size, icons, buttons and chips, form fields, cards and notices,
   map pins, and a Pidgin length check. Merging #16 recorded the decision and the files; it is not the approval of
   the designs. Colours approved by Emmanuel on 23 October 2026. Icons redrawn the same day as the app's own set,
-  to a standard above Font Awesome Pro, with outline and filled styles (decision 68). The rest of the design
+  to a standard above Font Awesome Pro, with outline and filled styles (decision 68). Font changed to Source Sans 3
+  (decision 69), because Roboto lacks the Yoruba letter ṣ. The rest of the design
   system is still **to review** by Emmanuel (review states are kept in `docs/designs.md`). No screens yet; no app
   screen built.
 
@@ -116,7 +117,7 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
     Done after the email step, so the sign-up and sign-in designs match what is built; the server steps below
     continue in other sessions while the designs are reviewed.
     Progress: decision 67 and the design system merged in pull request #16. Colours approved; icons redrawn under
-    decision 68 in pull request #19, awaiting approval; the other parts are waiting for Emmanuel's review. Still to do: the screens, group by group, once the design system is approved.
+    decision 68 and font changed under decision 69, in pull request #19, awaiting approval; the other parts are waiting for Emmanuel's review. Still to do: the screens, group by group, once the design system is approved.
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
 4. **Reference data endpoints**, then buildings, units and the parts checklist, with the distance to the main
