@@ -209,7 +209,8 @@ In these, two of the documents (or a document and the build) say different thing
 <td><strong>Your decision</strong></td>
 <td><p>Decided as follows.</p>
 <p>Agreed: There will be no human designer. The screen designs are produced in the build sessions using the Figma connector, as a separate step, for Emmanuel's review and approval before the app screens are built. The hosting account (and so the test system) follows once the company has a dollar card.</p>
-<p>Decided by Emmanuel on 23 October 2026. Recorded in the Decisions Log as decision 42.</p></td>
+<p>Decided by Emmanuel on 23 October 2026. Recorded in the Decisions Log as decision 42.</p>
+<p>Changed in part on 23 October 2026 by decision 67: the designs are made in Penpot through its connector instead of Figma (Figma needs a paid seat), with Claude's Design artifact type as the fallback.</p></td>
 </tr>
 </tbody>
 </table>
