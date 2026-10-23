@@ -119,7 +119,8 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
     Progress: decision 67 and the design system merged in pull request #16. Icons redrawn (decision 68) and font
     changed to Source Sans 3 (decision 69) in pull request #19; the whole design system approved by Emmanuel on
     23 October 2026. Now: the screens, group by group. Group 1, sign-up and sign-in (9 phone
-    screens), approved by Emmanuel on 23 October 2026 (pull request #20). Next: group 2, verification.
+    screens), approved by Emmanuel on 23 October 2026 (pull request #20). Group 2, verification (10 phone screens), is in pull
+    request #22, awaiting Emmanuel's review.
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
 4. **Reference data endpoints**, then buildings, units and the parts checklist, with the distance to the main
