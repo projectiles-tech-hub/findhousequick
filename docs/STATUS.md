@@ -25,6 +25,17 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
   - Every route now needs sign-in unless marked `@Public()` (`server/src/accounts/auth.ts`)
   - Design in `docs/adr/0004-sign-in-and-sessions.md` (accepted 22 October 2026)
 
+- **Release 1 step 2 (staff accounts and roles)**: complete. Merged in pull request #7.
+  - Staff management by super admins (`/admin/staff`), with every change in the audit log; the first super
+    admin is made with `pnpm staff:make-super-admin` (see `docs/DEPLOYMENT.md`)
+  - Two-step login for staff, by SMS code or authenticator app; every `/admin` route needs it. It lasts 3 hours
+    (a platform setting super admins can change), and must be a different factor from the sign-in: after an
+    SMS code sign-in, only an authenticator code (decisions 31 to 34)
+  - Feature-rule endpoints (`/admin/feature-rules`) following decision 28: country managers switch off at
+    once, everything else they do waits for a super admin, including withdrawal requests
+  - Platform settings store and `/admin/platform-settings`, starting with the staff second-step period
+  - Design in `docs/adr/0005-staff-accounts-and-two-step-login.md`; decisions 28 to 34 in the Decisions Log
+
 - **Specification check**: report merged in pull request #9; all 21 findings decided by Emmanuel on 23 October
   2026 (decisions 39 to 59, finding n recorded as decision 38 + n). Each decision is written into its row of
   the report itself (`docs/reviews/2026-10-22_FindHouseQuick_Specification_Check.docx`). The API design and
@@ -37,6 +48,13 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
   staff added by confirmed email; an email adapter (development provider that logs emails). Design in
   `docs/adr/0006-email-and-contacts.md`. Still to do from this step: a real email provider adapter once the
   account is opened.
+
+- **Release 1 step 2c (screen designs)**: started. Decision 67 (Penpot instead of Figma) and the design system
+  merged in pull request #16. The design system is in Emmanuel's Penpot file "Release 1 Screens", page "00 Design
+  system": colours, text styles, spacing and touch size, icons, buttons and chips, form fields, cards and notices,
+  map pins, and a Pidgin length check. Merging #16 recorded the decision and the files; it is not the approval of
+  the designs. The design system is still **to review** by Emmanuel (review states are kept in `docs/designs.md`).
+  No screens yet; no app screen built.
 
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
   #13. The server refuses actions above the user's level (`VERIFICATION_REQUIRED`, decision 64); identity
@@ -52,21 +70,10 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
   background job, BullMQ). Still to do from step 3: real identity and storage provider adapters once the accounts
   are opened; app screens.
 
-- **Release 1 step 2 (staff accounts and roles)**: complete. Merged in pull request #7.
-  - Staff management by super admins (`/admin/staff`), with every change in the audit log; the first super
-    admin is made with `pnpm staff:make-super-admin` (see `docs/DEPLOYMENT.md`)
-  - Two-step login for staff, by SMS code or authenticator app; every `/admin` route needs it. It lasts 3 hours
-    (a platform setting super admins can change), and must be a different factor from the sign-in: after an
-    SMS code sign-in, only an authenticator code (decisions 31 to 34)
-  - Feature-rule endpoints (`/admin/feature-rules`) following decision 28: country managers switch off at
-    once, everything else they do waits for a super admin, including withdrawal requests
-  - Platform settings store and `/admin/platform-settings`, starting with the staff second-step period
-  - Design in `docs/adr/0005-staff-accounts-and-two-step-login.md`; decisions 28 to 34 in the Decisions Log
-
 ## Small follow-ups
 
-- Technical points from the specification check (finding 21): move rate limits to Redis (BullMQ now started, in
-  pull request #14); make sure request logs never record "around me" search locations (Specification 15.2).
+- Technical points from the specification check (finding 21): move rate limits to Redis (they are still counted in
+  each server's memory; BullMQ was started in pull request #14); make sure request logs never record "around me" search locations (Specification 15.2).
 - Rare, harmless gap: if a staff member's app renews its sign-in at the very moment they complete the second
   step, the renewed sign-in may not carry the second step, and they are asked to do it again. Not fixed yet.
 - `ubuntu-latest` runners are moving to Ubuntu 26. On 22 October 2026 the checks still ran on Ubuntu 24.04;
@@ -75,11 +82,15 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
 
 ## Waiting for Emmanuel
 
-- Before step 3 (identity checks) goes live: how long identity images are kept after verification, after legal
-  advice (Decisions Log open point 15). It will be a country setting (decision 55), so step 3 can be built first.
+- Review of the design system in Penpot (page "00 Design system"): approve it or ask for changes. **Blocks the
+  screens in step 2c.**
+- The Penpot file's web address (copied from the browser's address bar), so `docs/designs.md` can carry clickable
+  links; the connector cannot read the team part of the address.
+- Before identity checks go live: how long identity images are kept after verification, after legal advice
+  (Decisions Log open point 15). Step 3 is built with this as a country setting (decision 55) that is not yet set.
 - A company dollar card, so the hosting account (and the test system) can be opened (decision 42).
-- Whether to build country switching (`PATCH /admin/countries`, still to do from step 2) as a small step
-  before step 3 (suggested 22 October 2026).
+- Whether to build country settings changes (`PATCH /admin/countries`, still to do from step 2) as a small step
+  before step 4 (suggested 22 October 2026, when it was proposed for before step 3; step 3 is now done).
 - Decisions Log open points: the five escrow settings, escrow legal structure, launch city, partner API,
   mention of the Agent Emma channel in the launch plan, budget, hiring.
 
@@ -102,10 +113,10 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
     signed-in website. Every screen, its Penpot link, its group and its review state are listed in
     `docs/designs.md`. Emmanuel is told before each design session so he can keep the file open. **No app screen
     is built until its design is approved.**
-    Progress: the design system (colours, text styles, spacing and touch size, icons, buttons and chips, form
-    fields, cards and notices, map pins, and a Pidgin length check) is in pull request #16, awaiting Emmanuel's
-    review. Still to do: the screens, group by group, once the design system is approved. Done after the email step, so the sign-up and sign-in designs match
-    what is built; the server steps below continue while the designs are reviewed.
+    Done after the email step, so the sign-up and sign-in designs match what is built; the server steps below
+    continue in other sessions while the designs are reviewed.
+    Progress: decision 67 and the design system merged in pull request #16; the design system is waiting for
+    Emmanuel's review. Still to do: the screens, group by group, once the design system is approved.
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
 4. **Reference data endpoints**, then buildings, units and the parts checklist, with the distance to the main
