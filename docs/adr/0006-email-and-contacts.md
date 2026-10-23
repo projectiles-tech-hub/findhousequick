@@ -1,6 +1,7 @@
 # ADR 0006: Email, and confirming phone numbers and email addresses
 
-- Status: Built to decisions 35 to 38 (Decisions Log, 22 October 2026). One reading is marked for confirmation below.
+- Status: Accepted. Built to decisions 35 to 38 (Decisions Log, 22 October 2026); the reading below confirmed as
+  decision 64 (23 October 2026).
 - Context: Product Specification, Sections 3.2 to 3.4 (level 1 needs phone and email); ADR 0004 (codes, sign-in,
   password reset); ADR 0005 (staff second step).
 
@@ -55,8 +56,8 @@
   which writes emails to the server log for development; the server refuses to start in production with it.
   The sender address is `EMAIL_FROM`.
 
-## For confirmation
+## Confirmed
 
 1. **Level 0 and actions.** Decision 35 says a confirmed phone is needed for any action, and decision 37 says
    level 1 needs both contacts. Read together, every action beyond browsing needs both phone and email
-   confirmed (level 1). The verification ladder check in step 3 will enforce it that way.
+   confirmed (level 1). The verification ladder check in step 3 will enforce it that way. Confirmed by Emmanuel as decision 64.

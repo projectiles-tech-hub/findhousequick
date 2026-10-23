@@ -6,7 +6,7 @@ Projectiles Tech Hub Limited
 
 Emmanuel Chukwuka Oraegbu, Managing Director
 
-Version 1.4 \| 23 October 2026
+Version 1.5 \| 23 October 2026
 
 # Contents
 
@@ -112,7 +112,7 @@ The platform is delivered on three platforms sharing one central system, so that
 
 - Registration needs both a phone number and an email address. The user signs up with either one: a code sent to it confirms it at once, and the other is confirmed afterwards with a code sent to it (decision 35).
 
-- Until the phone number is confirmed, the user can only browse; any action or progress needs a confirmed phone number (decision 35). Level 1 is reached once both the phone number and the email address are confirmed (decision 37).
+- Until both the phone number and the email address are confirmed, the user can only browse. Level 1 is reached once both are confirmed, and any action or progress needs level 1 (decisions 35, 37 and 64).
 
 - Users sign in with their phone number or email address, by password or by a code sent to it. Password reset codes go by SMS or email, as the user chooses (decisions 35 and 36).
 
@@ -1007,8 +1007,9 @@ This specification is kept as one document and updated in place; earlier version
 |----------------------|--------------------------------------------------------------------------------------------------|
 | 1.3, 22 October 2026 | The version given at the start of the build. It reflects decisions 1 to 23 of the Decisions Log. |
 | 1.4, 23 October 2026 | Includes decisions 24 to 63, listed below with where each appears.                               |
+| 1.5, 23 October 2026 | Includes decision 64: any action beyond browsing needs level 1 (Section 3.1).                    |
 
-Decisions 24 to 63 in this version. Some confirm what this specification already said, or only set when something is built; they are listed so that every decision can be traced. Decisions about how the platform is built, rather than what it does, are in the Technical Architecture and the architecture decision records.
+Decisions 24 to 64 in versions 1.4 and 1.5. Some confirm what this specification already said, or only set when something is built; they are listed so that every decision can be traced. Decisions about how the platform is built, rather than what it does, are in the Technical Architecture and the architecture decision records.
 
 | Decision                                                                                        | Where in this specification                                              |
 |-------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
@@ -1052,3 +1053,4 @@ Decisions 24 to 63 in this version. Some confirm what this specification already
 | 61\. Specification file name without version number                                             | The cover shows the version; not a product change                        |
 | 62\. Index of documents                                                                         | Not a product change                                                     |
 | 63\. Decision procedure                                                                         | Not a product change                                                     |
+| 64\. Actions need level 1 (phone and email confirmed)                                           | Section 3.1                                                              |
