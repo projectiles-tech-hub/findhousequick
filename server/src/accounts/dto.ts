@@ -7,7 +7,6 @@ import {
   ArrayUnique,
   IsArray,
   IsDefined,
-  IsEmail,
   IsIn,
   IsObject,
   IsOptional,
@@ -18,32 +17,52 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { IsStandardPhone, toStandardPhone } from '../common/phone.js';
+import { IsStandardEmail, toStandardEmail, type Channel } from './contact.js';
 import { OTP_PURPOSES, type OtpPurpose } from './otp.service.js';
 import type { UserTypeName } from './verification-level.js';
 
 const USER_TYPES: UserTypeName[] = ['TENANT', 'LANDLORD', 'AGENT'];
+const CHANNELS: Channel[] = ['SMS', 'EMAIL'];
 
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
-const trimLower = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim().toLowerCase() : value);
 
 /**
  * A phone number field: turned into the standard international form first (see src/common/phone.ts),
  * then checked, so every service only ever sees the standard form.
  */
-const PhoneField = () =>
+const PhoneField = (required = true) =>
   applyDecorators(
-    ApiProperty({
+    (required ? ApiProperty : ApiPropertyOptional)({
       example: '+2348031234567',
       description: 'International format, starting with + and the country code. Stored in standard form.',
     }),
+    ...(required ? [] : [IsOptional()]),
     Transform(toStandardPhone),
     IsStandardPhone(),
   );
 
-export class RequestOtpDto {
-  @PhoneField()
-  phone!: string;
+/** An email field: trimmed and put in lower case first, then checked. */
+const EmailField = (required = true) =>
+  applyDecorators(
+    (required ? ApiProperty : ApiPropertyOptional)({ example: 'ada@example.com', format: 'email' }),
+    ...(required ? [] : [IsOptional()]),
+    Transform(toStandardEmail),
+    IsStandardEmail(),
+  );
 
+const CodeField = (description: string) =>
+  applyDecorators(ApiProperty({ example: '042917', description }), Matches(/^[0-9]{6}$/, { message: 'code must be 6 digits' }));
+
+/** Requests that name one contact give either `phone` or `email`, not both (checked in the service). */
+class OneContact {
+  @PhoneField(false)
+  phone?: string;
+
+  @EmailField(false)
+  email?: string;
+}
+
+export class RequestOtpDto extends OneContact {
   @ApiProperty({ enum: OTP_PURPOSES })
   @IsIn(OTP_PURPOSES)
   purpose!: OtpPurpose;
@@ -67,8 +86,17 @@ export class RegisterDto {
   @PhoneField()
   phone!: string;
 
-  @ApiProperty({ example: '042917', description: 'The code sent by SMS for purpose REGISTER' })
-  @Matches(/^[0-9]{6}$/, { message: 'otp must be 6 digits' })
+  @EmailField()
+  email!: string;
+
+  @ApiProperty({
+    enum: CHANNELS,
+    description: 'Which contact the REGISTER code was sent to (decision 35). That contact is confirmed now; the other is confirmed later.',
+  })
+  @IsIn(CHANNELS)
+  signUpWith!: Channel;
+
+  @CodeField('The code sent for purpose REGISTER to the contact named in signUpWith')
   otp!: string;
 
   @ApiProperty({ minLength: 8, maxLength: 128 })
@@ -76,13 +104,6 @@ export class RegisterDto {
   @MinLength(8)
   @MaxLength(128)
   password!: string;
-
-  @ApiPropertyOptional({ format: 'email' })
-  @IsOptional()
-  @Transform(trimLower)
-  @IsEmail()
-  @MaxLength(254)
-  email?: string;
 
   @ApiProperty({ maxLength: 100 })
   @Transform(trim)
@@ -125,17 +146,14 @@ export class RegisterDto {
   consent!: ConsentDto;
 }
 
-export class LoginDto {
-  @PhoneField()
-  phone!: string;
-
+export class LoginDto extends OneContact {
   @ApiPropertyOptional({ description: 'Give either password or otp' })
   @IsOptional()
   @IsString()
   @MaxLength(128)
   password?: string;
 
-  @ApiPropertyOptional({ description: 'The code sent by SMS for purpose LOGIN' })
+  @ApiPropertyOptional({ description: 'The code sent for purpose LOGIN to the phone number or email address given' })
   @IsOptional()
   @Matches(/^[0-9]{6}$/, { message: 'otp must be 6 digits' })
   otp?: string;
@@ -147,12 +165,8 @@ export class LoginDto {
   device?: string;
 }
 
-export class ResetPasswordDto {
-  @PhoneField()
-  phone!: string;
-
-  @ApiProperty({ example: '042917', description: 'The code sent by SMS for purpose RESET_PASSWORD' })
-  @Matches(/^[0-9]{6}$/, { message: 'otp must be 6 digits' })
+export class ResetPasswordDto extends OneContact {
+  @CodeField('The code sent for purpose RESET_PASSWORD to the phone number or email address given')
   otp!: string;
 
   @ApiProperty({ minLength: 8, maxLength: 128 })
@@ -170,15 +184,9 @@ export class RefreshDto {
   refreshToken!: string;
 }
 
+/** Phone numbers and email addresses are changed through /me/contacts, never here (ADR 0006). */
 export class UpdateMeDto {
-  @ApiPropertyOptional({ format: 'email' })
-  @IsOptional()
-  @Transform(trimLower)
-  @IsEmail()
-  @MaxLength(254)
-  email?: string;
-
-  @ApiPropertyOptional({ example: 'pcm' })
+  @ApiPropertyOptional({ example: 'pcm', description: "One of the languages switched on for the user's country (decision 40)" })
   @IsOptional()
   @IsString()
   @MaxLength(10)
@@ -192,4 +200,30 @@ export class UpdateMeDto {
   @ArrayUnique()
   @IsIn(USER_TYPES, { each: true })
   types?: UserTypeName[];
+}
+
+export class ContactCodeDto {
+  @ApiProperty({ enum: CHANNELS })
+  @IsIn(CHANNELS)
+  channel!: Channel;
+
+  @ApiProperty({
+    description: 'The phone number or email address to confirm: the one already on the account, or a new one to replace it',
+  })
+  @IsString()
+  @MaxLength(254)
+  value!: string;
+}
+
+export class ContactConfirmDto extends ContactCodeDto {
+  @CodeField('The code sent for purpose CONFIRM_CONTACT to that phone number or email address')
+  code!: string;
+
+  @ApiPropertyOptional({
+    description: 'Required when replacing a phone number or email address that is already confirmed',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(128)
+  currentPassword?: string;
 }

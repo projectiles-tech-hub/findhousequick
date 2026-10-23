@@ -9,7 +9,7 @@ export interface RequestUser {
   /** The signed-in device; signing out ends it. */
   sessionId: string;
   /** How this device signed in (decision 34). */
-  signInMethod: 'PASSWORD' | 'SMS_CODE';
+  signInMethod: 'PASSWORD' | 'SMS_CODE' | 'EMAIL_CODE';
   /** Present when the user is an active staff member (ADR 0005). */
   staff?: RequestStaff;
 }

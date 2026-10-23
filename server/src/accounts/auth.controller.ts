@@ -29,10 +29,11 @@ export class AuthController {
   @HttpCode(202)
   @PER_MINUTE(10)
   @ApiOperation({
-    summary: 'Send a one-time code by SMS',
+    summary: 'Send a one-time code by SMS or email',
     description:
-      'Used for registration, sign-in without a password and password reset. Limited per phone number. ' +
-      'The response never reveals whether the number is registered.',
+      'Give either phone (code by SMS) or email (code by email). Used for registration, sign-in without a password ' +
+      'and password reset. Sign-in and reset codes go only to a confirmed contact. Limited per phone number or email ' +
+      'address. The response never reveals whether it is registered.',
   })
   @ApiAcceptedResponse({ description: 'Code sent if the request is allowed' })
   @ApiResponse({ status: 429, description: 'Too many codes requested' })
@@ -43,7 +44,10 @@ export class AuthController {
   @Public()
   @Post('register')
   @PER_MINUTE(10)
-  @ApiOperation({ summary: 'Register (free). Reaches verification level 1.' })
+  @ApiOperation({
+    summary: 'Register (free) with phone and email, confirming one of them now (decision 35)',
+    description: 'The other contact is confirmed afterwards; level 1 needs both (decision 37).',
+  })
   @ApiCreatedResponse({ description: 'Registered and signed in' })
   @ApiResponse({ status: 409, description: 'Phone or email already registered' })
   register(@Body() dto: RegisterDto, @Req() req: Request) {
@@ -54,7 +58,7 @@ export class AuthController {
   @Post('login')
   @HttpCode(200)
   @PER_MINUTE(20)
-  @ApiOperation({ summary: 'Sign in with phone and password, or phone and SMS code' })
+  @ApiOperation({ summary: 'Sign in with phone or email, and a password or a code sent to it (decision 35)' })
   @ApiOkResponse({ description: 'Signed in' })
   @ApiResponse({ status: 401, description: 'Wrong credentials' })
   @ApiResponse({ status: 403, description: 'Account suspended (code ACCOUNT_SUSPENDED)' })
@@ -68,10 +72,10 @@ export class AuthController {
   @HttpCode(204)
   @PER_MINUTE(10)
   @ApiOperation({
-    summary: 'Set a new password with an SMS code',
+    summary: 'Set a new password with a code sent by SMS or email, as the user chooses (decision 36)',
     description:
-      'Needs a code sent for purpose RESET_PASSWORD. Signs the user out of every device; they then sign in ' +
-      'with the new password. Also lifts any pause on password sign-in.',
+      'Needs a code sent for purpose RESET_PASSWORD to a confirmed phone number or email address. Signs the user out ' +
+      'of every device; they then sign in with the new password. Also lifts any pause on password sign-in.',
   })
   @ApiNoContentResponse({ description: 'Password changed and every device signed out' })
   @ApiResponse({ status: 400, description: 'Wrong or expired code (code INVALID_CODE)' })

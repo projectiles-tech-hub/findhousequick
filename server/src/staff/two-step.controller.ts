@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Post } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { CurrentUser } from '../accounts/auth.js';
@@ -15,19 +15,47 @@ const PER_MINUTE = (limit: number) => Throttle({ default: { limit, ttl: 60_000 }
 export class TwoStepController {
   constructor(private readonly twoStep: TwoStepService) {}
 
+  @Get('auth/two-step/options')
+  @StaffOnly({ twoStep: false })
+  @ApiOperation({
+    summary: 'The second steps this device may use, in the order to offer them (decision 36)',
+    description:
+      'Never the channel used to sign in. After a password: authenticator app (if set up), then email code, then SMS code. ' +
+      'Each option says whether it is ready (authenticator set up, contact confirmed).',
+  })
+  @ApiOkResponse({ description: 'Options, in order' })
+  options(@CurrentUser() user: RequestUser) {
+    return this.twoStep.options(user);
+  }
+
   @Post('auth/two-step/sms')
   @HttpCode(202)
   @PER_MINUTE(10)
   @StaffOnly({ twoStep: false })
   @ApiOperation({
     summary: 'Send a second-step code by SMS to the signed-in staff member',
-    description: 'Only on a device that signed in with a password (decision 34); otherwise DIFFERENT_FACTOR_REQUIRED.',
+    description: 'Not on a device that signed in with an SMS code (DIFFERENT_FACTOR_REQUIRED, decision 36).',
   })
   @ApiAcceptedResponse({ description: 'Code sent' })
   @ApiResponse({ status: 403, description: 'Device signed in with an SMS code (DIFFERENT_FACTOR_REQUIRED)' })
   @ApiResponse({ status: 429, description: 'Too many codes requested' })
   async sendSms(@CurrentUser() user: RequestUser): Promise<void> {
-    await this.twoStep.sendSms(user);
+    await this.twoStep.sendCode(user, 'SMS');
+  }
+
+  @Post('auth/two-step/email')
+  @HttpCode(202)
+  @PER_MINUTE(10)
+  @StaffOnly({ twoStep: false })
+  @ApiOperation({
+    summary: 'Send a second-step code by email to the signed-in staff member',
+    description: 'Not on a device that signed in with an email code (DIFFERENT_FACTOR_REQUIRED, decision 36).',
+  })
+  @ApiAcceptedResponse({ description: 'Code sent' })
+  @ApiResponse({ status: 403, description: 'Device signed in with an email code (DIFFERENT_FACTOR_REQUIRED)' })
+  @ApiResponse({ status: 429, description: 'Too many codes requested' })
+  async sendEmail(@CurrentUser() user: RequestUser): Promise<void> {
+    await this.twoStep.sendCode(user, 'EMAIL');
   }
 
   @Post('auth/two-step/verify')
@@ -35,15 +63,15 @@ export class TwoStepController {
   @PER_MINUTE(20)
   @StaffOnly({ twoStep: false })
   @ApiOperation({
-    summary: 'Complete two-step login on this device with an SMS code or an authenticator app code',
+    summary: 'Complete two-step login on this device with an authenticator, email or SMS code',
     description:
       'The second step lasts for the period in the platform settings (3 hours by default), then must be done ' +
-      'again. A device that signed in with an SMS code must use AUTHENTICATOR (decision 34). After 5 wrong ' +
-      'codes the second step pauses for 15 minutes (code TWO_STEP_LOCKED).',
+      'again. It never uses the channel the device signed in with (decision 36). After 5 wrong codes the second ' +
+      'step pauses for 15 minutes (code TWO_STEP_LOCKED).',
   })
-  @ApiResponse({ status: 403, description: 'SMS chosen on a device that signed in with an SMS code (DIFFERENT_FACTOR_REQUIRED)' })
+  @ApiResponse({ status: 403, description: 'Same channel as the sign-in (DIFFERENT_FACTOR_REQUIRED)' })
   @ApiNoContentResponse({ description: 'This device has passed the second step' })
-  @ApiResponse({ status: 400, description: 'Wrong code (INVALID_CODE) or no authenticator set up (NO_AUTHENTICATOR)' })
+  @ApiResponse({ status: 400, description: 'Wrong code (INVALID_CODE), no authenticator (NO_AUTHENTICATOR) or contact not confirmed (CONTACT_NOT_CONFIRMED)' })
   @ApiResponse({ status: 429, description: 'Second step paused (TWO_STEP_LOCKED)' })
   async verify(@CurrentUser() user: RequestUser, @Body() dto: TwoStepVerifyDto): Promise<void> {
     await this.twoStep.verify(user, dto.method, dto.code);

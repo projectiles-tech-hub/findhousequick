@@ -3,6 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { ArrayMaxSize, ArrayMinSize, ArrayUnique, IsArray, IsBoolean, IsIn, IsOptional, Matches } from 'class-validator';
 import { IsStandardPhone, toStandardPhone } from '../common/phone.js';
+import { IsStandardEmail, toStandardEmail } from '../accounts/contact.js';
 import type { StaffRole } from '../generated/prisma/client.js';
 import { STAFF_ROLES } from './staff.service.js';
 
@@ -34,10 +35,17 @@ const CountriesField = (required: boolean) =>
   );
 
 export class AddStaffDto {
-  @ApiProperty({ example: '+2348031234567', description: 'Phone number of a registered account' })
+  @ApiPropertyOptional({ example: '+2348031234567', description: 'Confirmed phone number of a registered account. Give phone or email.' })
+  @IsOptional()
   @Transform(toStandardPhone)
   @IsStandardPhone()
-  phone!: string;
+  phone?: string;
+
+  @ApiPropertyOptional({ example: 'ada@example.com', description: 'Confirmed email address of a registered account (decision 38). Give phone or email.' })
+  @IsOptional()
+  @Transform(toStandardEmail)
+  @IsStandardEmail()
+  email?: string;
 
   @RolesField(true)
   roles!: StaffRole[];
@@ -62,9 +70,9 @@ export class UpdateStaffDto {
 }
 
 export class TwoStepVerifyDto {
-  @ApiProperty({ enum: ['SMS', 'AUTHENTICATOR'] })
-  @IsIn(['SMS', 'AUTHENTICATOR'])
-  method!: 'SMS' | 'AUTHENTICATOR';
+  @ApiProperty({ enum: ['AUTHENTICATOR', 'EMAIL', 'SMS'] })
+  @IsIn(['AUTHENTICATOR', 'EMAIL', 'SMS'])
+  method!: 'AUTHENTICATOR' | 'EMAIL' | 'SMS';
 
   @ApiProperty({ example: '042917' })
   @Matches(/^[0-9]{6}$/, { message: 'code must be 6 digits' })
