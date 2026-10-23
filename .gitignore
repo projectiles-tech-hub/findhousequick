@@ -5,6 +5,9 @@
 *.pem
 *.key
 
+# Files kept by the local storage provider in development and tests
+.private-storage*/
+
 # Node
 node_modules/
 dist/

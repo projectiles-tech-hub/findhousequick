@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { Equals, IsOptional, IsString, Matches, MaxLength, MinLength } from 'class-validator';
+import { Equals, IsOptional, IsString, IsUUID, Matches, MaxLength, MinLength } from 'class-validator';
 
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
 
@@ -19,6 +19,12 @@ export class StartIdentityCheckDto {
   @ApiProperty({ description: 'The user agrees to the identity check. Must be true.' })
   @Equals(true, { message: 'consent must be true: the user must agree to the identity check' })
   consent!: boolean;
+}
+
+export class AttachDocumentDto {
+  @ApiProperty({ format: 'uuid', description: 'A finished upload from POST /documents with purpose IDENTITY' })
+  @IsUUID()
+  documentId!: string;
 }
 
 export class AgentProfileDto {

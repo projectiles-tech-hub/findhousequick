@@ -44,6 +44,14 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
   accounts sent to the verification team; agent company details (decision 50); data retention country setting
   (decision 55). Design in `docs/adr/0007-verification-ladder-and-identity-checks.md`.
 
+- **Release 1 step 3, second part (identity documents and the verification queue)**: in pull request #14,
+  awaiting approval (built on #13). Private document upload through a storage adapter (local provider for
+  development), checked by size and SHA-256; a document photo added to a failed check (decision 49); the
+  verification team's queue and decisions for identity checks, duplicate IDs and agent company details; staff
+  document views recorded with the reason; hourly deletion of photos whose retention period has ended (first
+  background job, BullMQ). Still to do from step 3: real identity and storage provider adapters once the accounts
+  are opened; app screens.
+
 - **Release 1 step 2 (staff accounts and roles)**: complete. Merged in pull request #7.
   - Staff management by super admins (`/admin/staff`), with every change in the audit log; the first super
     admin is made with `pnpm staff:make-super-admin` (see `docs/DEPLOYMENT.md`)
@@ -57,8 +65,8 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
 
 ## Small follow-ups
 
-- Technical points from the specification check (finding 21): move rate limits to Redis and start BullMQ with
-  the first background job; make sure request logs never record "around me" search locations (Specification 15.2).
+- Technical points from the specification check (finding 21): move rate limits to Redis (BullMQ now started, in
+  pull request #14); make sure request logs never record "around me" search locations (Specification 15.2).
 - Rare, harmless gap: if a staff member's app renews its sign-in at the very moment they complete the second
   step, the renewed sign-in may not carry the second step, and they are asked to do it again. Not fixed yet.
 - `ubuntu-latest` runners are moving to Ubuntu 26. On 22 October 2026 the checks still ran on Ubuntu 24.04;
@@ -95,10 +103,8 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
     produced in the build sessions with the Figma connector, for Emmanuel's review and approval. **No app screen
     is built until its design is approved.** Done after the email step, so the sign-up and sign-in designs match
     what is built; the server steps below continue while the designs are reviewed.
-3. **Verification ladder and identity checks**: first part in pull request #13. Second part, next: private document
-   upload and the document photo when the NIN check fails or does not match (decision 49); the verification team's
-   queue and decisions (`/admin/review-tasks`) and document viewing; deleting identity photos when their retention
-   period ends (first background job, BullMQ). A real identity provider adapter once the account is opened.
+3. **Verification ladder and identity checks**: in pull requests #13 and #14, awaiting approval. Still to do: real
+   identity and storage provider adapters once the accounts are opened.
 4. **Reference data endpoints**, then buildings, units and the parts checklist, with the distance to the main
    road, separate toilets in the checklist and a note per part (decision 56).
 5. Documents and media upload (private storage adapter), listings and submission, search and the property page

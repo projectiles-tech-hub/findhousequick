@@ -6,5 +6,7 @@ export const TEST_ENV = {
   JWT_SECRET: 'test-secret-that-is-at-least-32-characters-long',
   OTP_HASH_SECRET: 'test-code-secret-that-is-also-at-least-32-characters',
   LOOKUP_HASH_SECRET: 'test-lookup-secret-that-is-also-at-least-32-characters',
+  RUN_BACKGROUND_JOBS: 'false',
+  STORAGE_LOCAL_DIR: '.private-storage-test',
   FIELD_ENCRYPTION_KEY: Buffer.alloc(32, 7).toString('base64'),
 };

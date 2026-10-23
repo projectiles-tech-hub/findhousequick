@@ -17,7 +17,11 @@ GitHub repository secrets, **never in the code**. `server/.env.example` shows th
 | `NODE_ENV` | Yes | Which kind of server this is | `production` on any internet-facing server | Development-only shortcuts are refused when this is `production` |
 | `PORT` | No (default 3000) | Port the API listens on | Usually set by the host | |
 | `DATABASE_URL` | Yes | Address and password of the PostgreSQL database (with PostGIS) | Given by the database host | **Secret** |
-| `REDIS_URL` | Yes | Address and password of Redis | Given by the Redis host | **Secret** |
+| `REDIS_URL` | Yes | Address and password of Redis | Given by the Redis host | **Secret.** Background jobs run on it (from the identity documents pull request) |
+| `RUN_BACKGROUND_JOBS` | No (default `true`) | Whether this server runs background jobs, such as deleting identity photos whose retention period has ended | `true` or `false` | Leave `true` on at least one server. With several servers each job still runs once |
+| `STORAGE_PROVIDER` | Yes | Where private documents (identity photos, later ownership documents) are kept | `local` for development only | `local` keeps files in a folder and is refused in production. A real provider (Cloudflare R2) is added before any pilot (ADR 0007) |
+| `STORAGE_LOCAL_DIR` | No (default `.private-storage`) | Folder used by the `local` storage provider | A folder path | Development only |
+| `API_PUBLIC_URL` | Yes on servers | The API's own address as the apps reach it, used in upload links | e.g. `https://api.findhousequick.com` | Defaults to `http://localhost:3000` for development |
 | `CORS_ORIGINS` | Yes | Web addresses allowed to call the API from a browser | e.g. `https://app.findhousequick.com` (comma-separated) | Must include the web app's address |
 | `JWT_SECRET` | Yes | Signs sign-in passes | `openssl rand -hex 32` | **Secret.** At least 32 characters. Changing it signs every user out |
 | `OTP_HASH_SECRET` | Yes (from pull request #4, accounts) | Scrambles SMS codes before storing them | `openssl rand -hex 32` | **Secret.** At least 32 characters and **must differ from `JWT_SECRET`**; the server refuses to start otherwise. Changing it cancels codes already sent |
@@ -46,6 +50,7 @@ The country settings used by identity checks (ADR 0007):
 | `verification.identityProvider` | `test` on development servers; **must be set to the contracted provider** on the pilot and production servers | Which identity provider runs NIN, selfie and liveness checks | Empty means identity checks are unavailable in that country. The `test` provider exists only when `NODE_ENV` is not `production` |
 | `verification.acceptedIdTypes` | `["NIN"]` | ID types accepted for the check | |
 | `verification.idNumberPatterns` | `{"NIN": "^[0-9]{11}$"}` | The format each ID number must have | Checked after spaces and dashes are removed |
+| `verification.idDocumentTypes` | `["DRIVERS_LICENCE", "INTERNATIONAL_PASSPORT", "NIN_SLIP"]` | Document photos accepted when the ID check fails or does not match (decision 49) | Codes from the country's document types |
 | `verification.maxIdentityChecksPerDay` | 3 | Checks one user may start in 24 hours (each costs money with the provider) | 1 to 20 |
 | `retention.identityImagesDays` | Not set | Days identity document photos are kept after their check is closed (decision 55) | **Must be set after legal advice before identity checks go live** (open point 15) |
 
@@ -63,7 +68,7 @@ login. Most need the CAC certificate (RC 7987623).
 | SMS provider (Termii recommended; Africa's Talking as backup) | SMS codes | Pilot | Not yet |
 | Email sending service (for example Resend, Postmark or Amazon SES) | Email confirmation, sign-in and reset codes, receipts and statements (decisions 35 and 36) | Pilot | Not yet |
 | Hosting (VPS, e.g. DigitalOcean or Hetzner) | Runs the API, database and Redis | Test system and pilot | Not yet (needs a company dollar card) |
-| Cloudflare | Domain DNS, web app hosting (Pages), file storage (R2) | Test system and pilot | Not yet |
+| Cloudflare | Domain DNS, web app hosting (Pages), file storage (R2: private documents now, media later) | Test system and pilot | Not yet. Private storage is built with a local provider; R2 needs its own adapter and keys as server settings |
 | Domain name (findhousequick.com and/or .com.ng) | Web addresses | Pilot | Not yet |
 | Google Cloud project (with Firebase) | Maps; push notifications (decision 46); Sign in with Google if adopted | Release 1 | Not yet |
 | Calling service (a self-hosted relay, or a provider such as LiveKit or Agora) | Voice calls inside the app (decision 44) | Release 1 | Not yet; to be chosen when calls are built |
@@ -106,7 +111,7 @@ company and its lawyer, not the developers, but no real user may sign up until t
 ## 5. Checklist before any server goes live
 
 1. Every required setting in section 1 is set, with fresh secrets.
-2. `NODE_ENV` is `production`, and `SMS_PROVIDER` and `EMAIL_PROVIDER` are real providers.
+2. `NODE_ENV` is `production`, and `SMS_PROVIDER`, `EMAIL_PROVIDER` and `STORAGE_PROVIDER` are real providers.
    Each enabled country's `verification.identityProvider` names a real provider, and `retention.identityImagesDays`
    is set (section 1).
 3. Database migrations applied (`npx prisma migrate deploy`) and starter data loaded (`pnpm db:seed`).

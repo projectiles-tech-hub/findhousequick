@@ -72,7 +72,12 @@ async function main() {
   // chosen by the platform team once an account is opened.
   const testIdentityProvider = process.env.NODE_ENV === 'production' ? null : 'test';
   const settings = countrySettingsSchema.parse({
-    verification: { acceptedIdTypes: ['NIN'], idNumberPatterns: { NIN: '^[0-9]{11}$' }, identityProvider: testIdentityProvider },
+    verification: {
+      acceptedIdTypes: ['NIN'],
+      idNumberPatterns: { NIN: '^[0-9]{11}$' },
+      idDocumentTypes: ['DRIVERS_LICENCE', 'INTERNATIONAL_PASSPORT', 'NIN_SLIP'],
+      identityProvider: testIdentityProvider,
+    },
   });
   await prisma.country.upsert({
     where: { code: 'NG' },
@@ -93,6 +98,7 @@ async function main() {
   const current = (ng.settings ?? {}) as { verification?: Record<string, unknown> };
   const verification = { ...current.verification };
   verification.idNumberPatterns ??= settings.verification.idNumberPatterns;
+  verification.idDocumentTypes ??= settings.verification.idDocumentTypes;
   verification.identityProvider ??= testIdentityProvider;
   await prisma.country.update({
     where: { code: 'NG' },

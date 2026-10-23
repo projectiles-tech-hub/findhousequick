@@ -74,6 +74,11 @@ export const countrySettingsSchema = z.object({
        * are made capitals. An ID type without a pattern is accepted if it has 4 to 30 letters and digits.
        */
       idNumberPatterns: z.record(z.string(), z.string()).default({}),
+      /**
+       * Document types (codes from the country's document types, purpose IDENTITY) accepted as a photo when the ID
+       * check fails or does not match (decision 49).
+       */
+      idDocumentTypes: z.array(z.string()).default([]),
       /** Identity checks one user may start in 24 hours; each one costs money with the provider. */
       maxIdentityChecksPerDay: z.number().int().min(1).max(20).default(3),
       /** Percentage of green listings picked for a random site visit. */

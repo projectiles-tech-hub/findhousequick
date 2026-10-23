@@ -54,6 +54,7 @@ export function toCheckView(c: IdentityVerification) {
     status: c.status,
     failureReason: c.failureReason,
     nextAction: c.nextAction,
+    documentAttached: c.documentId !== null,
     createdAt: c.createdAt,
     completedAt: c.completedAt,
   };
@@ -277,6 +278,46 @@ export class IdentityService {
       return true;
     });
     return { recorded };
+  }
+
+  /**
+   * Adds a document photo to a check that failed or did not match (decision 49), and sends it to the verification
+   * team. Only allowed when the check says UPLOAD_ID_DOCUMENT, and only with a finished identity upload of the user's
+   * own that is not attached to another check.
+   */
+  async attachDocument(userId: string, checkId: string, documentId: string) {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "IdentityVerification" WHERE "id" = ${checkId}::uuid FOR UPDATE`;
+      const check = await tx.identityVerification.findFirst({
+        where: { id: checkId, userId },
+        include: { user: { select: { countryCode: true, identityVerifiedAt: true } } },
+      });
+      if (!check) throw apiError(404, 'NOT_FOUND', 'Identity check not found.');
+      if (check.nextAction !== 'UPLOAD_ID_DOCUMENT' || check.user.identityVerifiedAt) {
+        throw apiError(409, 'DOCUMENT_NOT_REQUESTED', 'This identity check does not need a document.');
+      }
+      const doc = await tx.document.findFirst({
+        where: { id: documentId, ownerId: userId, purpose: 'IDENTITY', deletedAt: null },
+        include: { identityCheck: { select: { id: true } } },
+      });
+      if (!doc) throw apiError(404, 'NOT_FOUND', 'Document not found.');
+      if (!doc.uploadedAt) throw apiError(409, 'UPLOAD_NOT_COMPLETE', 'Please finish uploading the document first.');
+      if (doc.identityCheck) throw apiError(409, 'DOCUMENT_ALREADY_USED', 'This document is already attached to another check.');
+
+      const saved = await tx.identityVerification.update({
+        where: { id: check.id },
+        data: { documentId: doc.id, status: 'MANUAL_REVIEW', nextAction: null, completedAt: null },
+      });
+      const open = await tx.reviewTask.findFirst({
+        where: { entityType: 'IdentityVerification', entityId: check.id, status: { in: ['OPEN', 'ASSIGNED'] } },
+        select: { id: true },
+      });
+      if (!open) await this.sendForReview(tx, 'IDENTITY_REVIEW', check.user.countryCode, check.id);
+      await tx.auditLog.create({
+        data: { actorId: userId, action: 'identity.document_added', entityType: 'IdentityVerification', entityId: check.id, metadata: { documentId: doc.id } },
+      });
+      return toCheckView(saved);
+    });
   }
 
   /** Saves an agent's company details (decision 50) and asks the verification team to check them. */
