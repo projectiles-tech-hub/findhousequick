@@ -32,12 +32,22 @@ const envSchema = z.object({
    * it is for development and tests only and is refused in production.
    */
   SMS_PROVIDER: z.enum(['log']).default('log'),
+  /**
+   * Which email service sends codes and notices (decision 35). "log" writes emails to the server log instead of
+   * sending them; it is for development and tests only and is refused in production.
+   */
+  EMAIL_PROVIDER: z.enum(['log']).default('log'),
+  /** The sender shown on emails, e.g. "FindHouseQuick <no-reply@findhousequick.com>". */
+  EMAIL_FROM: z.string().min(3).default('FindHouseQuick <no-reply@findhousequick.com>'),
 }).superRefine((env, ctx) => {
   if (env.OTP_HASH_SECRET === env.JWT_SECRET) {
     ctx.addIssue({ code: 'custom', path: ['OTP_HASH_SECRET'], message: 'OTP_HASH_SECRET must be different from JWT_SECRET' });
   }
   if (env.NODE_ENV === 'production' && env.SMS_PROVIDER === 'log') {
     ctx.addIssue({ code: 'custom', path: ['SMS_PROVIDER'], message: 'The "log" SMS provider cannot be used in production' });
+  }
+  if (env.NODE_ENV === 'production' && env.EMAIL_PROVIDER === 'log') {
+    ctx.addIssue({ code: 'custom', path: ['EMAIL_PROVIDER'], message: 'The "log" email provider cannot be used in production' });
   }
 });
 
