@@ -38,14 +38,14 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
   `docs/adr/0006-email-and-contacts.md`. Still to do from this step: a real email provider adapter once the
   account is opened.
 
-- **Release 1 step 3, first part (verification ladder and identity checks)**: in pull request #13, awaiting
-  approval. The server refuses actions above the user's level (`VERIFICATION_REQUIRED`, decision 64); identity
+- **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
+  #13. The server refuses actions above the user's level (`VERIFICATION_REQUIRED`, decision 64); identity
   checks (NIN, selfie, liveness) through a provider adapter, with a test provider for development; one ID on two
   accounts sent to the verification team; agent company details (decision 50); data retention country setting
   (decision 55). Design in `docs/adr/0007-verification-ladder-and-identity-checks.md`.
 
-- **Release 1 step 3, second part (identity documents and the verification queue)**: in pull request #14,
-  awaiting approval (built on #13). Private document upload through a storage adapter (local provider for
+- **Release 1 step 3, second part (identity documents and the verification queue)**: complete. Merged in pull
+  request #14. Private document upload through a storage adapter (local provider for
   development), checked by size and SHA-256; a document photo added to a failed check (decision 49); the
   verification team's queue and decisions for identity checks, duplicate IDs and agent company details; staff
   document views recorded with the reason; hourly deletion of photos whose retention period has ended (first
@@ -103,8 +103,8 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
     produced in the build sessions with the Figma connector, for Emmanuel's review and approval. **No app screen
     is built until its design is approved.** Done after the email step, so the sign-up and sign-in designs match
     what is built; the server steps below continue while the designs are reviewed.
-3. **Verification ladder and identity checks**: in pull requests #13 and #14, awaiting approval. Still to do: real
-   identity and storage provider adapters once the accounts are opened.
+3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
+   identity and storage provider adapters once the accounts are opened; app screens.
 4. **Reference data endpoints**, then buildings, units and the parts checklist, with the distance to the main
    road, separate toilets in the checklist and a note per part (decision 56).
 5. Documents and media upload (private storage adapter), listings and submission, search and the property page
