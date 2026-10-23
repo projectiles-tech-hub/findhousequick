@@ -30,6 +30,14 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
   the report itself (`docs/reviews/2026-10-22_FindHouseQuick_Specification_Check.docx`). The API design and
   the Product Specification (now version 1.4) are updated to match, in pull request #10, awaiting approval.
 
+- **Release 1 step 2b (email)**: in pull request #11, awaiting approval (it builds on pull request #10; merge
+  #10 first). Email required at registration; sign-up and sign-in with phone or email; both confirmed, with
+  level 0 (browse only) until they are; contacts added or changed only once confirmed, and released from an
+  account that never confirmed them; codes by SMS or email for sign-in, the staff second step and password reset;
+  staff added by confirmed email; an email adapter (development provider that logs emails). Design in
+  `docs/adr/0006-email-and-contacts.md`. Still to do from this step: a real email provider adapter once the
+  account is opened.
+
 - **Release 1 step 2 (staff accounts and roles)**: complete. Merged in pull request #7.
   - Staff management by super admins (`/admin/staff`), with every change in the audit log; the first super
     admin is made with `pnpm staff:make-super-admin` (see `docs/DEPLOYMENT.md`)
@@ -53,6 +61,8 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
 
 ## Waiting for Emmanuel
 
+- ADR 0006, point 1: every action beyond browsing needs both phone and email confirmed (level 1), reading
+  decisions 35 and 37 together. Built that way; easy to change.
 - Password rules: keep the agreed minimum of 8 characters, or move to at least 10 characters with common and
   leaked passwords blocked and no character-mix rules (discussed 22 October 2026, not yet decided).
 - Sign in with Google (and Sign in with Apple for the iPhone release): add to Release 1 or not (discussed
@@ -78,10 +88,8 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
 2a. **Specification check**: decided 23 October 2026 (decisions 39 to 59); recorded in pull request #10, awaiting
     approval, together with Product Specification 1.4, the document index (`docs/README.md`) and the decision
     procedure in `CLAUDE.md` (decisions 60 to 63).
-2b. **Email** (decisions 35 to 38): email required at registration; sign-up and sign-in with phone or email;
-    both confirmed; phone confirmed before any action; email codes for sign-in, the second step and password
-    reset; level 1 needs both confirmed; staff can be added by confirmed email; an email adapter (a development
-    provider that logs emails, then a real one). Needs an email sending account (see `docs/DEPLOYMENT.md`).
+2b. **Email** (decisions 35 to 38): in pull request #11, awaiting approval. A real email provider adapter
+    follows once the email sending account is opened (see `docs/DEPLOYMENT.md`).
 2c. **Screen designs in Figma** (decision 42): every Release 1 screen for tenants, landlords, agents and staff,
     produced in the build sessions with the Figma connector, for Emmanuel's review and approval. **No app screen
     is built until its design is approved.** Done after the email step, so the sign-up and sign-in designs match

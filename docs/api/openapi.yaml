@@ -40,7 +40,8 @@ info:
     ## Verification levels
     | Level | Name | Reached by |
     | --- | --- | --- |
-    | 1 | BASIC | Phone number confirmed by SMS code |
+    | 0 | UNCONFIRMED | Registered, but phone and email not both confirmed: browsing only (decisions 35 and 37) |
+    | 1 | BASIC | Phone number confirmed by SMS code and email address confirmed by email code |
     | 2 | VERIFIED | Identity check passed (NIN or national equivalent, selfie, liveness) |
     | 3 | PAYMENT_READY | Bank account verified in the user's own name |
 
@@ -82,11 +83,14 @@ paths:
   /auth/otp:
     post:
       tags: [Accounts]
-      summary: Send a one-time code by SMS
+      summary: Send a one-time code by SMS or email
       description: |
-        Used for registration, login without password and password reset. Limited per phone number (one
-        code a minute, five an hour); a code expires after 10 minutes and allows 5 guesses in all.
-        REGISTER codes are refused with `403 FEATURE_UNAVAILABLE` where registrations are switched off.
+        Give exactly one of `phone` (code by SMS) or `email` (code by email) (decision 35). Used for
+        registration, sign-in without a password and password reset. Sign-in and reset codes go only to a
+        phone number or email address an active account has confirmed (ADR 0006). Limited per phone number
+        or email address (one code a minute, five an hour); a code expires after 10 minutes and allows 5
+        guesses in all. REGISTER codes are refused with `403 FEATURE_UNAVAILABLE` where registrations are
+        switched off.
       security: []
       requestBody:
         required: true
@@ -94,12 +98,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [phone, purpose]
+              required: [purpose]
               properties:
                 phone: { $ref: "#/components/schemas/Phone" }
+                email: { type: string, format: email, description: Trimmed and stored in lower case }
                 purpose: { type: string, enum: [REGISTER, LOGIN, RESET_PASSWORD] }
       responses:
-        "202": { description: Code sent if the request is allowed. The response never reveals whether the number is registered. }
+        "202": { description: Code sent if the request is allowed. The response never reveals whether the contact is registered. }
         "400": { $ref: "#/components/responses/BadRequest" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "429": { $ref: "#/components/responses/TooManyRequests" }
@@ -107,7 +112,15 @@ paths:
   /auth/register:
     post:
       tags: [Accounts]
-      summary: Register (free). Reaches verification level 1.
+      summary: Register (free) with phone and email, confirming one of them with its code (decision 35)
+      description: |
+        Phone and email are both required. `signUpWith` says which one the REGISTER code was sent to; it is
+        confirmed now and the other is confirmed afterwards through `/me/contacts`. Until both are confirmed
+        the user is at level 0 and can only browse (decisions 35 and 37). The device counts as signed in by
+        that code (SMS or email) for the staff second step (decision 36).
+        If another account holds the confirmed contact without having confirmed it, it is released from that
+        account (ADR 0006). A contact another account has confirmed, or an unconfirmed contact another account
+        holds, is refused with 409.
       security: []
       x-feature: platform.new_registrations
       requestBody:
@@ -116,12 +129,13 @@ paths:
           application/json:
             schema:
               type: object
-              required: [phone, otp, password, firstName, lastName, countryCode, types, consent]
+              required: [phone, email, signUpWith, otp, password, firstName, lastName, countryCode, types, consent]
               properties:
                 phone: { $ref: "#/components/schemas/Phone" }
+                email: { type: string, format: email }
+                signUpWith: { type: string, enum: [SMS, EMAIL], description: Which contact the code was sent to }
                 otp: { type: string, pattern: "^[0-9]{6}$" }
                 password: { type: string, minLength: 8, maxLength: 128 }
-                email: { type: string, format: email }
                 firstName: { type: string, maxLength: 100 }
                 lastName: { type: string, maxLength: 100 }
                 countryCode: { $ref: "#/components/schemas/CountryCode" }
@@ -139,7 +153,7 @@ paths:
                     privacyVersion: { type: string }
       responses:
         "201":
-          description: Registered and signed in.
+          description: Registered and signed in (level 0 until both contacts are confirmed).
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Session" }
@@ -150,7 +164,7 @@ paths:
               schema: { $ref: "#/components/schemas/Error" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "409":
-          description: "Phone or email already registered (`code` PHONE_TAKEN or EMAIL_TAKEN)."
+          description: "Phone or email already used by another account (`code` PHONE_TAKEN or EMAIL_TAKEN)."
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
@@ -158,10 +172,11 @@ paths:
   /auth/login:
     post:
       tags: [Accounts]
-      summary: Sign in with phone and password, or phone and SMS code
+      summary: Sign in with phone or email, and a password or a code sent to it (decision 35)
       description: |
-        Give exactly one of `password` or `otp`. After 5 wrong passwords in a row, password sign-in pauses
-        for 15 minutes (`429 PASSWORD_LOCKED`); sign-in by SMS code still works.
+        Give exactly one of `phone` or `email`, and exactly one of `password` or `otp`. A code signs in only
+        through a contact the account has confirmed. After 5 wrong passwords in a row, password sign-in
+        pauses for 15 minutes (`429 PASSWORD_LOCKED`); sign-in by code still works.
       security: []
       requestBody:
         required: true
@@ -169,9 +184,9 @@ paths:
           application/json:
             schema:
               type: object
-              required: [phone]
               properties:
                 phone: { $ref: "#/components/schemas/Phone" }
+                email: { type: string, format: email, description: Trimmed and stored in lower case }
                 password: { type: string }
                 otp: { type: string }
                 device: { type: string, description: Device name shown in the user's list of signed-in devices }
@@ -183,7 +198,7 @@ paths:
               schema: { $ref: "#/components/schemas/Session" }
         "400": { $ref: "#/components/responses/BadRequest" }
         "401":
-          description: "Wrong credentials (`code` WRONG_CREDENTIALS). The same answer is given for an unknown number."
+          description: "Wrong credentials (`code` WRONG_CREDENTIALS). The same answer is given for an unknown phone number or email address."
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
@@ -193,11 +208,11 @@ paths:
   /auth/password-reset:
     post:
       tags: [Accounts]
-      summary: Set a new password with an SMS code, then sign out every device
+      summary: Set a new password with a code sent by SMS or email, as the user chooses, then sign out every device
       description: |
-        Needs a code sent with purpose RESET_PASSWORD. On success the password is changed, any pause on
-        password sign-in is lifted, and every signed-in device is signed out; the user then signs in with
-        the new password.
+        Decision 36. Give `phone` or `email`, with a code sent to it for purpose RESET_PASSWORD (only ever
+        sent to a confirmed contact). On success the password is changed, any pause on password sign-in is
+        lifted, and every signed-in device is signed out; the user then signs in with the new password.
       security: []
       requestBody:
         required: true
@@ -205,9 +220,10 @@ paths:
           application/json:
             schema:
               type: object
-              required: [phone, otp, newPassword]
+              required: [otp, newPassword]
               properties:
                 phone: { $ref: "#/components/schemas/Phone" }
+                email: { type: string, format: email, description: Trimmed and stored in lower case }
                 otp: { type: string, pattern: "^[0-9]{6}$" }
                 newPassword: { type: string, minLength: 8, maxLength: 128 }
       responses:
@@ -220,16 +236,53 @@ paths:
         "403": { $ref: "#/components/responses/Forbidden" }
         "429": { $ref: "#/components/responses/TooManyRequests" }
 
+  /auth/two-step/options:
+    get:
+      tags: [Staff two-step login]
+      summary: The second steps this device may use, in the order to offer them (decision 36)
+      description: |
+        Never the channel the device signed in with. After a password: authenticator app (if set up), then
+        an email code, then an SMS code (SMS delivery is not always reliable). After an SMS code: authenticator
+        or email code. After an email code: authenticator or SMS code. `available` is false when the
+        authenticator is not set up or the phone number or email address is not confirmed.
+      responses:
+        "200":
+          description: Options, in order.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    method: { type: string, enum: [AUTHENTICATOR, EMAIL, SMS] }
+                    available: { type: boolean }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
   /auth/two-step/sms:
     post:
       tags: [Staff two-step login]
-      summary: Send a second-step code by SMS to the signed-in staff member (ADR 0005)
+      summary: Send a second-step code by SMS to the signed-in staff member's confirmed phone (ADR 0005)
       description: |
-        Staff only, and only on a device that signed in with a password: a device that signed in with an SMS
-        code must use an authenticator app code (`403 DIFFERENT_FACTOR_REQUIRED`, decision 34). Same limits
-        as other SMS codes (ADR 0004).
+        Not on a device that signed in with an SMS code (`403 DIFFERENT_FACTOR_REQUIRED`, decision 36).
+        `400 CONTACT_NOT_CONFIRMED` if the phone is not confirmed. Same limits as other codes (ADR 0004).
       responses:
         "202": { description: Code sent. }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+
+  /auth/two-step/email:
+    post:
+      tags: [Staff two-step login]
+      summary: Send a second-step code by email to the signed-in staff member's confirmed email (decision 36)
+      description: |
+        Not on a device that signed in with an email code (`403 DIFFERENT_FACTOR_REQUIRED`).
+        `400 CONTACT_NOT_CONFIRMED` if the email address is not confirmed.
+      responses:
+        "202": { description: Code sent. }
+        "400": { $ref: "#/components/responses/BadRequest" }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "429": { $ref: "#/components/responses/TooManyRequests" }
@@ -237,15 +290,14 @@ paths:
   /auth/two-step/verify:
     post:
       tags: [Staff two-step login]
-      summary: Complete two-step login on this device with an SMS code or an authenticator app code
+      summary: Complete two-step login on this device with an authenticator, email or SMS code
       description: |
         Staff only. On success, this signed-in device has passed the second step for the period in the
         platform settings (`staffTwoStepMinutes`, 3 hours by decision 32), after which it must be done again.
-        The second step must be a different factor from the sign-in (decision 34): a device that signed in
-        with an SMS code must use AUTHENTICATOR (`403 DIFFERENT_FACTOR_REQUIRED`, not counted as an attempt);
-        a device that signed in with a password may use either. Every attempt counts; after 5 without a
-        correct code the second step pauses for 15 minutes (`429 TWO_STEP_LOCKED`). Each authenticator code
-        works once.
+        The second step never uses the channel the device signed in with (decision 36; see
+        `/auth/two-step/options`): otherwise `403 DIFFERENT_FACTOR_REQUIRED`, with `allowedMethods`, not
+        counted as an attempt. Every attempt counts; after 5 without a correct code the second step pauses
+        for 15 minutes (`429 TWO_STEP_LOCKED`). Each authenticator code works once.
       requestBody:
         required: true
         content:
@@ -254,7 +306,7 @@ paths:
               type: object
               required: [method, code]
               properties:
-                method: { type: string, enum: [SMS, AUTHENTICATOR] }
+                method: { type: string, enum: [AUTHENTICATOR, EMAIL, SMS] }
                 code: { type: string, pattern: "^[0-9]{6}$" }
       responses:
         "204": { description: This device has passed the second step. }
@@ -370,8 +422,8 @@ paths:
           application/json:
             schema:
               type: object
+              description: Phone numbers and email addresses are changed through /me/contacts (ADR 0006).
               properties:
-                email: { type: string, format: email }
                 language:
                   type: string
                   description: One of the languages switched on for the user's country (decision 40).
@@ -390,17 +442,83 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
         "401": { $ref: "#/components/responses/Unauthorized" }
-        "409":
-          description: "Email already used by another account (`code` EMAIL_TAKEN)."
-          content:
-            application/json:
-              schema: { $ref: "#/components/schemas/Error" }
     delete:
       tags: [Accounts]
       summary: Request account deletion
       description: Personal data is deleted except records the law requires to be kept (e.g. payment records), which are retained for the legal period only.
       responses:
         "202": { description: Deletion scheduled. }
+
+  /me/contacts/code:
+    post:
+      tags: [Accounts]
+      summary: Send a code to confirm a phone number or email address (ADR 0006)
+      description: |
+        The one already on the account, or a new one to replace it. The code is sent only if no other
+        account has confirmed that contact; the answer is the same either way. `409 ALREADY_CONFIRMED` if it
+        is already confirmed on this account.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [channel, value]
+              properties:
+                channel: { type: string, enum: [SMS, EMAIL] }
+                value: { type: string, description: The phone number or email address }
+      responses:
+        "202": { description: Code sent if the contact is free to confirm. }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "409":
+          description: "Already confirmed on this account (`code` ALREADY_CONFIRMED)."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+
+  /me/contacts/confirm:
+    post:
+      tags: [Accounts]
+      summary: Confirm a phone number or email address with its code
+      description: |
+        Puts a new contact on the account only once confirmed. Replacing a contact that is already confirmed
+        needs `currentPassword`, and the old contact is told about the change. If another account holds the
+        contact without having confirmed it, it is released from that account; one another account has
+        confirmed is refused. Level 1 needs both phone and email confirmed (decision 37).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [channel, value, code]
+              properties:
+                channel: { type: string, enum: [SMS, EMAIL] }
+                value: { type: string }
+                code: { type: string, pattern: "^[0-9]{6}$" }
+                currentPassword: { type: string, description: Required when replacing a confirmed contact }
+      responses:
+        "200":
+          description: Updated user.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Me" }
+        "400":
+          description: "Wrong code (`code` INVALID_CODE) or password missing (PASSWORD_REQUIRED)."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "401":
+          description: "Wrong password (`code` WRONG_PASSWORD)."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "409":
+          description: "Confirmed by another account (PHONE_TAKEN, EMAIL_TAKEN) or already confirmed here."
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
 
   /me/devices:
     post:
@@ -1770,9 +1888,11 @@ paths:
           application/json:
             schema:
               type: object
-              required: [phone, roles, countryScopes]
+              required: [roles, countryScopes]
+              description: Give exactly one of phone or email; it must be confirmed on the account (decision 38).
               properties:
                 phone: { $ref: "#/components/schemas/Phone" }
+                email: { type: string, format: email }
                 roles: { type: array, minItems: 1, items: { $ref: "#/components/schemas/StaffRole" } }
                 countryScopes:
                   type: array
@@ -1792,7 +1912,7 @@ paths:
               schema: { $ref: "#/components/schemas/Error" }
         "403": { $ref: "#/components/responses/Forbidden" }
         "404":
-          description: "No registered account with this phone number (USER_NOT_FOUND)."
+          description: "No account has confirmed this phone number or email address (USER_NOT_FOUND)."
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Error" }
@@ -2082,24 +2202,27 @@ components:
       type: object
       properties:
         id: { $ref: "#/components/schemas/Id" }
-        phone: { $ref: "#/components/schemas/Phone" }
+        phone: { type: [string, "null"], description: "E.164; empty only if released to an account that confirmed it" }
+        phoneConfirmed: { type: boolean }
         email: { type: [string, "null"] }
+        emailConfirmed: { type: boolean }
         firstName: { type: string }
         lastName: { type: string }
         countryCode: { $ref: "#/components/schemas/CountryCode" }
         types: { type: array, items: { $ref: "#/components/schemas/UserType" } }
         language: { type: string }
-        verificationLevel: { type: integer, minimum: 1, maximum: 3 }
+        verificationLevel: { type: integer, minimum: 0, maximum: 3, description: "0 until both phone and email are confirmed (decision 37)" }
         next:
           type: [object, "null"]
           description: What the user must do to reach the next level, for the app to guide them.
           properties:
             level: { type: integer }
-            action: { type: string, enum: [VERIFY_IDENTITY, ADD_BANK_ACCOUNT] }
+            action: { type: string, enum: [CONFIRM_PHONE, CONFIRM_EMAIL, VERIFY_IDENTITY, ADD_BANK_ACCOUNT] }
             unlocks:
               type: array
               description: |
-                Codes the apps translate into the user's language. Level 2: CONTACT_LISTERS, CHAT,
+                Codes the apps translate into the user's language. Level 1: SAVE_FAVOURITES and
+                SAVED_AREA_ALERTS (tenants), START_IDENTITY_CHECK (all). Level 2: CONTACT_LISTERS, CHAT,
                 BOOK_INSPECTIONS (tenants); ADD_PROPERTY_DRAFTS, APPROVE_AGENTS (landlords);
                 REQUEST_PROPERTY_AUTHORITY (agents). Level 3: PAY_THROUGH_ESCROW, SIGN_TENANCY_AGREEMENTS,
                 BOOK_SHORT_LETS (tenants); RECEIVE_PAYMENTS (landlords); RECEIVE_AGENCY_FEES (agents).

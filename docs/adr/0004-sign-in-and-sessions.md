@@ -3,8 +3,8 @@
 - Status: Accepted by Emmanuel on 22 October 2026 (session lengths, code rules and password rules as proposed;
   password reset added to Release 1)
 - **Changed by decisions 35 and 36 (22 October 2026):** email is required at registration; users sign up and
-  sign in with phone or email, and confirm both; password reset codes go by SMS or email. The sections below
-  describe the phone-only version as built in pull request #4, until the email step updates them.
+  sign in with phone or email, and confirm both; password reset codes go by SMS or email. Built in the email step: see ADR 0006, which takes
+  precedence over the phone-only wording below wherever the two differ.
 - Context: Product Specification, Section 3 (Registration and Verification) and Section 15 (Data Protection);
   Decision 5 (everyone registers, free); Release 1 step 1.
 
