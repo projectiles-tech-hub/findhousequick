@@ -21,6 +21,7 @@ has both a Word (`.docx`) and a text (`.md`) copy, the Word file is the original
 | `STATUS.md` | Where the build stands, what Emmanuel still needs to decide, and the next steps in order. | At the start and end of every session. |
 | `DEPLOYMENT.md` | Every server setting, secret, outside account and manual step needed to run the system. | When adding a setting, secret or outside service, and when deploying. |
 | `api/openapi.yaml` | The agreed Release 1 API design (OpenAPI). | Before building or changing any endpoint; the code must match it. |
+| `designs.md` | Every Release 1 screen design and design system part: its Penpot link, its group, and whether Emmanuel has approved it, asked for changes or is still to review it (decisions 42 and 67). | Before designing a screen, and before building any app screen: only approved designs are built. |
 
 ## Architecture decision records (`docs/adr/`)
 

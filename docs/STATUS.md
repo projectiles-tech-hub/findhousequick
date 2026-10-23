@@ -8,7 +8,7 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
   The old PHP prototype is in `ecoraegbu/findhousequick-legacy`, for reference only.
 - **Release 0 (foundations)**: mostly complete; delivered in pull request #1. **Not yet done** (Technical
   Architecture, Section 15; found by the specification check, finding 4): screen designs for tenants, landlords,
-  agents and staff (now the design step 2c below, decision 42); the test system on a cloud host (after the
+  agents and staff (now the design step 2c below, decisions 42 and 67); the test system on a cloud host (after the
   hosting account, which needs a company dollar card); the public website code structure (with step 5).
   - Database design (Release 1 plus escrow ledger) with database-level safety rules
   - Country settings and feature controls (48 switches, approvals, emergency switches, change record)
@@ -78,11 +78,6 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
 - Before step 3 (identity checks) goes live: how long identity images are kept after verification, after legal
   advice (Decisions Log open point 15). It will be a country setting (decision 55), so step 3 can be built first.
 - A company dollar card, so the hosting account (and the test system) can be opened (decision 42).
-- Figma (blocks step 2c): tested 23 October 2026. The connector can create and edit files on the free Starter
-  plan, but Figma limits a Starter View seat to 20 connector calls a month, and designing and checking every
-  Release 1 screen needs several hundred. A Professional plan Full seat (200 calls a day) is needed; it is paid
-  by card, so it may wait for the company dollar card. The test file "FindHouseQuick Release 1 Screens" is in
-  Emmanuel's Figma drafts.
 - Whether to build country switching (`PATCH /admin/countries`, still to do from step 2) as a small step
   before step 3 (suggested 22 October 2026).
 - Decisions Log open points: the five escrow settings, escrow legal structure, launch city, partner API,
@@ -99,9 +94,17 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
 2a. ~~**Specification check**~~: done (pull requests #9 and #10; decisions 39 to 63).
 2b. ~~**Email**~~ (decisions 35 to 38, 64): done (pull request #11). Still to do: a real email provider adapter
     once the email sending account is opened (see `docs/DEPLOYMENT.md`).
-2c. **Screen designs in Figma** (decision 42; waiting for a Figma Full seat, see above): every Release 1 screen for tenants, landlords, agents and staff,
-    produced in the build sessions with the Figma connector, for Emmanuel's review and approval. **No app screen
-    is built until its design is approved.** Done after the email step, so the sign-up and sign-in designs match
+2c. **Screen designs in Penpot** (decisions 42 and 67): every Release 1 screen for tenants, landlords, agents and
+    staff, produced in the build sessions with the Penpot connector in Emmanuel's file "Release 1 Screens", for his
+    review and approval; if the connector is not reliable, Claude's Design artifact type is used instead and
+    Emmanuel is told. No longer blocked: the connector was tested on 23 October 2026. Order: the design system
+    first (for approval before any screen), then the screens in groups, phone layouts first, then desktop and the
+    signed-in website. Every screen, its Penpot link, its group and its review state are listed in
+    `docs/designs.md`. Emmanuel is told before each design session so he can keep the file open. **No app screen
+    is built until its design is approved.**
+    Progress: the design system (colours, text styles, spacing and touch size, icons, buttons and chips, form
+    fields, cards and notices, map pins, and a Pidgin length check) is in pull request #16, awaiting Emmanuel's
+    review. Still to do: the screens, group by group, once the design system is approved. Done after the email step, so the sign-up and sign-in designs match
     what is built; the server steps below continue while the designs are reviewed.
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
