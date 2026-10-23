@@ -6,7 +6,9 @@ Updated: 22 October 2026 (evening). Read this after CLAUDE.md at the start of ev
 
 - **Repository**: `projectiles-tech-hub/findhousequick` (public during the build; may be made private later).
   The old PHP prototype is in `ecoraegbu/findhousequick-legacy`, for reference only.
-- **Release 0 (foundations)**: complete. Delivered in pull request #1. All GitHub checks pass.
+- **Release 0 (foundations)**: mostly complete; delivered in pull request #1. **Not yet done** (Technical
+  Architecture, Section 15; found by the specification check, finding 4): screen designs for tenants, landlords,
+  agents and staff; the test system on a cloud host (needs the hosting account); the public website code structure.
   - Database design (Release 1 plus escrow ledger) with database-level safety rules
   - Country settings and feature controls (48 switches, approvals, emergency switches, change record)
   - Seed data for Nigeria, Benin City, property types, documents
@@ -35,6 +37,8 @@ Updated: 22 October 2026 (evening). Read this after CLAUDE.md at the start of ev
 
 ## Small follow-ups
 
+- Technical points from the specification check (finding 21): move rate limits to Redis and start BullMQ with
+  the first background job; make sure request logs never record "around me" search locations (Specification 15.2).
 - Rare, harmless gap: if a staff member's app renews its sign-in at the very moment they complete the second
   step, the renewed sign-in may not carry the second step, and they are asked to do it again. Not fixed yet.
 - `ubuntu-latest` runners are moving to Ubuntu 26. On 22 October 2026 the checks still ran on Ubuntu 24.04;
@@ -52,6 +56,8 @@ Updated: 22 October 2026 (evening). Read this after CLAUDE.md at the start of ev
   country settings, so step 3 can be built before they are settled.
 - Whether to build country switching (`PATCH /admin/countries`, still to do from step 2) as a small step
   before step 3 (suggested 22 October 2026).
+- Specification check: a decision on each of the 21 findings in
+  `docs/reviews/2026-10-22_FindHouseQuick_Specification_Check.docx` (findings 1, 4, 5 and 8 are high priority).
 - Decisions Log open points: the five escrow settings, escrow legal structure, launch city, partner API,
   mention of the Agent Emma channel in the launch plan, budget, hiring.
 
@@ -63,9 +69,10 @@ Updated: 22 October 2026 (evening). Read this after CLAUDE.md at the start of ev
 2. ~~**Staff accounts and roles**~~, and the admin feature-rule endpoints: done (pull request #7).
    Still to do from this area: admin screens in the app; two-step login for ordinary users (ADR 0005, point 3);
    `PATCH /admin/countries/{countryCode}` (country settings), which is in the API design but not yet built.
-2a. **Check the specification against what is built and designed** (agreed 22 October 2026, after the missing
-    email requirement was found): every difference listed for Emmanuel in a Word document, decided once, and
-    recorded in the Decisions Log.
+2a. **Check the specification against what is built and designed**: done 22 October 2026. Report in
+    `docs/reviews/2026-10-22_FindHouseQuick_Specification_Check.docx` (21 findings; 1, 4, 5 and 8 high priority),
+    **waiting for Emmanuel's decisions**. Each decision goes into the Decisions Log, and the API design and this
+    note are updated, before any code that depends on it.
 2b. **Email** (decisions 35 to 38): email required at registration; sign-up and sign-in with phone or email;
     both confirmed; phone confirmed before any action; email codes for sign-in, the second step and password
     reset; level 1 needs both confirmed; staff can be added by confirmed email; an email adapter (a development provider that logs emails, then a real one). Needs an email sending
