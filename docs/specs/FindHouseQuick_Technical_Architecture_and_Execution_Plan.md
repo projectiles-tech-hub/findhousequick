@@ -44,7 +44,7 @@ Version 1.0 \| 22 October 2026
 
 # 1. About This Document
 
-This document sets out how FindHouseQuick will be built and delivered. It should be read together with the FindHouseQuick Product Specification (version 1.3), which describes what the platform does. Where the two documents differ, the Product Specification decides what is built; this document decides how.
+This document sets out how FindHouseQuick will be built and delivered. It should be read together with the FindHouseQuick Product Specification, which describes what the platform does. Where the two documents differ, the Product Specification decides what is built; this document decides how.
 
 The technology choices in this document are recommendations. They should be reviewed and confirmed by the technical lead once appointed, before Release 1 development starts.
 

@@ -26,8 +26,9 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
   - Design in `docs/adr/0004-sign-in-and-sessions.md` (accepted 22 October 2026)
 
 - **Specification check**: report merged in pull request #9; all 21 findings decided by Emmanuel on 23 October
-  2026 (decisions 39 to 59, finding n recorded as decision 38 + n). Decided version:
-  `docs/reviews/2026-10-23_FindHouseQuick_Specification_Check_Decided.docx`. The API design is updated to match.
+  2026 (decisions 39 to 59, finding n recorded as decision 38 + n). Each decision is written into its row of
+  the report itself (`docs/reviews/2026-10-22_FindHouseQuick_Specification_Check.docx`). The API design and
+  the Product Specification (now version 1.4) are updated to match, in pull request #10, awaiting approval.
 
 - **Release 1 step 2 (staff accounts and roles)**: complete. Merged in pull request #7.
   - Staff management by super admins (`/admin/staff`), with every change in the audit log; the first super
@@ -74,7 +75,9 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
 2. ~~**Staff accounts and roles**~~, and the admin feature-rule endpoints: done (pull request #7).
    Still to do from this area: admin screens in the app; two-step login for ordinary users (ADR 0005, point 3);
    `PATCH /admin/countries/{countryCode}` (country settings), which is in the API design but not yet built.
-2a. ~~**Specification check**~~: done; decided 23 October 2026 (decisions 39 to 59).
+2a. **Specification check**: decided 23 October 2026 (decisions 39 to 59); recorded in pull request #10, awaiting
+    approval, together with Product Specification 1.4, the document index (`docs/README.md`) and the decision
+    procedure in `CLAUDE.md` (decisions 60 to 63).
 2b. **Email** (decisions 35 to 38): email required at registration; sign-up and sign-in with phone or email;
     both confirmed; phone confirmed before any action; email codes for sign-in, the second step and password
     reset; level 1 needs both confirmed; staff can be added by confirmed email; an email adapter (a development
