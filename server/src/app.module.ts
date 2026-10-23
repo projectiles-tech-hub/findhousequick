@@ -6,6 +6,7 @@ import { AccountsModule } from './accounts/accounts.module.js';
 import { validateEnv } from './config/env.js';
 import { ControlsModule } from './controls/controls.module.js';
 import { HealthController } from './health/health.controller.js';
+import { EmailModule } from './integrations/email/email.module.js';
 import { SmsModule } from './integrations/sms/sms.module.js';
 import { StaffModule } from './staff/staff.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
@@ -23,6 +24,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
     PrismaModule,
     ControlsModule,
     SmsModule,
+    EmailModule,
     AccountsModule,
     StaffModule,
   ],

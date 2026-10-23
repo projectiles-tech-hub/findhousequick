@@ -24,6 +24,8 @@ GitHub repository secrets, **never in the code**. `server/.env.example` shows th
 | `FIELD_ENCRYPTION_KEY` | Yes | Encrypts staff authenticator app secrets (from the staff accounts pull request), and later ID numbers and bank account numbers, in the database | `openssl rand -base64 32` | **Secret. Never change or lose it**: data encrypted with it cannot be read without it. Keep a copy offline in a safe place (see section 3) |
 | `ACCESS_TOKEN_MINUTES` | No (default 15) | How long a sign-in pass lasts | Number of minutes, 1 to 60 | Agreed in ADR 0004 |
 | `REFRESH_TOKEN_DAYS` | No (default 30) | How long a device stays signed in | Number of days, 1 to 365 | Agreed in ADR 0004 |
+| `EMAIL_PROVIDER` | Yes | Which service sends emails (codes and notices) | `log` for development only | `log` prints emails instead of sending them and is refused in production. A real provider is added before any pilot (decision 35) |
+| `EMAIL_FROM` | No (has a default) | The sender shown on emails | e.g. `FindHouseQuick <no-reply@findhousequick.com>` | Must be an address on a domain the email service has verified |
 | `SMS_PROVIDER` | Yes | Which service sends SMS codes | `log` for development only | `log` prints codes instead of sending them and is refused in production. A real provider (e.g. Termii) is added before any pilot |
 
 ### Settings changed in the admin panel (not server settings)
@@ -74,7 +76,7 @@ login. Most need the CAC certificate (RC 7987623).
 
 | Step | When | How | Notes |
 | --- | --- | --- | --- |
-| Create the first super admin | Once per server, after the database is set up (from the staff accounts pull request) | 1. The person (normally the Managing Director) registers in the app as a normal user. 2. On the server, in the `server` folder: `pnpm staff:make-super-admin +234...` with their phone number. 3. They sign in **with their password** and complete two-step login with an SMS code (after signing in with an SMS code, the second step must be an authenticator app code, decision 34). They can then add an authenticator app. | The command refuses if any super admin already exists, so it can only be used once per server. All further staff are added by a super admin through the admin endpoints (ADR 0005). It is recorded in the audit log |
+| Create the first super admin | Once per server, after the database is set up (from the staff accounts pull request) | 1. The person (normally the Managing Director) registers in the app as a normal user. 2. On the server, in the `server` folder: `pnpm staff:make-super-admin +234...` with their phone number. 3. They confirm both phone and email, sign in **with their password**, and complete two-step login with an email or SMS code (the second step never uses the channel they signed in with, decision 36). They can then add an authenticator app. | The command refuses if any super admin already exists, so it can only be used once per server. All further staff are added by a super admin through the admin endpoints (ADR 0005). It is recorded in the audit log |
 
 ### Legal and regulatory steps (before any real user signs up)
 
@@ -92,7 +94,7 @@ company and its lawyer, not the developers, but no real user may sign up until t
 ## 5. Checklist before any server goes live
 
 1. Every required setting in section 1 is set, with fresh secrets.
-2. `NODE_ENV` is `production` and `SMS_PROVIDER` is a real provider.
+2. `NODE_ENV` is `production`, and `SMS_PROVIDER` and `EMAIL_PROVIDER` are real providers.
 3. Database migrations applied (`npx prisma migrate deploy`) and starter data loaded (`pnpm db:seed`).
 4. `GET /v1/health` returns `status: ok`.
 5. The first super admin has been created (section 4) and has completed two-step login.

@@ -3,6 +3,8 @@ import request from 'supertest';
 import { hashPassword } from '../src/accounts/secrets.js';
 import { FieldEncryption } from '../src/common/field-encryption.js';
 import type { StaffRole } from '../src/generated/prisma/client.js';
+import { EMAIL_SENDER } from '../src/integrations/email/email-sender.js';
+import { LogEmailAdapter } from '../src/integrations/email/log-email.adapter.js';
 import { LogSmsAdapter } from '../src/integrations/sms/log-sms.adapter.js';
 import { SMS_SENDER } from '../src/integrations/sms/sms-sender.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
@@ -16,13 +18,16 @@ describe('Staff: accounts, two-step login and feature rules (API)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
   let sms: LogSmsAdapter;
+  let mail: LogEmailAdapter;
   let seq = 0;
 
   const api = () => request(app.getHttpServer());
   /** A valid Nigerian number no other test uses (a different prefix from the accounts tests). */
   const newPhone = () => `+234806${String(process.pid % 100).padStart(2, '0')}${String(++seq).padStart(5, '0')}`;
-  const lastCode = (phone: string) => {
-    const msgs = sms.messagesTo(phone);
+  const newEmail = () => `staff${process.pid}.${++seq}@example.com`;
+  /** The last code sent to a phone number (by SMS) or email address (by email). */
+  const lastCode = (to: string) => {
+    const msgs = to.includes('@') ? mail.messagesTo(to) : sms.messagesTo(to);
     return /\b(\d{6})\b/.exec(msgs[msgs.length - 1].text)![1];
   };
   const bearer = (token: string) => ({ Authorization: `Bearer ${token}` });
@@ -30,17 +35,21 @@ describe('Staff: accounts, two-step login and feature rules (API)', () => {
   interface Person {
     id: string;
     phone: string;
+    email: string;
     token: string;
     refreshToken: string;
   }
 
-  /** A registered user, signed in on one device. */
-  async function person(): Promise<Person> {
+  /** A registered user with phone and email confirmed (unless `emailConfirmed` is false), signed in with a password. */
+  async function person(opts: { emailConfirmed?: boolean } = {}): Promise<Person> {
     const phone = newPhone();
+    const email = newEmail();
     const user = await prisma.user.create({
       data: {
         phone,
         phoneVerifiedAt: new Date(),
+        email,
+        emailVerifiedAt: opts.emailConfirmed === false ? null : new Date(),
         passwordHash: await hashPassword(PASSWORD),
         firstName: 'Staff',
         lastName: `Person ${seq}`,
@@ -49,7 +58,7 @@ describe('Staff: accounts, two-step login and feature rules (API)', () => {
       },
     });
     const res = await api().post('/v1/auth/login').send({ phone, password: PASSWORD }).expect(200);
-    return { id: user.id, phone, token: res.body.accessToken, refreshToken: res.body.refreshToken };
+    return { id: user.id, phone, email, token: res.body.accessToken, refreshToken: res.body.refreshToken };
   }
 
   /** Signs the person in on another device. */
@@ -68,6 +77,19 @@ describe('Staff: accounts, two-step login and feature rules (API)', () => {
   async function smsDevice(p: Person): Promise<Person> {
     await api().post('/v1/auth/otp').send({ phone: p.phone, purpose: 'LOGIN' }).expect(202);
     const res = await api().post('/v1/auth/login').send({ phone: p.phone, otp: lastCode(p.phone) }).expect(200);
+    return { ...p, token: res.body.accessToken, refreshToken: res.body.refreshToken };
+  }
+
+  /** Moves this person's earlier code requests back two minutes, so the one-code-a-minute rule allows another. */
+  async function allowNewCodes(p: Person): Promise<void> {
+    await prisma.$executeRaw`UPDATE "OtpCode" SET "createdAt" = "createdAt" - interval '2 minutes'
+      WHERE "destination" IN (${p.phone}, ${p.email})`;
+  }
+
+  /** Signs the person in on another device with an email code. */
+  async function emailDevice(p: Person): Promise<Person> {
+    await api().post('/v1/auth/otp').send({ email: p.email, purpose: 'LOGIN' }).expect(202);
+    const res = await api().post('/v1/auth/login').send({ email: p.email, otp: lastCode(p.email) }).expect(200);
     return { ...p, token: res.body.accessToken, refreshToken: res.body.refreshToken };
   }
 
@@ -96,6 +118,7 @@ describe('Staff: accounts, two-step login and feature rules (API)', () => {
     app = await createTestApp();
     prisma = app.get(PrismaService);
     sms = app.get(SMS_SENDER);
+    mail = app.get(EMAIL_SENDER);
   });
 
   afterAll(async () => {
@@ -239,7 +262,7 @@ describe('Staff: accounts, two-step login and feature rules (API)', () => {
     });
   });
 
-  describe('second step must be a different factor from the sign-in (decision 34)', () => {
+  describe('second step never uses the sign-in channel (decisions 34 and 36)', () => {
     it('records how each device signed in, and keeps it when the device renews its tokens', async () => {
       const p = await person();
       const bySms = await smsDevice(p);
@@ -257,7 +280,7 @@ describe('Staff: accounts, two-step login and feature rules (API)', () => {
       await api().post('/v1/auth/otp').send({ phone, purpose: 'REGISTER' }).expect(202);
       const res = await api()
         .post('/v1/auth/register')
-        .send({ phone, otp: lastCode(phone), password: PASSWORD, firstName: 'New', lastName: 'Staff', countryCode: 'NG', types: ['TENANT'], consent: { termsVersion: 't', privacyVersion: 'p' } })
+        .send({ phone, email: newEmail(), signUpWith: 'SMS', otp: lastCode(phone), password: PASSWORD, firstName: 'New', lastName: 'Staff', countryCode: 'NG', types: ['TENANT'], consent: { termsVersion: 't', privacyVersion: 'p' } })
         .expect(201);
       const token = await prisma.refreshToken.findFirstOrThrow({ where: { userId: res.body.user.id } });
       expect(token.signInMethod).toBe('SMS_CODE');
@@ -289,17 +312,65 @@ describe('Staff: accounts, two-step login and feature rules (API)', () => {
       await api().get('/v1/admin/staff').set(bearer(p.token)).expect(200);
     });
 
-    it('accepts an authenticator code as the second step after an SMS code sign-in', async () => {
+    it('accepts an email code or an authenticator code after an SMS code sign-in (decision 36)', async () => {
       const admin = await staff(['SUPER_ADMIN']);
-      const secret = await addAuthenticator(admin);
       const bySms = await smsDevice(admin);
-      await api().post('/v1/auth/two-step/verify').set(bearer(bySms.token)).send({ method: 'AUTHENTICATOR', code: codeAt(secret, timeStep()) }).expect(204);
+      await api().post('/v1/auth/two-step/email').set(bearer(bySms.token)).expect(202);
+      await api().post('/v1/auth/two-step/verify').set(bearer(bySms.token)).send({ method: 'EMAIL', code: lastCode(admin.email) }).expect(204);
       await api().get('/v1/admin/staff').set(bearer(bySms.token)).expect(200);
+
+      const secret = await addAuthenticator(admin);
+      await allowNewCodes(admin);
+      const another = await smsDevice({ ...admin, token: bySms.token });
+      await api().post('/v1/auth/two-step/verify').set(bearer(another.token)).send({ method: 'AUTHENTICATOR', code: codeAt(secret, timeStep()) }).expect(204);
+      await api().get('/v1/admin/staff').set(bearer(another.token)).expect(200);
     });
 
-    it('lets a device that signed in with a password use either an SMS code or an authenticator code', async () => {
+    it('refuses an email code after an email code sign-in, but accepts an SMS code', async () => {
+      const admin = await staff(['SUPER_ADMIN']);
+      const byEmail = await emailDevice(admin);
+      const refused = await api().post('/v1/auth/two-step/email').set(bearer(byEmail.token)).expect(403);
+      expect(refused.body).toMatchObject({ code: 'DIFFERENT_FACTOR_REQUIRED', allowedMethods: ['AUTHENTICATOR', 'SMS'] });
+      await allowNewCodes(admin);
+      await api().post('/v1/auth/two-step/sms').set(bearer(byEmail.token)).expect(202);
+      await api().post('/v1/auth/two-step/verify').set(bearer(byEmail.token)).send({ method: 'SMS', code: lastCode(admin.phone) }).expect(204);
+      await api().get('/v1/admin/staff').set(bearer(byEmail.token)).expect(200);
+    });
+
+    it('offers the second steps in order: authenticator if set up, then email, then SMS (decision 36)', async () => {
+      const admin = await staff(['SUPER_ADMIN']);
+      const before = await api().get('/v1/auth/two-step/options').set(bearer(admin.token)).expect(200);
+      expect(before.body).toEqual([
+        { method: 'AUTHENTICATOR', available: false },
+        { method: 'EMAIL', available: true },
+        { method: 'SMS', available: true },
+      ]);
+      await addAuthenticator(admin);
+      const after = await api().get('/v1/auth/two-step/options').set(bearer(admin.token)).expect(200);
+      expect(after.body[0]).toEqual({ method: 'AUTHENTICATOR', available: true });
+
+      const bySms = await smsDevice(admin);
+      const smsOptions = await api().get('/v1/auth/two-step/options').set(bearer(bySms.token)).expect(200);
+      expect(smsOptions.body.map((o: { method: string }) => o.method)).toEqual(['AUTHENTICATOR', 'EMAIL']);
+    });
+
+    it('refuses a code by a contact that is not confirmed, without counting an attempt', async () => {
+      const p = await person({ emailConfirmed: false });
+      await prisma.staffMember.create({ data: { userId: p.id, roles: ['SUPPORT'], countryScopes: ['NG'] } });
+      const options = await api().get('/v1/auth/two-step/options').set(bearer(p.token)).expect(200);
+      expect(options.body[1]).toEqual({ method: 'EMAIL', available: false });
+      const res = await api().post('/v1/auth/two-step/email').set(bearer(p.token)).expect(400);
+      expect(res.body.code).toBe('CONTACT_NOT_CONFIRMED');
+      await api().post('/v1/auth/two-step/verify').set(bearer(p.token)).send({ method: 'EMAIL', code: '123456' }).expect(400);
+      expect((await prisma.staffMember.findUniqueOrThrow({ where: { userId: p.id } })).twoStepFailedCount).toBe(0);
+    });
+
+    it('lets a device that signed in with a password use any of the three', async () => {
       const admin = await staff(['SUPER_ADMIN']); // passed by SMS after a password sign-in
       await api().get('/v1/admin/staff').set(bearer(admin.token)).expect(200);
+      const tablet = await newDevice(admin);
+      await api().post('/v1/auth/two-step/email').set(bearer(tablet.token)).expect(202);
+      await api().post('/v1/auth/two-step/verify').set(bearer(tablet.token)).send({ method: 'EMAIL', code: lastCode(admin.email) }).expect(204);
       const secret = await addAuthenticator(admin);
       const laptop = await newDevice(admin);
       await api().post('/v1/auth/two-step/verify').set(bearer(laptop.token)).send({ method: 'AUTHENTICATOR', code: codeAt(secret, timeStep()) }).expect(204);
@@ -314,7 +385,7 @@ describe('Staff: accounts, two-step login and feature rules (API)', () => {
       await api().get('/v1/admin/staff').set(bearer(admin.token)).expect(200);
       await secondStepDoneAgo(admin, 181);
       // The earlier second-step code was sent then too (otherwise the one-code-a-minute rule applies).
-      await prisma.$executeRaw`UPDATE "OtpCode" SET "createdAt" = "createdAt" - interval '181 minutes' WHERE "phone" = ${admin.phone}`;
+      await prisma.$executeRaw`UPDATE "OtpCode" SET "createdAt" = "createdAt" - interval '181 minutes' WHERE "destination" = ${admin.phone}`;
       const expired = await api().get('/v1/admin/staff').set(bearer(admin.token)).expect(403);
       expect(expired.body.code).toBe('TWO_STEP_REQUIRED');
 
@@ -371,6 +442,25 @@ describe('Staff: accounts, two-step login and feature rules (API)', () => {
   });
 
   describe('managing staff', () => {
+    it('adds staff by confirmed email address as well as by phone number (decision 38)', async () => {
+      const admin = await staff(['SUPER_ADMIN']);
+      const byEmail = await person();
+      const res = await api()
+        .post('/v1/admin/staff')
+        .set(bearer(admin.token))
+        .send({ email: byEmail.email.toUpperCase(), roles: ['SUPPORT'], countryScopes: ['NG'] })
+        .expect(201);
+      expect(res.body).toMatchObject({ userId: byEmail.id, roles: ['SUPPORT'] });
+
+      // Never through a contact nobody has proved they own.
+      const unconfirmed = await person({ emailConfirmed: false });
+      const refused = await api().post('/v1/admin/staff').set(bearer(admin.token)).send({ email: unconfirmed.email, roles: ['SUPPORT'], countryScopes: ['NG'] }).expect(404);
+      expect(refused.body.code).toBe('USER_NOT_FOUND');
+      await prisma.user.update({ where: { id: unconfirmed.id }, data: { phoneVerifiedAt: null } });
+      await api().post('/v1/admin/staff').set(bearer(admin.token)).send({ phone: unconfirmed.phone, roles: ['SUPPORT'], countryScopes: ['NG'] }).expect(404);
+      await api().post('/v1/admin/staff').set(bearer(admin.token)).send({ phone: unconfirmed.phone, email: unconfirmed.email, roles: ['SUPPORT'], countryScopes: ['NG'] }).expect(400);
+    });
+
     it('lets a super admin add a registered user as staff, with every change recorded', async () => {
       const admin = await staff(['SUPER_ADMIN']);
       const newcomer = await person();

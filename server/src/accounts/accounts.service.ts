@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { apiError } from '../common/api-error.js';
 import { ControlsService } from '../controls/controls.service.js';
 import type { EvaluationContext } from '../controls/feature-evaluator.js';
-import { Prisma } from '../generated/prisma/client.js';
+import { Prisma, type SignInMethod } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import type { LoginDto, RegisterDto, RequestOtpDto, ResetPasswordDto, UpdateMeDto } from './dto.js';
+import { contactOf, oneContact, type Channel, type Contact } from './contact.js';
+import type { ContactCodeDto, ContactConfirmDto, LoginDto, RegisterDto, RequestOtpDto, ResetPasswordDto, UpdateMeDto } from './dto.js';
 import { OtpService } from './otp.service.js';
 import { DUMMY_PASSWORD_HASH, hashPassword, verifyPassword } from './secrets.js';
 import { SessionsService, type IssuedTokens } from './sessions.service.js';
@@ -12,7 +13,7 @@ import { nextStep, verificationLevel, type UserTypeName } from './verification-l
 
 /** Protection against password guessing on one account. */
 export const PASSWORD_RULES = {
-  /** Password attempts without a success before password sign-in pauses. Sign-in by SMS code still works. */
+  /** Password attempts without a success before password sign-in pauses. Sign-in by code still works. */
   maxFailures: 5,
   /** Minutes password sign-in stays paused. */
   lockMinutes: 15,
@@ -21,7 +22,9 @@ export const PASSWORD_RULES = {
 const meSelect = {
   id: true,
   phone: true,
+  phoneVerifiedAt: true,
   email: true,
+  emailVerifiedAt: true,
   firstName: true,
   lastName: true,
   countryCode: true,
@@ -40,25 +43,39 @@ export interface Session {
   user: ReturnType<typeof toMe>;
 }
 
-/** The user as the apps see them: profile, verification level, and what to do next. */
+/** The user as the apps see them: profile, which contacts are confirmed, verification level, and what to do next. */
 export function toMe(u: MeRow) {
   const types = u.types as UserTypeName[];
+  const contacts = { phoneConfirmed: !!u.phone && !!u.phoneVerifiedAt, emailConfirmed: !!u.email && !!u.emailVerifiedAt };
   const level = verificationLevel({
+    ...contacts,
     identityVerifiedAt: u.identityVerifiedAt,
     hasVerifiedBankAccount: u.bankAccounts.length > 0,
   });
   return {
     id: u.id,
     phone: u.phone,
+    phoneConfirmed: contacts.phoneConfirmed,
     email: u.email,
+    emailConfirmed: contacts.emailConfirmed,
     firstName: u.firstName,
     lastName: u.lastName,
     countryCode: u.countryCode,
     types,
     language: u.language,
     verificationLevel: level,
-    next: nextStep(level, types),
+    next: nextStep(level, types, contacts),
   };
+}
+
+const LABEL: Record<Channel, string> = { SMS: 'phone number', EMAIL: 'email address' };
+const signInMethodFor = (c: Contact): SignInMethod => (c.channel === 'SMS' ? 'SMS_CODE' : 'EMAIL_CODE');
+
+/** The account holding a phone number or email address, if any, and whether it has confirmed it. */
+interface Holder {
+  id: string;
+  status: string;
+  confirmed: boolean;
 }
 
 @Injectable()
@@ -70,15 +87,28 @@ export class AccountsService {
     private readonly controls: ControlsService,
   ) {}
 
-  /** Sends a one-time code. The outcome looks the same whether or not the number is registered. */
+  /**
+   * Sends a one-time code to a phone number or email address. The outcome looks the same whether or not it is
+   * registered. Sign-in and reset codes go only to a contact an active account has confirmed, so a mistyped
+   * address can never be used to get into someone else's account (ADR 0006).
+   */
   async requestOtp(dto: RequestOtpDto, ctx: EvaluationContext): Promise<void> {
+    const contact = oneContact(dto);
     if (dto.purpose === 'REGISTER') await this.assertRegistrationsOpen(ctx);
-
-    const user = await this.prisma.user.findUnique({ where: { phone: dto.phone }, select: { status: true } });
-    const deliver = dto.purpose === 'REGISTER' ? !user : user?.status === 'ACTIVE';
-    await this.otp.issue(dto.phone, dto.purpose, deliver);
+    const holder = await this.holderOf(contact);
+    const deliver =
+      dto.purpose === 'REGISTER' ? !holder?.confirmed : !!holder?.confirmed && holder.status === 'ACTIVE';
+    await this.otp.issue(contact, dto.purpose, deliver);
   }
 
+  /**
+   * Registers a user (decision 35). Phone and email are both required; the one named in `signUpWith` is
+   * confirmed by the code now, and the other is confirmed afterwards through /me/contacts.
+   *
+   * If another account holds the confirmed contact without having confirmed it, the contact is released from
+   * that account, so nobody can block a phone number or email address by typing it first. A contact another
+   * account has confirmed cannot be taken. The other, unconfirmed contact must not be held by anyone.
+   */
   async register(dto: RegisterDto, ctx: EvaluationContext): Promise<Session> {
     await this.assertRegistrationsOpen({ ...ctx, countryCode: dto.countryCode });
 
@@ -89,107 +119,103 @@ export class AccountsService {
     const language = dto.language ?? country.defaultLanguage;
     await this.assertLanguageOffered(language, country.languages, { ...ctx, countryCode: dto.countryCode });
 
-    if (!(await this.otp.consume(dto.phone, 'REGISTER', dto.otp))) {
+    const confirmed: Contact = dto.signUpWith === 'SMS' ? { channel: 'SMS', destination: dto.phone } : { channel: 'EMAIL', destination: dto.email };
+    const other: Contact = dto.signUpWith === 'SMS' ? { channel: 'EMAIL', destination: dto.email } : { channel: 'SMS', destination: dto.phone };
+
+    if (!(await this.otp.consume(confirmed, 'REGISTER', dto.otp))) {
       throw apiError(400, 'INVALID_CODE', 'The code is wrong or has expired. Please request a new one.');
     }
 
     const now = new Date();
+    const passwordHash = await hashPassword(dto.password);
     let user: MeRow;
     try {
-      user = await this.prisma.user.create({
-        data: {
-          phone: dto.phone,
-          phoneVerifiedAt: now,
-          email: dto.email ?? null,
-          passwordHash: await hashPassword(dto.password),
-          firstName: dto.firstName,
-          lastName: dto.lastName,
-          countryCode: dto.countryCode,
-          types: dto.types,
-          language,
-          termsVersion: dto.consent.termsVersion,
-          privacyVersion: dto.consent.privacyVersion,
-          consentedAt: now,
-        },
-        select: meSelect,
+      user = await this.prisma.$transaction(async (tx) => {
+        await this.claimConfirmed(tx, confirmed, null);
+        if (await this.holderOf(other, tx)) throw this.takenError(other);
+        return tx.user.create({
+          data: {
+            phone: dto.phone,
+            phoneVerifiedAt: confirmed.channel === 'SMS' ? now : null,
+            email: dto.email,
+            emailVerifiedAt: confirmed.channel === 'EMAIL' ? now : null,
+            passwordHash,
+            firstName: dto.firstName,
+            lastName: dto.lastName,
+            countryCode: dto.countryCode,
+            types: dto.types,
+            language,
+            termsVersion: dto.consent.termsVersion,
+            privacyVersion: dto.consent.privacyVersion,
+            consentedAt: now,
+          },
+          select: meSelect,
+        });
       });
     } catch (err) {
       throw this.duplicateError(err) ?? err;
     }
-    // Registering uses an SMS code, so the new device counts as signed in by SMS code.
-    return this.session(user, await this.sessions.start(user.id, null, 'SMS_CODE'));
+    // Registering uses a code, so the new device counts as signed in by that channel (decision 36).
+    return this.session(user, await this.sessions.start(user.id, null, signInMethodFor(confirmed)));
   }
 
+  /** Signs in with a phone number or email address, and a password or a code sent to it (decision 35). */
   async login(dto: LoginDto): Promise<Session> {
+    const contact = oneContact(dto);
     if (!!dto.password === !!dto.otp) {
-      throw apiError(400, 'BAD_REQUEST', 'Give either a password or an SMS code.');
+      throw apiError(400, 'BAD_REQUEST', 'Give either a password or a code.');
     }
-    const wrong = () => apiError(401, 'WRONG_CREDENTIALS', 'The phone number, password or code is not correct.');
+    const wrong = () =>
+      apiError(401, 'WRONG_CREDENTIALS', 'The phone number or email address, password or code is not correct.');
     const user = await this.prisma.user.findUnique({
-      where: { phone: dto.phone },
+      where: contact.channel === 'SMS' ? { phone: contact.destination } : { email: contact.destination },
       select: { ...meSelect, status: true, passwordHash: true },
     });
 
     if (dto.otp) {
-      if (!(await this.otp.consume(dto.phone, 'LOGIN', dto.otp)) || !user) throw wrong();
+      if (!(await this.otp.consume(contact, 'LOGIN', dto.otp)) || !user) throw wrong();
+      // A code only signs in through a contact the account has confirmed (ADR 0006).
+      const confirmedAt = contact.channel === 'SMS' ? user.phoneVerifiedAt : user.emailVerifiedAt;
+      if (!confirmedAt) throw wrong();
     } else {
       if (!user) {
-        // Same work as a real check, so an unknown number takes as long to refuse as a wrong password.
+        // Same work as a real check, so an unknown contact takes as long to refuse as a wrong password.
         await verifyPassword(dto.password!, DUMMY_PASSWORD_HASH);
         throw wrong();
       }
-      const attempt = await this.claimPasswordAttempt(user.id);
-      if (attempt === null) {
-        throw apiError(
-          429,
-          'PASSWORD_LOCKED',
-          'Too many wrong passwords. Please wait a few minutes, or sign in with an SMS code.',
-        );
-      }
-      if (!(await verifyPassword(dto.password!, user.passwordHash))) {
-        if (attempt >= PASSWORD_RULES.maxFailures) {
-          await this.prisma.auditLog.create({
-            data: { actorId: null, action: 'auth.password_locked', entityType: 'User', entityId: user.id },
-          });
-        }
-        throw wrong();
-      }
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: { failedPasswordCount: 0, passwordLockedUntil: null },
-      });
+      await this.checkPassword(user.id, user.passwordHash, dto.password!, wrong);
     }
 
     if (user.status === 'DELETED') throw wrong();
     if (user.status !== 'ACTIVE') {
       throw apiError(403, 'ACCOUNT_SUSPENDED', 'This account has been suspended. Please contact support.');
     }
-    return this.session(user, await this.sessions.start(user.id, dto.device ?? null, dto.otp ? 'SMS_CODE' : 'PASSWORD'));
+    const method: SignInMethod = dto.otp ? signInMethodFor(contact) : 'PASSWORD';
+    return this.session(user, await this.sessions.start(user.id, dto.device ?? null, method));
   }
 
   /**
-   * Sets a new password using an SMS code, then signs the user out of every device, so anyone who had the
-   * old password or a stolen session is shut out. Also lifts any pause on password sign-in.
+   * Sets a new password using a code sent by SMS or email, as the user chooses (decision 36), then signs the
+   * user out of every device, so anyone who had the old password or a stolen session is shut out. Also lifts
+   * any pause on password sign-in.
    */
   async resetPassword(dto: ResetPasswordDto): Promise<void> {
-    if (!(await this.otp.consume(dto.phone, 'RESET_PASSWORD', dto.otp))) {
-      throw apiError(400, 'INVALID_CODE', 'The code is wrong or has expired. Please request a new one.');
-    }
-    // A reset code is only ever sent to an active account, so a missing account here is treated the same way.
-    const user = await this.prisma.user.findUnique({ where: { phone: dto.phone }, select: { id: true, status: true } });
-    if (!user || user.status === 'DELETED') {
-      throw apiError(400, 'INVALID_CODE', 'The code is wrong or has expired. Please request a new one.');
-    }
-    if (user.status !== 'ACTIVE') {
+    const contact = oneContact(dto);
+    const invalid = () => apiError(400, 'INVALID_CODE', 'The code is wrong or has expired. Please request a new one.');
+    if (!(await this.otp.consume(contact, 'RESET_PASSWORD', dto.otp))) throw invalid();
+    // A reset code is only ever sent to a contact an active account has confirmed; anything else is refused alike.
+    const holder = await this.holderOf(contact);
+    if (!holder?.confirmed || holder.status === 'DELETED') throw invalid();
+    if (holder.status !== 'ACTIVE') {
       throw apiError(403, 'ACCOUNT_SUSPENDED', 'This account has been suspended. Please contact support.');
     }
     await this.prisma.user.update({
-      where: { id: user.id },
+      where: { id: holder.id },
       data: { passwordHash: await hashPassword(dto.newPassword), failedPasswordCount: 0, passwordLockedUntil: null },
     });
-    await this.sessions.endAllForUser(user.id);
+    await this.sessions.endAllForUser(holder.id);
     await this.prisma.auditLog.create({
-      data: { actorId: user.id, action: 'auth.password_reset', entityType: 'User', entityId: user.id },
+      data: { actorId: holder.id, action: 'auth.password_reset', entityType: 'User', entityId: holder.id, metadata: { channel: contact.channel } },
     });
   }
 
@@ -208,10 +234,7 @@ export class AccountsService {
   }
 
   async updateMe(userId: string, dto: UpdateMeDto, ctx: EvaluationContext) {
-    const current = await this.prisma.user.findUniqueOrThrow({
-      where: { id: userId },
-      select: { email: true, countryCode: true },
-    });
+    const current = await this.prisma.user.findUniqueOrThrow({ where: { id: userId }, select: { countryCode: true } });
     const data: Prisma.UserUpdateInput = {};
     if (dto.language !== undefined) {
       const country = await this.controls.findCountry(current.countryCode);
@@ -219,19 +242,147 @@ export class AccountsService {
       data.language = dto.language;
     }
     if (dto.types !== undefined) data.types = dto.types;
-    if (dto.email !== undefined && dto.email !== current.email) {
-      data.email = dto.email;
-      data.emailVerifiedAt = null; // A new address has not been confirmed yet.
+    return toMe(await this.prisma.user.update({ where: { id: userId }, data, select: meSelect }));
+  }
+
+  /**
+   * Sends a code to confirm a phone number or email address: the one already on the account, or a new one to
+   * replace it (ADR 0006). The answer is the same whether or not another account has the contact; the code is
+   * only sent if the contact is free to be confirmed here.
+   */
+  async sendContactCode(userId: string, dto: ContactCodeDto): Promise<void> {
+    const contact = contactOf(dto.channel, dto.value);
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId }, select: meSelect });
+    const [current, confirmedAt] = dto.channel === 'SMS' ? [user.phone, user.phoneVerifiedAt] : [user.email, user.emailVerifiedAt];
+    if (current === contact.destination && confirmedAt) {
+      throw apiError(409, 'ALREADY_CONFIRMED', `This ${LABEL[contact.channel]} is already confirmed.`);
     }
+    const holder = await this.holderOf(contact);
+    const deliver = !holder || holder.id === userId || !holder.confirmed;
+    await this.otp.issue(contact, 'CONFIRM_CONTACT', deliver);
+  }
+
+  /**
+   * Confirms a phone number or email address with its code, putting it on the account if it is new. Replacing a
+   * contact that is already confirmed needs the current password, and the old contact is told about the change,
+   * so someone with only a stolen session cannot quietly take the account over.
+   */
+  async confirmContact(userId: string, dto: ContactConfirmDto) {
+    const contact = contactOf(dto.channel, dto.value);
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+      select: { ...meSelect, passwordHash: true },
+    });
+    const [current, confirmedAt] = dto.channel === 'SMS' ? [user.phone, user.phoneVerifiedAt] : [user.email, user.emailVerifiedAt];
+    if (current === contact.destination && confirmedAt) {
+      throw apiError(409, 'ALREADY_CONFIRMED', `This ${LABEL[contact.channel]} is already confirmed.`);
+    }
+    const replacingConfirmed = !!current && !!confirmedAt && current !== contact.destination;
+    if (replacingConfirmed) {
+      if (!dto.currentPassword) {
+        throw apiError(400, 'PASSWORD_REQUIRED', `Enter your password to change your ${LABEL[contact.channel]}.`);
+      }
+      await this.checkPassword(user.id, user.passwordHash, dto.currentPassword, () =>
+        apiError(401, 'WRONG_PASSWORD', 'The password is not correct.'),
+      );
+    }
+    if (!(await this.otp.consume(contact, 'CONFIRM_CONTACT', dto.code))) {
+      throw apiError(400, 'INVALID_CODE', 'The code is wrong or has expired. Please request a new one.');
+    }
+
+    let updated: MeRow;
     try {
-      return toMe(await this.prisma.user.update({ where: { id: userId }, data, select: meSelect }));
+      updated = await this.prisma.$transaction(async (tx) => {
+        await this.claimConfirmed(tx, contact, userId);
+        const now = new Date();
+        const data: Prisma.UserUpdateInput =
+          contact.channel === 'SMS' ? { phone: contact.destination, phoneVerifiedAt: now } : { email: contact.destination, emailVerifiedAt: now };
+        const u = await tx.user.update({ where: { id: userId }, data, select: meSelect });
+        await tx.auditLog.create({
+          data: {
+            actorId: userId,
+            action: current && current !== contact.destination ? 'contact.changed' : 'contact.confirmed',
+            entityType: 'User',
+            entityId: userId,
+            metadata: { channel: contact.channel },
+          },
+        });
+        return u;
+      });
     } catch (err) {
       throw this.duplicateError(err) ?? err;
     }
+
+    if (replacingConfirmed) {
+      const label = LABEL[contact.channel];
+      await this.otp.notify(
+        { channel: contact.channel, destination: current! },
+        `Your FindHouseQuick ${label} was changed`,
+        `The ${label} on your FindHouseQuick account was changed. If you did not do this, contact FindHouseQuick support at once.`,
+      );
+    }
+    return toMe(updated);
   }
 
   private session(user: MeRow, tokens: IssuedTokens): Session {
     return { ...tokens, user: toMe(user) };
+  }
+
+  /** The account holding a contact, if any. */
+  private async holderOf(contact: Contact, db: Prisma.TransactionClient = this.prisma): Promise<Holder | null> {
+    if (contact.channel === 'SMS') {
+      const u = await db.user.findUnique({ where: { phone: contact.destination }, select: { id: true, status: true, phoneVerifiedAt: true } });
+      return u ? { id: u.id, status: u.status, confirmed: !!u.phoneVerifiedAt } : null;
+    }
+    const u = await db.user.findUnique({ where: { email: contact.destination }, select: { id: true, status: true, emailVerifiedAt: true } });
+    return u ? { id: u.id, status: u.status, confirmed: !!u.emailVerifiedAt } : null;
+  }
+
+  /**
+   * Makes a just-confirmed contact free for `forUserId` (null for a new registration): refuses if another account
+   * has confirmed it, and releases it from another account that holds it unconfirmed. Runs inside a transaction,
+   * with the row locked so two confirmations at the same moment cannot both succeed.
+   */
+  private async claimConfirmed(tx: Prisma.TransactionClient, contact: Contact, forUserId: string | null): Promise<void> {
+    const rows =
+      contact.channel === 'SMS'
+        ? await tx.$queryRaw<{ id: string; confirmed: boolean }[]>`
+            SELECT "id", ("phoneVerifiedAt" IS NOT NULL) AS "confirmed" FROM "User" WHERE "phone" = ${contact.destination} FOR UPDATE`
+        : await tx.$queryRaw<{ id: string; confirmed: boolean }[]>`
+            SELECT "id", ("emailVerifiedAt" IS NOT NULL) AS "confirmed" FROM "User" WHERE "email" = ${contact.destination} FOR UPDATE`;
+    const holder = rows[0];
+    if (!holder || holder.id === forUserId) return;
+    if (holder.confirmed) throw this.takenError(contact);
+    await tx.user.update({
+      where: { id: holder.id },
+      data: contact.channel === 'SMS' ? { phone: null, phoneVerifiedAt: null } : { email: null, emailVerifiedAt: null },
+    });
+    await tx.auditLog.create({
+      data: {
+        actorId: forUserId,
+        action: 'contact.released',
+        entityType: 'User',
+        entityId: holder.id,
+        metadata: { channel: contact.channel, reason: 'confirmed by another account' },
+      },
+    });
+  }
+
+  /** Counts a password attempt, then checks it (see claimPasswordAttempt). Throws `wrong()` if incorrect. */
+  private async checkPassword(userId: string, hash: string, password: string, wrong: () => Error): Promise<void> {
+    const attempt = await this.claimPasswordAttempt(userId);
+    if (attempt === null) {
+      throw apiError(429, 'PASSWORD_LOCKED', 'Too many wrong passwords. Please wait a few minutes, or sign in with a code.');
+    }
+    if (!(await verifyPassword(password, hash))) {
+      if (attempt >= PASSWORD_RULES.maxFailures) {
+        await this.prisma.auditLog.create({
+          data: { actorId: null, action: 'auth.password_locked', entityType: 'User', entityId: userId },
+        });
+      }
+      throw wrong();
+    }
+    await this.prisma.user.update({ where: { id: userId }, data: { failedPasswordCount: 0, passwordLockedUntil: null } });
   }
 
   /**
@@ -277,14 +428,17 @@ export class AccountsService {
     }
   }
 
+  private takenError(contact: Pick<Contact, 'channel'>) {
+    return contact.channel === 'EMAIL'
+      ? apiError(409, 'EMAIL_TAKEN', 'This email address is already used by another account.')
+      : apiError(409, 'PHONE_TAKEN', 'This phone number is already used by another account.');
+  }
+
   /** Turns a database "already exists" error into a clear 409. */
   private duplicateError(err: unknown) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
       const target = JSON.stringify(err.meta ?? {});
-      if (target.includes('email')) {
-        return apiError(409, 'EMAIL_TAKEN', 'This email address is already used by another account.');
-      }
-      return apiError(409, 'PHONE_TAKEN', 'This phone number is already registered. Please sign in instead.');
+      return this.takenError({ channel: target.includes('email') ? 'EMAIL' : 'SMS' });
     }
     return null;
   }

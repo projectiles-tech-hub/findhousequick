@@ -20,8 +20,14 @@ export async function makeFirstSuperAdmin(prisma: PrismaClient, rawPhone: string
     if (existing > 0) {
       throw new Error('A super admin already exists. Add further staff through the admin endpoints instead.');
     }
-    const user = await tx.user.findUnique({ where: { phone }, select: { id: true, status: true, firstName: true, lastName: true } });
+    const user = await tx.user.findUnique({
+      where: { phone },
+      select: { id: true, status: true, firstName: true, lastName: true, phoneVerifiedAt: true },
+    });
     if (!user) throw new Error(`No registered account uses ${phone}. The person must register in the app first.`);
+    if (!user.phoneVerifiedAt) {
+      throw new Error(`The account for ${phone} has not confirmed this phone number. Confirm it in the app first.`);
+    }
     if (user.status !== 'ACTIVE') throw new Error(`The account for ${phone} is not active (${user.status}).`);
 
     await tx.staffMember.upsert({

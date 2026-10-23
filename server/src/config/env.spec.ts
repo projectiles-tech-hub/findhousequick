@@ -19,7 +19,12 @@ describe('configuration', () => {
     expect(() => validateEnv({ ...base, OTP_HASH_SECRET: base.JWT_SECRET })).toThrow(/different from JWT_SECRET/);
   });
 
-  it('refuses the development SMS provider in production', () => {
-    expect(() => validateEnv({ ...base, NODE_ENV: 'production' })).toThrow(/cannot be used in production/);
+  it('refuses the development SMS and email providers in production', () => {
+    expect(() => validateEnv({ ...base, NODE_ENV: 'production' })).toThrow(/SMS provider cannot be used in production/);
+    expect(() => validateEnv({ ...base, NODE_ENV: 'production' })).toThrow(/email provider cannot be used in production/);
+  });
+
+  it('has a sender for emails by default', () => {
+    expect(validateEnv(base).EMAIL_FROM).toContain('FindHouseQuick');
   });
 });

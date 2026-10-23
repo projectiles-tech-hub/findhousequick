@@ -3,6 +3,7 @@ import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags }
 import { CurrentUser } from '../accounts/auth.js';
 import type { RequestUser } from '../controls/request-context.js';
 import { AddStaffDto, UpdateStaffDto } from './dto.js';
+import { oneContact } from '../accounts/contact.js';
 import { StaffOnly } from './staff.guard.js';
 import { StaffService } from './staff.service.js';
 
@@ -21,12 +22,12 @@ export class StaffController {
   }
 
   @Post()
-  @ApiOperation({ summary: 'Make a registered user a staff member' })
+  @ApiOperation({ summary: 'Make a registered user a staff member, by confirmed phone number or email address (decision 38)' })
   @ApiCreatedResponse({ description: 'Staff member added' })
-  @ApiResponse({ status: 404, description: 'No registered account with this phone number (USER_NOT_FOUND)' })
+  @ApiResponse({ status: 404, description: 'No account has confirmed this phone number or email address (USER_NOT_FOUND)' })
   @ApiResponse({ status: 409, description: 'Already a staff member (ALREADY_STAFF)' })
   add(@CurrentUser() actor: RequestUser, @Body() dto: AddStaffDto) {
-    return this.staff.add(actor.id, dto.phone, dto.roles, dto.countryScopes);
+    return this.staff.add(actor.id, oneContact(dto), dto.roles, dto.countryScopes);
   }
 
   @Patch(':userId')

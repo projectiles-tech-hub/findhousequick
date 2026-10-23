@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { apiError } from '../common/api-error.js';
 import type { Prisma, StaffRole } from '../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import type { Contact } from '../accounts/contact.js';
 
 export const STAFF_ROLES: StaffRole[] = ['SUPER_ADMIN', 'COUNTRY_MANAGER', 'VERIFIER', 'FIELD_OFFICER', 'SUPPORT', 'FINANCE'];
 
@@ -50,15 +51,26 @@ export class StaffService {
     return rows.map(toStaffView);
   }
 
-  /** Makes an existing registered user a staff member. The person must have registered in the app first. */
-  async add(actorId: string, phone: string, roles: StaffRole[], countryScopes: string[]) {
+  /**
+   * Makes an existing registered user a staff member, found by confirmed phone number or confirmed email address
+   * (decision 38). The person must have registered in the app and confirmed that contact first, so staff rights
+   * can never be given through a phone number or email address nobody has proved they own.
+   */
+  async add(actorId: string, contact: Contact, roles: StaffRole[], countryScopes: string[]) {
     await this.assertCountries(countryScopes);
-    const user = await this.prisma.user.findUnique({
-      where: { phone },
-      select: { id: true, status: true, staff: { select: { userId: true } } },
-    });
+    const select = { id: true, status: true, phoneVerifiedAt: true, emailVerifiedAt: true, staff: { select: { userId: true } } } as const;
+    const found =
+      contact.channel === 'SMS'
+        ? await this.prisma.user.findUnique({ where: { phone: contact.destination }, select })
+        : await this.prisma.user.findUnique({ where: { email: contact.destination }, select });
+    const confirmed = found && (contact.channel === 'SMS' ? found.phoneVerifiedAt : found.emailVerifiedAt);
+    const user = confirmed ? found : null;
     if (!user || user.status === 'DELETED') {
-      throw apiError(404, 'USER_NOT_FOUND', 'No registered account uses this phone number. Ask the person to register first.');
+      throw apiError(
+        404,
+        'USER_NOT_FOUND',
+        'No registered account has confirmed this phone number or email address. Ask the person to register and confirm it first.',
+      );
     }
     if (user.status !== 'ACTIVE') {
       throw apiError(400, 'ACCOUNT_SUSPENDED', 'This account is suspended and cannot be made staff.');
