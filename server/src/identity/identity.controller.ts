@@ -6,7 +6,7 @@ import { CurrentUser, Public } from '../accounts/auth.js';
 import { RequireLevel } from '../accounts/verification.guard.js';
 import type { RequestUser } from '../controls/request-context.js';
 import { RequireFeature } from '../controls/require-feature.guard.js';
-import { AgentProfileDto, StartIdentityCheckDto } from './dto.js';
+import { AgentProfileDto, AttachDocumentDto, StartIdentityCheckDto } from './dto.js';
 import { IdentityService } from './identity.service.js';
 
 @ApiTags('Identity')
@@ -47,6 +47,25 @@ export class IdentityController {
   @ApiOkResponse({ description: 'Check' })
   get(@CurrentUser() user: RequestUser, @Param('checkId', ParseUUIDPipe) checkId: string) {
     return this.identity.get(user.id, checkId);
+  }
+
+  @Post('identity/checks/:checkId/document')
+  @RequireLevel(1)
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Add an identity document photo after the NIN check failed or did not match (decision 49)',
+    description:
+      'Only when the check has nextAction UPLOAD_ID_DOCUMENT. Upload the photo first through POST /documents with purpose ' +
+      "IDENTITY and one of the country's accepted document types. The verification team reviews it.",
+  })
+  @ApiOkResponse({ description: 'Document attached; check sent to the verification team' })
+  @ApiResponse({ status: 409, description: 'DOCUMENT_NOT_REQUESTED, UPLOAD_NOT_COMPLETE or DOCUMENT_ALREADY_USED' })
+  attachDocument(
+    @CurrentUser() user: RequestUser,
+    @Param('checkId', ParseUUIDPipe) checkId: string,
+    @Body() dto: AttachDocumentDto,
+  ) {
+    return this.identity.attachDocument(user.id, checkId, dto.documentId);
   }
 
   @Post('identity/provider-results/:provider')

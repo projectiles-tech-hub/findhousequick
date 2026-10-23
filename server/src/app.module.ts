@@ -6,9 +6,13 @@ import { AccountsModule } from './accounts/accounts.module.js';
 import { validateEnv } from './config/env.js';
 import { ControlsModule } from './controls/controls.module.js';
 import { HealthController } from './health/health.controller.js';
+import { DocumentsModule } from './documents/documents.module.js';
 import { IdentityModule } from './identity/identity.module.js';
+import { JobsModule } from './jobs/jobs.module.js';
 import { EmailModule } from './integrations/email/email.module.js';
 import { IdentityProviderModule } from './integrations/identity/identity.module.js';
+import { StorageModule } from './integrations/storage/storage.module.js';
+import { ReviewModule } from './review/review.module.js';
 import { SmsModule } from './integrations/sms/sms.module.js';
 import { StaffModule } from './staff/staff.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
@@ -28,9 +32,13 @@ import { PrismaModule } from './prisma/prisma.module.js';
     SmsModule,
     EmailModule,
     IdentityProviderModule,
+    StorageModule,
     AccountsModule,
     StaffModule,
     IdentityModule,
+    DocumentsModule,
+    ReviewModule,
+    JobsModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

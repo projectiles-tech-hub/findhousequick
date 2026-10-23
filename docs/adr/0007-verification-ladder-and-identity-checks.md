@@ -1,6 +1,6 @@
 # ADR 0007: The verification ladder check and identity checks
 
-- Status: Proposed (Release 1 step 3, first part).
+- Status: Proposed (Release 1 step 3).
 - Context: Product Specification, Sections 3.1 to 3.4 and 15; decisions 6, 35, 37, 49, 50, 55 and 64; ADR 0004
   (sign-in); ADR 0006 (contacts). Technical Architecture: identity providers such as Smile ID, Dojah or Prembly.
 
@@ -76,16 +76,45 @@ another). `GET /me/agent-profile` returns them.
 
 A country setting `retention.identityImagesDays` holds how long identity document photos are kept after their check
 is closed. It is empty until set after legal advice (open point 15). Selfies stay with the provider and are not
-stored by the platform. The photos themselves arrive in the second part of step 3, which will set each photo's
-deletion date from this setting.
+stored by the platform. Each photo's deletion date is set from it when its check is closed (below).
 
-## Second part of step 3 (next pull request)
+### Document photos (decision 49)
 
-- Private document upload (`/documents`), with a storage adapter, and adding a document photo to a check
-  (`/identity/checks/{checkId}/document`, decision 49).
-- The verification team's queue and decisions (`/admin/review-tasks`), including passing or failing identity checks
-  and agent company details, and viewing private documents with every view recorded (`/admin/documents/{id}/view`).
-- Deleting identity document photos when their retention period ends (the first background job; BullMQ starts here).
+- **Private storage** is reached through an adapter (`server/src/integrations/storage`), one per company. The
+  development provider `local` keeps files in a folder and accepts uploads through the API with signed links that
+  run out after 15 minutes; it is refused in production. Cloudflare R2 gets its own adapter when the account is opened.
+- **Uploading** (`POST /documents`, level 1): the app declares the document type, file type, size and SHA-256 and
+  gets an upload link. Only identity documents are open so far, of the types in the country setting
+  `verification.idDocumentTypes` (Nigeria: driver's licence, international passport, NIN slip). After sending the
+  file, the app confirms (`/documents/{id}/complete`); the server checks the stored file's size and SHA-256 against
+  what was declared, and removes a file that does not match. An `Idempotency-Key` returns the same document if the
+  request is repeated.
+- **Adding the photo to a check** (`/identity/checks/{id}/document`) is allowed only when the check says
+  `UPLOAD_ID_DOCUMENT`, with a finished upload of the user's own not used on another check. The check goes to the
+  verification team.
+
+### The verification team's queue
+
+- `GET /admin/review-tasks` lists tasks oldest first, only in the staff member's countries, for verifiers, country
+  managers and super admins who have completed two-step login. Each task carries what is needed to decide it (the
+  account name, the ID type and last four characters, the name on the ID, the reason, the document), never the full
+  ID number.
+- `POST /admin/review-tasks/{id}/decision` with APPROVE or REJECT and notes:
+  - identity reviews and duplicate IDs: APPROVE passes the check and the user reaches level 2; REJECT fails it and the
+    user may start a new check. An ID already verified on another account is never passed (one ID, one verified
+    account); that account must be dealt with first;
+  - agent company details: APPROVE or REJECT them.
+  Other task types and outcomes (bans, site visits and so on) are decided here once their parts are built.
+- Staff never decide their own case or view their own documents. Each decision is written to the audit log with the
+  notes. `POST /admin/documents/{id}/view` gives a 5-minute link and records the viewer and reason in the audit log.
+
+### Deleting photos when the retention period ends (decision 55)
+
+When a check with a photo is closed, the photo is marked for deletion after the country's
+`retention.identityImagesDays` (no date while the setting is empty). An hourly background job removes due files from
+storage and marks the documents deleted, keeping the record without the file. This is the first background job, so
+BullMQ on Redis starts here (decision 59); the schedule is stored once in Redis, so with several servers it still runs
+once an hour. `RUN_BACKGROUND_JOBS=false` turns jobs off on a server.
 
 ## Build choices
 

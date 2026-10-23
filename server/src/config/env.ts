@@ -42,6 +42,23 @@ const envSchema = z.object({
    * sending them; it is for development and tests only and is refused in production.
    */
   EMAIL_PROVIDER: z.enum(['log']).default('log'),
+  /**
+   * Where private files (identity and ownership documents) are kept (ADR 0007). "local" keeps them in a folder on the
+   * server and serves uploads through the API; it is for development and tests only and is refused in production.
+   */
+  STORAGE_PROVIDER: z.enum(['local']).default('local'),
+  /** Folder used by the "local" storage provider. */
+  STORAGE_LOCAL_DIR: z.string().default('.private-storage'),
+  /** The API's own address as the apps reach it, used in upload links, e.g. https://api.findhousequick.com. */
+  API_PUBLIC_URL: z.string().url().default('http://localhost:3000'),
+  /**
+   * Whether this server runs background jobs (such as deleting identity photos whose retention period has ended).
+   * Needs Redis. Off in the API tests, which call the jobs directly.
+   */
+  RUN_BACKGROUND_JOBS: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((v) => v === 'true'),
   /** The sender shown on emails, e.g. "FindHouseQuick <no-reply@findhousequick.com>". */
   EMAIL_FROM: z.string().min(3).default('FindHouseQuick <no-reply@findhousequick.com>'),
 }).superRefine((env, ctx) => {
@@ -53,6 +70,9 @@ const envSchema = z.object({
   }
   if (env.NODE_ENV === 'production' && env.SMS_PROVIDER === 'log') {
     ctx.addIssue({ code: 'custom', path: ['SMS_PROVIDER'], message: 'The "log" SMS provider cannot be used in production' });
+  }
+  if (env.NODE_ENV === 'production' && env.STORAGE_PROVIDER === 'local') {
+    ctx.addIssue({ code: 'custom', path: ['STORAGE_PROVIDER'], message: 'The "local" storage provider cannot be used in production' });
   }
   if (env.NODE_ENV === 'production' && env.EMAIL_PROVIDER === 'log') {
     ctx.addIssue({ code: 'custom', path: ['EMAIL_PROVIDER'], message: 'The "log" email provider cannot be used in production' });

@@ -680,7 +680,8 @@ paths:
   /identity/checks/{checkId}/document:
     post:
       tags: [Identity]
-      summary: Add an identity document photo after the NIN check failed or did not match
+      summary: Add an identity document photo after the NIN check failed or did not match (built)
+      x-verification-level: 1
       description: |
         Decision 49: no document photo is asked for by default. Only when a check ends FAILED or
         MANUAL_REVIEW with `nextAction: UPLOAD_ID_DOCUMENT` may the user add one, uploaded first
@@ -703,7 +704,7 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/IdentityCheck" }
-        "409": { description: "This check does not need a document (`code` DOCUMENT_NOT_REQUESTED)." }
+        "409": { description: "`code` DOCUMENT_NOT_REQUESTED (the check does not need one), UPLOAD_NOT_COMPLETE or DOCUMENT_ALREADY_USED." }
 
   /me/agent-profile:
     get:
@@ -1052,10 +1053,14 @@ paths:
   /documents:
     post:
       tags: [Documents]
-      summary: Start a private document upload
+      summary: Start a private document upload (built for purpose IDENTITY)
+      x-verification-level: 1
       description: |
-        Returns a short-lived upload address. Files go to private storage only; they are never
-        publicly reachable. After upload, call `/documents/{id}/complete`.
+        Returns a short-lived upload address. Send the file there with PUT and `uploadHeaders`. Files go to
+        private storage only; they are never publicly reachable. After upload, call
+        `/documents/{id}/complete`, which checks the stored file's size and SHA-256 (lower-case hex) against
+        what was declared. Only purpose IDENTITY is open so far (document types in the country setting
+        `verification.idDocumentTypes`); the others open with buildings.
       parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
       requestBody:
         required: true
@@ -1077,18 +1082,22 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/UploadTicket" }
+        "400": { description: "`code` PURPOSE_NOT_AVAILABLE or DOCUMENT_TYPE_NOT_ACCEPTED (with `acceptedDocumentTypes`)." }
+        "409": { description: "`code` DOCUMENT_ALREADY_UPLOADED: the Idempotency-Key belongs to a finished upload." }
 
   /documents/{documentId}/complete:
     post:
       tags: [Documents]
-      summary: Confirm a document upload finished; starts automatic reading and checks
+      summary: Confirm a document upload finished (built); later also starts automatic reading and checks
       parameters: [{ $ref: "#/components/parameters/DocumentId" }]
       responses:
         "200":
-          description: Document recorded.
+          description: Document recorded. Confirming twice is harmless.
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Document" }
+        "400": { description: "`code` UPLOAD_MISMATCH: the stored file is not the one declared; it is removed, start again." }
+        "409": { description: "`code` UPLOAD_NOT_FOUND: the file has not arrived yet." }
 
   # ------------------------------------------------------------------
   # Media (photos and videos of property parts)
@@ -1839,7 +1848,8 @@ paths:
   /admin/review-tasks:
     get:
       tags: [Admin]
-      summary: Verification work queue, limited to the staff member's countries
+      summary: Verification work queue, oldest first, limited to the staff member's countries (built)
+      description: Verifiers, country managers and super admins. Default status filter is OPEN and ASSIGNED.
       parameters:
         - name: type
           in: query
@@ -1864,7 +1874,12 @@ paths:
   /admin/review-tasks/{taskId}/decision:
     post:
       tags: [Admin]
-      summary: Record the outcome of a review, site visit or report
+      summary: Record the outcome of a review, site visit or report (built for identity, duplicate ID and agent company reviews)
+      description: |
+        IDENTITY_REVIEW and DUPLICATE_RESOLUTION: APPROVE passes the identity check (the user reaches level 2;
+        refused with ID_HELD_BY_ANOTHER_ACCOUNT if the ID is verified on another account), REJECT fails it.
+        AGENT_PROFILE_REVIEW: APPROVE or REJECT. Other outcomes and task types answer OUTCOME_NOT_SUPPORTED
+        until their parts are built. Staff never decide their own case (OWN_CASE).
       parameters:
         - name: taskId
           in: path
@@ -1893,7 +1908,7 @@ paths:
   /admin/documents/{documentId}/view:
     post:
       tags: [Admin]
-      summary: Get a short-lived link to view a private document (recorded in the audit log)
+      summary: Get a short-lived link to view a private document (recorded in the audit log) (built)
       parameters: [{ $ref: "#/components/parameters/DocumentId" }]
       requestBody:
         required: true
@@ -1914,6 +1929,7 @@ paths:
                 properties:
                   url: { type: string, format: uri }
                   expiresAt: { type: string, format: date-time }
+        "410": { description: "`code` DOCUMENT_GONE: not uploaded, or deleted after its retention period." }
 
   /admin/staff:
     get:
@@ -2291,6 +2307,7 @@ components:
             Why the check did not pass. LIVENESS_FAILED: try again (no document helps). ID_NOT_FOUND and
             FACE_MISMATCH: failed, a document photo may be added. NAME_MISMATCH and DUPLICATE_ID: with the
             verification team. REPLACED: a newer check was started. PROVIDER_ERROR: try again later.
+        documentAttached: { type: boolean }
         nextAction:
           type: [string, "null"]
           enum: [UPLOAD_ID_DOCUMENT, null]
@@ -2410,6 +2427,7 @@ components:
       properties:
         documentId: { $ref: "#/components/schemas/Id" }
         uploadUrl: { type: string, format: uri }
+        uploadHeaders: { type: object, additionalProperties: { type: string }, description: Headers to send with the PUT }
         expiresAt: { type: string, format: date-time }
 
     Document:
@@ -2419,6 +2437,7 @@ components:
         documentTypeCode: { type: string }
         purpose: { type: string }
         status: { type: string, enum: [PENDING, PASSED, FAILED, MANUAL_REVIEW] }
+        uploaded: { type: boolean }
         createdAt: { type: string, format: date-time }
 
     MediaItem:
@@ -2684,7 +2703,17 @@ components:
         entityId: { type: string }
         status: { type: string }
         assignedToId: { type: [string, "null"] }
+        outcome: { type: [string, "null"] }
+        notes: { type: [string, "null"] }
         dueAt: { type: [string, "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+        closedAt: { type: [string, "null"], format: date-time }
+        details:
+          type: [object, "null"]
+          description: |
+            What is needed to decide the task. Identity tasks: accountName, idType, idNumberLast4, nameOnId,
+            livenessPassed, faceMatchScore, checkStatus, failureReason, documentId. Agent company tasks:
+            accountName, businessName, registrationNumber, profileStatus.
 
     FeatureRuleInput:
       type: object

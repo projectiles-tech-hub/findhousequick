@@ -291,8 +291,8 @@ enum IdentityNextAction {
 /// Identity check result. The ID number itself is stored encrypted; only the last four digits are readable.
 /// See ADR 0007 for how a check moves from PENDING to its result.
 model IdentityVerification {
-  id                String      @id @default(uuid(7)) @db.Uuid
-  userId            String      @db.Uuid
+  id                String              @id @default(uuid(7)) @db.Uuid
+  userId            String              @db.Uuid
   provider          String
   providerReference String?
   idType            String
@@ -304,15 +304,18 @@ model IdentityVerification {
   livenessPassed    Boolean?
   faceMatchScore    Int?
   nameMatches       Boolean?
-  status            CheckStatus @default(PENDING)
+  status            CheckStatus         @default(PENDING)
   /// Why the check did not pass, e.g. ID_NOT_FOUND, FACE_MISMATCH, NAME_MISMATCH, LIVENESS_FAILED, DUPLICATE_ID.
   failureReason     String?
   nextAction        IdentityNextAction?
-  reviewedById      String?     @db.Uuid
-  createdAt         DateTime    @default(now())
+  /// Document photo added after the NIN check failed or did not match (decision 49).
+  documentId        String?             @unique @db.Uuid
+  reviewedById      String?             @db.Uuid
+  createdAt         DateTime            @default(now())
   completedAt       DateTime?
 
-  user User @relation(fields: [userId], references: [id])
+  user     User      @relation(fields: [userId], references: [id])
+  document Document? @relation(fields: [documentId], references: [id])
 
   @@unique([provider, providerReference])
   @@index([idNumberHash])
@@ -635,7 +638,16 @@ model Document {
   purpose        DocumentPurpose
   buildingId     String?         @db.Uuid
   storageKey     String
+  /// SHA-256 of the file, in lower-case hex, as declared by the app and checked once the upload is complete.
   sha256         String
+  contentType    String
+  sizeBytes      Int
+  /// Set when the upload is confirmed complete and its size and SHA-256 match what was declared.
+  uploadedAt     DateTime?
+  /// Set when the file has been removed from storage (for example when its retention period ended).
+  deletedAt      DateTime?
+  /// The Idempotency-Key the upload was started with, so repeating the request returns the same document.
+  idempotencyKey String?
   /// Document number read from the file (e.g. Certificate of Occupancy number), normalised.
   documentNumber String?
   extracted      Json?
@@ -643,11 +655,14 @@ model Document {
   deleteAfter    DateTime?
   createdAt      DateTime        @default(now())
 
-  owner        User                @relation(fields: [ownerId], references: [id])
-  documentType DocumentType?       @relation(fields: [documentTypeId], references: [id])
-  building     Building?           @relation(fields: [buildingId], references: [id])
-  authorities  PropertyAuthority[]
+  owner         User                  @relation(fields: [ownerId], references: [id])
+  documentType  DocumentType?         @relation(fields: [documentTypeId], references: [id])
+  building      Building?             @relation(fields: [buildingId], references: [id])
+  authorities   PropertyAuthority[]
+  identityCheck IdentityVerification?
 
+  @@unique([ownerId, idempotencyKey])
+  @@index([deleteAfter])
   @@index([documentNumber])
   @@index([sha256])
 }

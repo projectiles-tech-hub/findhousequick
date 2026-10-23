@@ -30,6 +30,12 @@ describe('configuration', () => {
   it('refuses the development SMS and email providers in production', () => {
     expect(() => validateEnv({ ...base, NODE_ENV: 'production' })).toThrow(/SMS provider cannot be used in production/);
     expect(() => validateEnv({ ...base, NODE_ENV: 'production' })).toThrow(/email provider cannot be used in production/);
+    expect(() => validateEnv({ ...base, NODE_ENV: 'production' })).toThrow(/storage provider cannot be used in production/);
+  });
+
+  it('runs background jobs unless told not to', () => {
+    expect(validateEnv(base).RUN_BACKGROUND_JOBS).toBe(true);
+    expect(validateEnv({ ...base, RUN_BACKGROUND_JOBS: 'false' }).RUN_BACKGROUND_JOBS).toBe(false);
   });
 
   it('has a sender for emails by default', () => {
