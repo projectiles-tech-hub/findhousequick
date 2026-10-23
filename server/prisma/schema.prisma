@@ -265,11 +265,15 @@ model User {
   mediaUploads        MediaAsset[]
 }
 
+/// Company details for agents who work through a firm (decision 50), checked by the verification team.
 model AgentProfile {
-  userId             String  @id @db.Uuid
+  userId             String      @id @db.Uuid
   businessName       String?
   registrationNumber String?
-  user               User    @relation(fields: [userId], references: [id])
+  status             CheckStatus @default(PENDING)
+  updatedAt          DateTime    @default(now()) @updatedAt
+  reviewedAt         DateTime?
+  user               User        @relation(fields: [userId], references: [id])
 }
 
 enum CheckStatus {
@@ -279,7 +283,13 @@ enum CheckStatus {
   MANUAL_REVIEW
 }
 
+/// What the user may do after a check that did not pass (decision 49).
+enum IdentityNextAction {
+  UPLOAD_ID_DOCUMENT
+}
+
 /// Identity check result. The ID number itself is stored encrypted; only the last four digits are readable.
+/// See ADR 0007 for how a check moves from PENDING to its result.
 model IdentityVerification {
   id                String      @id @default(uuid(7)) @db.Uuid
   userId            String      @db.Uuid
@@ -295,13 +305,18 @@ model IdentityVerification {
   faceMatchScore    Int?
   nameMatches       Boolean?
   status            CheckStatus @default(PENDING)
+  /// Why the check did not pass, e.g. ID_NOT_FOUND, FACE_MISMATCH, NAME_MISMATCH, LIVENESS_FAILED, DUPLICATE_ID.
+  failureReason     String?
+  nextAction        IdentityNextAction?
   reviewedById      String?     @db.Uuid
   createdAt         DateTime    @default(now())
   completedAt       DateTime?
 
   user User @relation(fields: [userId], references: [id])
 
+  @@unique([provider, providerReference])
   @@index([idNumberHash])
+  @@index([userId, createdAt])
 }
 
 model BankAccount {
@@ -730,6 +745,7 @@ model VerificationCheck {
 enum ReviewTaskType {
   LISTING_REVIEW
   IDENTITY_REVIEW
+  AGENT_PROFILE_REVIEW
   AUTHORITY_CONFIRMATION
   DUPLICATE_RESOLUTION
   SITE_VISIT

@@ -21,7 +21,8 @@ GitHub repository secrets, **never in the code**. `server/.env.example` shows th
 | `CORS_ORIGINS` | Yes | Web addresses allowed to call the API from a browser | e.g. `https://app.findhousequick.com` (comma-separated) | Must include the web app's address |
 | `JWT_SECRET` | Yes | Signs sign-in passes | `openssl rand -hex 32` | **Secret.** At least 32 characters. Changing it signs every user out |
 | `OTP_HASH_SECRET` | Yes (from pull request #4, accounts) | Scrambles SMS codes before storing them | `openssl rand -hex 32` | **Secret.** At least 32 characters and **must differ from `JWT_SECRET`**; the server refuses to start otherwise. Changing it cancels codes already sent |
-| `FIELD_ENCRYPTION_KEY` | Yes | Encrypts staff authenticator app secrets (from the staff accounts pull request), and later ID numbers and bank account numbers, in the database | `openssl rand -base64 32` | **Secret. Never change or lose it**: data encrypted with it cannot be read without it. Keep a copy offline in a safe place (see section 3) |
+| `LOOKUP_HASH_SECRET` | Yes (from the identity checks pull request, step 3) | Makes fingerprints of ID numbers so one ID used on two accounts can be spotted without storing the number readably (ADR 0007) | `openssl rand -hex 32` | **Secret.** At least 32 characters and **must differ from `JWT_SECRET` and `OTP_HASH_SECRET`**; the server refuses to start otherwise. **Never change it** once real checks exist: earlier fingerprints would stop matching and duplicate IDs would go unnoticed. Keep an offline copy, like `FIELD_ENCRYPTION_KEY` |
+| `FIELD_ENCRYPTION_KEY` | Yes | Encrypts staff authenticator app secrets and ID numbers (from the identity checks pull request), and later bank account numbers, in the database | `openssl rand -base64 32` | **Secret. Never change or lose it**: data encrypted with it cannot be read without it. Keep a copy offline in a safe place (see section 3) |
 | `ACCESS_TOKEN_MINUTES` | No (default 15) | How long a sign-in pass lasts | Number of minutes, 1 to 60 | Agreed in ADR 0004 |
 | `REFRESH_TOKEN_DAYS` | No (default 30) | How long a device stays signed in | Number of days, 1 to 365 | Agreed in ADR 0004 |
 | `EMAIL_PROVIDER` | Yes | Which service sends emails (codes and notices) | `log` for development only | `log` prints emails instead of sending them and is refused in production. A real provider is added before any pilot (decision 35) |
@@ -38,6 +39,17 @@ change is recorded with the values before and after. They need nothing set on th
 | `staffTwoStepMinutes` | 180 (3 hours) | How long a staff device's second step lasts before it must be done again | `PATCH /v1/admin/platform-settings` | Decision 32. Allowed from 15 to 1440 minutes. Reaches every server within 30 seconds |
 
 Country settings and feature switches are also changed this way (see ADR 0002 and the country controls).
+The country settings used by identity checks (ADR 0007):
+
+| Country setting | Nigeria at launch | What it is | Notes |
+| --- | --- | --- | --- |
+| `verification.identityProvider` | `test` on development servers; **must be set to the contracted provider** on the pilot and production servers | Which identity provider runs NIN, selfie and liveness checks | Empty means identity checks are unavailable in that country. The `test` provider exists only when `NODE_ENV` is not `production` |
+| `verification.acceptedIdTypes` | `["NIN"]` | ID types accepted for the check | |
+| `verification.idNumberPatterns` | `{"NIN": "^[0-9]{11}$"}` | The format each ID number must have | Checked after spaces and dashes are removed |
+| `verification.maxIdentityChecksPerDay` | 3 | Checks one user may start in 24 hours (each costs money with the provider) | 1 to 20 |
+| `retention.identityImagesDays` | Not set | Days identity document photos are kept after their check is closed (decision 55) | **Must be set after legal advice before identity checks go live** (open point 15) |
+
+The feature switch `verification.identity_check` (critical) turns identity checks on or off, like any other switch.
 
 ## 2. Outside accounts
 
@@ -55,8 +67,8 @@ login. Most need the CAC certificate (RC 7987623).
 | Domain name (findhousequick.com and/or .com.ng) | Web addresses | Pilot | Not yet |
 | Google Cloud project (with Firebase) | Maps; push notifications (decision 46); Sign in with Google if adopted | Release 1 | Not yet |
 | Calling service (a self-hosted relay, or a provider such as LiveKit or Agora) | Voice calls inside the app (decision 44) | Release 1 | Not yet; to be chosen when calls are built |
-| Figma | Screen designs (decision 42) | Now | Connected; the account has a View seat on the free Starter plan, which may need upgrading to an editing seat (to be tested at the design step) |
-| Identity check provider (Smile ID, Dojah, Prembly or similar) | NIN, selfie and liveness checks | Release 1 | Not yet |
+| Figma | Screen designs (decision 42) | Now | Connected and tested (23 October 2026): files can be created and edited, but the free Starter plan's View seat allows only 20 connector calls a month. A Professional plan Full seat is needed for the design step |
+| Identity check provider (Smile ID, Dojah, Prembly or similar) | NIN, selfie and liveness checks | Release 1 (before any pilot) | Not yet. Built with a test provider; the real one needs its own adapter, its keys as server settings, and our results address given to the provider: `https://<api address>/v1/identity/provider-results/<provider name>` (ADR 0007) |
 | Google Play developer account | Android app distribution and testing | Pilot | Not yet |
 | Apple developer account | iPhone app (TestFlight), push notifications and incoming-call alerts on iPhone, Sign in with Apple if adopted | iPhone release | Not yet |
 
@@ -66,7 +78,7 @@ login. Most need the CAC certificate (RC 7987623).
   development values.
 - Store secrets only in the host's settings page or in GitHub repository secrets (Settings, then Secrets and
   variables, then Actions).
-- Keep an offline copy of `FIELD_ENCRYPTION_KEY` for each server (for example, written down and kept in the company
+- Keep an offline copy of `FIELD_ENCRYPTION_KEY` and `LOOKUP_HASH_SECRET` for each server (for example, written down and kept in the company
   safe, or in a password manager the Managing Director controls). Losing it means losing the encrypted ID and bank
   numbers.
 - If a secret is ever exposed (pasted in a chat, committed by mistake), replace it at once. For
@@ -95,6 +107,8 @@ company and its lawyer, not the developers, but no real user may sign up until t
 
 1. Every required setting in section 1 is set, with fresh secrets.
 2. `NODE_ENV` is `production`, and `SMS_PROVIDER` and `EMAIL_PROVIDER` are real providers.
+   Each enabled country's `verification.identityProvider` names a real provider, and `retention.identityImagesDays`
+   is set (section 1).
 3. Database migrations applied (`npx prisma migrate deploy`) and starter data loaded (`pnpm db:seed`).
 4. `GET /v1/health` returns `status: ok`.
 5. The first super admin has been created (section 4) and has completed two-step login.

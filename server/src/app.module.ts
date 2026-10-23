@@ -6,7 +6,9 @@ import { AccountsModule } from './accounts/accounts.module.js';
 import { validateEnv } from './config/env.js';
 import { ControlsModule } from './controls/controls.module.js';
 import { HealthController } from './health/health.controller.js';
+import { IdentityModule } from './identity/identity.module.js';
 import { EmailModule } from './integrations/email/email.module.js';
+import { IdentityProviderModule } from './integrations/identity/identity.module.js';
 import { SmsModule } from './integrations/sms/sms.module.js';
 import { StaffModule } from './staff/staff.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
@@ -25,8 +27,10 @@ import { PrismaModule } from './prisma/prisma.module.js';
     ControlsModule,
     SmsModule,
     EmailModule,
+    IdentityProviderModule,
     AccountsModule,
     StaffModule,
+    IdentityModule,
   ],
   controllers: [HealthController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

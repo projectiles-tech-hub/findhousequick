@@ -15,6 +15,11 @@ const envSchema = z.object({
    * each secret does one job, and one can be changed without affecting the other.
    */
   OTP_HASH_SECRET: z.string().min(32, 'OTP_HASH_SECRET must be at least 32 characters'),
+  /**
+   * Secret used to make lookup fingerprints of ID numbers (and later bank account numbers), so the same number on
+   * two accounts can be spotted without storing it readably. Must differ from the other secrets (ADR 0007).
+   */
+  LOOKUP_HASH_SECRET: z.string().min(32, 'LOOKUP_HASH_SECRET must be at least 32 characters'),
   /** Comma-separated web addresses allowed to call the API from a browser (the Flutter web app, admin panel). */
   CORS_ORIGINS: z
     .string()
@@ -42,6 +47,9 @@ const envSchema = z.object({
 }).superRefine((env, ctx) => {
   if (env.OTP_HASH_SECRET === env.JWT_SECRET) {
     ctx.addIssue({ code: 'custom', path: ['OTP_HASH_SECRET'], message: 'OTP_HASH_SECRET must be different from JWT_SECRET' });
+  }
+  if (env.LOOKUP_HASH_SECRET === env.JWT_SECRET || env.LOOKUP_HASH_SECRET === env.OTP_HASH_SECRET) {
+    ctx.addIssue({ code: 'custom', path: ['LOOKUP_HASH_SECRET'], message: 'LOOKUP_HASH_SECRET must be different from the other secrets' });
   }
   if (env.NODE_ENV === 'production' && env.SMS_PROVIDER === 'log') {
     ctx.addIssue({ code: 'custom', path: ['SMS_PROVIDER'], message: 'The "log" SMS provider cannot be used in production' });

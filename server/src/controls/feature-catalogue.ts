@@ -51,6 +51,7 @@ export const FEATURES = [
   f('contact.inspection_safety_share', 'Share inspection details with a trusted contact', { on: true }),
 
   // Verification
+  f('verification.identity_check', 'Identity check: NIN or national equivalent, selfie and liveness', { critical: true, on: true }),
   f('verification.satellite_check', 'Satellite check of property location', { critical: true }),
   f('verification.survey_plan_match', 'Survey plan coordinate match', { critical: true }),
   f('verification.document_reading', 'Automatic reading of title documents', { critical: true }),

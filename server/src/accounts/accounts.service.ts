@@ -9,7 +9,8 @@ import type { ContactCodeDto, ContactConfirmDto, LoginDto, RegisterDto, RequestO
 import { OtpService } from './otp.service.js';
 import { DUMMY_PASSWORD_HASH, hashPassword, verifyPassword } from './secrets.js';
 import { SessionsService, type IssuedTokens } from './sessions.service.js';
-import { nextStep, verificationLevel, type UserTypeName } from './verification-level.js';
+import type { UserTypeName } from './verification-level.js';
+import { ladderOf, ladderSelect } from './verification.guard.js';
 
 /** Protection against password guessing on one account. */
 export const PASSWORD_RULES = {
@@ -20,18 +21,12 @@ export const PASSWORD_RULES = {
 } as const;
 
 const meSelect = {
+  ...ladderSelect,
   id: true,
-  phone: true,
-  phoneVerifiedAt: true,
-  email: true,
-  emailVerifiedAt: true,
   firstName: true,
   lastName: true,
   countryCode: true,
-  types: true,
   language: true,
-  identityVerifiedAt: true,
-  bankAccounts: { where: { status: 'PASSED' }, select: { id: true }, take: 1 },
 } satisfies Prisma.UserSelect;
 
 type MeRow = Prisma.UserGetPayload<{ select: typeof meSelect }>;
@@ -45,13 +40,7 @@ export interface Session {
 
 /** The user as the apps see them: profile, which contacts are confirmed, verification level, and what to do next. */
 export function toMe(u: MeRow) {
-  const types = u.types as UserTypeName[];
-  const contacts = { phoneConfirmed: !!u.phone && !!u.phoneVerifiedAt, emailConfirmed: !!u.email && !!u.emailVerifiedAt };
-  const level = verificationLevel({
-    ...contacts,
-    identityVerifiedAt: u.identityVerifiedAt,
-    hasVerifiedBankAccount: u.bankAccounts.length > 0,
-  });
+  const { level, contacts, next } = ladderOf(u);
   return {
     id: u.id,
     phone: u.phone,
@@ -61,10 +50,10 @@ export function toMe(u: MeRow) {
     firstName: u.firstName,
     lastName: u.lastName,
     countryCode: u.countryCode,
-    types,
+    types: u.types as UserTypeName[],
     language: u.language,
     verificationLevel: level,
-    next: nextStep(level, types, contacts),
+    next,
   };
 }
 
