@@ -84,8 +84,6 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
 
 - Review of the design system in Penpot (page "00 Design system"): approve it or ask for changes. **Blocks the
   screens in step 2c.**
-- The Penpot file's web address (copied from the browser's address bar), so `docs/designs.md` can carry clickable
-  links; the connector cannot read the team part of the address.
 - Before identity checks go live: how long identity images are kept after verification, after legal advice
   (Decisions Log open point 15). Step 3 is built with this as a country setting (decision 55) that is not yet set.
 - A company dollar card, so the hosting account (and the test system) can be opened (decision 42).
