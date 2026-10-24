@@ -60,8 +60,8 @@ Updated: 24 October 2026. Read this after CLAUDE.md at the start of every build 
   `docs/designs.md`). Group 1, sign-up and sign-in (9 phone screens), was approved the same day (pull requests #20
   and #21); group 2, verification (10 phone screens), was approved on 24 October 2026 (pull request #22), with level
   3 ("Payment ready") shown as "Later". The app screens for both groups may now be built from them (step 6); no app
-  screen built yet. Group 3, search and map, with the bottom bar, was approved on 24 October 2026. Group 4, the property page,
-  is drawn and waiting for review.
+  screen built yet. Group 3, search and map, with the bottom bar, was approved on 24 October 2026. Group 4, the property page (screens 30 to 36), was approved on 24 October 2026. Next design
+  group: listing creation (screens 50 to 65).
 
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
   #13. The server refuses actions above the user's level (`VERIFICATION_REQUIRED`, decision 64); identity
@@ -114,7 +114,7 @@ Updated: 24 October 2026. Read this after CLAUDE.md at the start of every build 
 2c. **Screen designs in Penpot** (Release 0 work; decisions 42, 67 and 73): the 112 screens listed in
     `docs/designs.md`, for tenants, landlords, agents, scouts and staff and the public website, on the phone app
     (87), the website (112) and the desktop software (105): 304 designs. The step is complete only when all 304
-    are approved. Approved so far: 29, all phone layouts (screens 1 to 29). Produced in the build sessions with the Penpot connector in Emmanuel's file "Release 1 Screens", for his
+    are approved. Approved so far: 36, all phone layouts (screens 1 to 36). Produced in the build sessions with the Penpot connector in Emmanuel's file "Release 1 Screens", for his
     review and approval; if the connector is not reliable, Claude's Design artifact type is used instead and
     Emmanuel is told. No longer blocked: the connector was tested on 23 October 2026. Order: the design system
     first (for approval before any screen), then the screens in groups, phone layouts first, then desktop and the
@@ -128,8 +128,8 @@ Updated: 24 October 2026. Read this after CLAUDE.md at the start of every build 
     23 October 2026. Now: the screens, group by group. Group 1, sign-up and sign-in (9 phone
     screens), approved by Emmanuel on 23 October 2026 (pull request #20). Group 2, verification (10 phone screens),
     approved on 24 October 2026 (pull request #22). Group 3, search and map (10 phone screens and
-    the new bottom bar), approved on 24 October 2026 (pull request #24). Group 4, the property page (7 phone screens,
-    numbered as in decision 73), is in pull request #27, awaiting Emmanuel's review.
+    the new bottom bar), approved on 24 October 2026 (pull request #24). Group 4, the property page (screens 30 to 36),
+    approved on 24 October 2026 (pull request #27). Next: listing creation (screens 50 to 65).
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
 4. **Reference data endpoints**, then buildings, units and the parts checklist, with the distance to the main
