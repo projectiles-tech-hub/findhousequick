@@ -1,6 +1,7 @@
 # Screen designs (Release 1)
 
-Every design for Release 1 step 2c, with its Penpot link, its group and where it stands with Emmanuel. The
+Every screen design for the Release 1 platform (the screen designs of Release 0, step 2c): the complete list of
+screens to be designed (decision 73), and each design made so far with its Penpot link, its group and where it stands with Emmanuel. The
 designs are made in Penpot, in the file "Release 1 Screens", through the Penpot connector (decisions 42 and 67).
 **No app screen is built until its design is approved.**
 
@@ -11,9 +12,146 @@ Review states:
 - **Approved**: Emmanuel approved it; the app screen may be built from it.
 
 Order of work: the design system first (approved before any screen), then the screens in groups. Phone layouts
-first, then the wider layouts for desktop and the signed-in website. Suggested group order: sign-up and sign-in,
-verification, search and map, property page, listing creation, messaging and calls, inspections, saved items,
-notification and language settings, the help page, and the staff admin screens.
+first, then the wide layouts for the website and the desktop software, then the public website pages. Group order:
+sign-up and sign-in, verification, search and map, property page, listing creation, agents and authority,
+messaging and calls, inspections, saved items, me and settings (with notification and language settings and the
+help page), scouts, and the staff screens.
+
+## Screens to be designed (complete list)
+
+Decision 73 fixes the screens to be designed. The website does everything the app does, so it has every user
+screen; it also has the staff screens and the public pages. The desktop software has every user screen and the staff
+screens. Screens are added to or removed from this list only by a recorded decision.
+
+| Platform | Screens | Count |
+| --- | --- | --- |
+| Phone app | 1 to 87 (every user type) | 87 |
+| Website | 1 to 87, the staff screens 88 to 105 and the public pages 106 to 112 | 112 |
+| Desktop software | 1 to 87 and the staff screens 88 to 105 | 105 |
+| **All designs** | | **304** |
+
+Screens 51, 57 and 58 (adding a building, camera capture and the walkthrough video) are done on site with the
+phone's camera and GPS (Specification Sections 5.3 and 6.2). On the website and desktop, those screens send the user
+to the phone.
+
+The screen designs (Release 0, step 2c) are complete only when all 304 designs are approved. Approved so far:
+29 of 304, all phone layouts. When a design is approved, its cell below changes to "Approved" with its
+Penpot screen number, and its row is added to the tables further down with its link.
+
+| # | Screen | Group | Phone app | Website | Desktop software |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Welcome | Accounts | Approved (Penpot 01) | To design | To design |
+| 2 | Who are you (tenant, landlord, agent) | Accounts | Approved (Penpot 02) | To design | To design |
+| 3 | Your details (sign up) | Accounts | Approved (Penpot 03) | To design | To design |
+| 4 | Enter the code | Accounts | Approved (Penpot 04) | To design | To design |
+| 5 | Confirm your email | Accounts | Approved (Penpot 05) | To design | To design |
+| 6 | Sign in | Accounts | Approved (Penpot 06) | To design | To design |
+| 7 | Sign in paused | Accounts | Approved (Penpot 07) | To design | To design |
+| 8 | Forgot password | Accounts | Approved (Penpot 08) | To design | To design |
+| 9 | Set a new password | Accounts | Approved (Penpot 09) | To design | To design |
+| 10 | Location permission | Accounts | Approved (Penpot 29) | To design | To design |
+| 11 | Not signed in (summary cards) | Accounts | Approved (Penpot 28) | To design | To design |
+| 12 | Your verification | Verification | Approved (Penpot 10) | To design | To design |
+| 13 | Verify to continue | Verification | Approved (Penpot 11) | To design | To design |
+| 14 | Verify your identity (NIN) | Verification | Approved (Penpot 12) | To design | To design |
+| 15 | Face check | Verification | Approved (Penpot 13) | To design | To design |
+| 16 | Checking | Verification | Approved (Penpot 14) | To design | To design |
+| 17 | You're verified | Verification | Approved (Penpot 15) | To design | To design |
+| 18 | Face check didn't work | Verification | Approved (Penpot 16) | To design | To design |
+| 19 | Add an ID document | Verification | Approved (Penpot 17) | To design | To design |
+| 20 | With our verification team | Verification | Approved (Penpot 18) | To design | To design |
+| 21 | Company details (agents) | Verification | Approved (Penpot 19) | To design | To design |
+| 22 | Home | Search and map | Approved (Penpot 20) | To design | To design |
+| 23 | Map | Search and map | Approved (Penpot 21) | To design | To design |
+| 24 | Around me | Search and map | Approved (Penpot 22) | To design | To design |
+| 25 | List of results | Search and map | Approved (Penpot 23) | To design | To design |
+| 26 | Filters | Search and map | Approved (Penpot 24) | To design | To design |
+| 27 | Search by area or landmark | Search and map | Approved (Penpot 25) | To design | To design |
+| 28 | No results | Search and map | Approved (Penpot 26) | To design | To design |
+| 29 | Save this area | Search and map | Approved (Penpot 27) | To design | To design |
+| 30 | Property page (summary, details, costs, location, lister, actions) | Property page | To design | To design | To design |
+| 31 | Gallery by part | Property page | To design | To design | To design |
+| 32 | Full-screen photo viewer | Property page | To design | To design | To design |
+| 33 | Walkthrough video and 360-degree views | Property page | To design | To design | To design |
+| 34 | Compare (up to three) | Property page | To design | To design | To design |
+| 35 | Share property | Property page | To design | To design | To design |
+| 36 | Report (fake listing, already taken, inspection fee demand) | Property page | To design | To design | To design |
+| 37 | Saved properties | Saved | To design | To design | To design |
+| 38 | Saved areas and alerts | Saved | To design | To design | To design |
+| 39 | Saved places (office, school) | Saved | To design | To design | To design |
+| 40 | Messages list | Messages and calls | To design | To design | To design |
+| 41 | Conversation | Messages and calls | To design | To design | To design |
+| 42 | Calling | Messages and calls | To design | To design | To design |
+| 43 | Incoming call | Messages and calls | To design | To design | To design |
+| 44 | In call and call ended | Messages and calls | To design | To design | To design |
+| 45 | Agree to share phone numbers | Messages and calls | To design | To design | To design |
+| 46 | Book an inspection (time slots) | Inspections (tenant) | To design | To design | To design |
+| 47 | My inspections | Inspections (tenant) | To design | To design | To design |
+| 48 | Inspection details (reschedule, cancel) | Inspections (tenant) | To design | To design | To design |
+| 49 | Share inspection details with family or a friend | Inspections (tenant) | To design | To design | To design |
+| 50 | My properties | Listing creation (landlord, authorised agent) | To design | To design | To design |
+| 51 | Add building (GPS on site, address, distance to main road) | Listing creation (landlord, authorised agent) | To design | To design: sends the user to the phone | To design: sends the user to the phone |
+| 52 | Add unit (for example Block A, Flat 3) | Listing creation (landlord, authorised agent) | To design | To design | To design |
+| 53 | Category and type | Listing creation (landlord, authorised agent) | To design | To design | To design |
+| 54 | Property details | Listing creation (landlord, authorised agent) | To design | To design | To design |
+| 55 | Costs and fees | Listing creation (landlord, authorised agent) | To design | To design | To design |
+| 56 | Parts checklist | Listing creation (landlord, authorised agent) | To design | To design | To design |
+| 57 | Camera capture per part (quality check, retake) | Listing creation (landlord, authorised agent) | To design | To design: sends the user to the phone | To design: sends the user to the phone |
+| 58 | Walkthrough video capture | Listing creation (landlord, authorised agent) | To design | To design: sends the user to the phone | To design: sends the user to the phone |
+| 59 | Occupant consent | Listing creation (landlord, authorised agent) | To design | To design | To design |
+| 60 | Ownership documents upload | Listing creation (landlord, authorised agent) | To design | To design | To design |
+| 61 | Review and submit | Listing creation (landlord, authorised agent) | To design | To design | To design |
+| 62 | Listing status (draft, under review, held, live, expired) | Listing creation (landlord, authorised agent) | To design | To design | To design |
+| 63 | Confirm still available or mark as rented | Listing creation (landlord, authorised agent) | To design | To design | To design |
+| 64 | Set inspection times | Listing creation (landlord, authorised agent) | To design | To design | To design |
+| 65 | Inspection requests (confirm, reschedule) | Listing creation (landlord, authorised agent) | To design | To design | To design |
+| 66 | Agent requests (landlord approves or rejects) | Agents and authority | To design | To design | To design |
+| 67 | My agents (end date, withdraw) | Agents and authority | To design | To design | To design |
+| 68 | Request authority over a property (agent) | Agents and authority | To design | To design | To design |
+| 69 | Letter of authority upload (landlord not registered) | Agents and authority | To design | To design | To design |
+| 70 | Authorised properties (agent) | Agents and authority | To design | To design | To design |
+| 71 | Me (profile) | Me and settings | To design | To design | To design |
+| 72 | Edit profile | Me and settings | To design | To design | To design |
+| 73 | Change phone or email | Me and settings | To design | To design | To design |
+| 74 | Language | Me and settings | To design | To design | To design |
+| 75 | Notification settings | Me and settings | To design | To design | To design |
+| 76 | Notifications list | Me and settings | To design | To design | To design |
+| 77 | Help (WhatsApp and phone lines) | Me and settings | To design | To design | To design |
+| 78 | Download my data | Me and settings | To design | To design | To design |
+| 79 | Delete account | Me and settings | To design | To design | To design |
+| 80 | Sign out | Me and settings | To design | To design | To design |
+| 81 | Become a scout | Scouts (decisions 70 to 72) | To design | To design | To design |
+| 82 | Report a vacant property | Scouts (decisions 70 to 72) | To design | To design | To design |
+| 83 | Invite the landlord (link, or sign-up on the landlord's own phone) | Scouts (decisions 70 to 72) | To design | To design | To design |
+| 84 | My reported properties and invitations | Scouts (decisions 70 to 72) | To design | To design | To design |
+| 85 | My rewards | Scouts (decisions 70 to 72) | To design | To design | To design |
+| 86 | Withdraw a reward | Scouts (decisions 70 to 72) | To design | To design | To design |
+| 87 | Add bank account | Scouts (decisions 70 to 72) | To design | To design | To design |
+| 88 | Staff sign-in | Staff | Not on this platform | To design | To design |
+| 89 | Second step (SMS, email, authenticator) | Staff | Not on this platform | To design | To design |
+| 90 | Set up authenticator | Staff | Not on this platform | To design | To design |
+| 91 | Dashboard | Staff | Not on this platform | To design | To design |
+| 92 | User lookup | Staff | Not on this platform | To design | To design |
+| 93 | Risk score review | Staff | Not on this platform | To design | To design |
+| 94 | Verification documents review | Staff | Not on this platform | To design | To design |
+| 95 | Agent authority confirmation | Staff | Not on this platform | To design | To design |
+| 96 | Duplicate listings | Staff | Not on this platform | To design | To design |
+| 97 | Site visits and audits | Staff | Not on this platform | To design | To design |
+| 98 | Reports | Staff | Not on this platform | To design | To design |
+| 99 | Warnings, badge removal, suspensions and bans | Staff | Not on this platform | To design | To design |
+| 100 | Country controls | Staff | Not on this platform | To design | To design |
+| 101 | Feature controls (messages, return times, dependency warnings, approvals) | Staff | Not on this platform | To design | To design |
+| 102 | Change record | Staff | Not on this platform | To design | To design |
+| 103 | Staff management | Staff | Not on this platform | To design | To design |
+| 104 | Platform settings | Staff | Not on this platform | To design | To design |
+| 105 | Scout reward payout approvals | Staff | Not on this platform | To design | To design |
+| 106 | Home | Public website | Not on this platform | To design | Not on this platform |
+| 107 | Search results (summaries) | Public website | Not on this platform | To design | Not on this platform |
+| 108 | Listing summary page | Public website | Not on this platform | To design | Not on this platform |
+| 109 | Create account or sign in prompt | Public website | Not on this platform | To design | Not on this platform |
+| 110 | Help | Public website | Not on this platform | To design | Not on this platform |
+| 111 | Terms of use | Public website | Not on this platform | To design | Not on this platform |
+| 112 | Privacy policy | Public website | Not on this platform | To design | Not on this platform |
 
 ## Design system
 

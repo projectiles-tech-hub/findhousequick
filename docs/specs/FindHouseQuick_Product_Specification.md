@@ -6,7 +6,7 @@ Projectiles Tech Hub Limited
 
 Emmanuel Chukwuka Oraegbu, Managing Director
 
-Version 1.6 \| 24 October 2026
+Version 1.7 \| 24 October 2026
 
 # Contents
 
@@ -86,7 +86,7 @@ The central promise of the platform is trust: verified users, verified propertie
 
 ## 1.4 Platforms
 
-The platform is delivered on three platforms sharing one central system, so that any change made on one platform appears on the others immediately.
+The platform is delivered on three platforms sharing one central system, so that any change made on one platform appears on the others immediately. The website and the desktop software have every screen the mobile app has, laid out for a wide screen; adding a building, taking photos of each part and recording the walkthrough video are done on site with the phone, so on the website and desktop those steps send the user to the phone. The website also has the staff screens and the public pages for visitors, and the desktop software has the staff screens (decision 73). The full list of screens is kept in docs/designs.md in the code repository.
 
 | **Platform**     | **Main users**                                                   | **Main purpose**                                                            |
 |------------------|------------------------------------------------------------------|-----------------------------------------------------------------------------|
@@ -209,7 +209,9 @@ Checks:
 
 - No reward where the scout is the landlord, the agent or the tenant of that property, or shares a phone number, bank account or device with any of them.
 
-Scouts and the referral reward are switched off by default (Section 17.1). The reward amount is a country setting (Section 16.1). The reward amount, the release it goes in, and the legal and tax questions are open points in the Decisions Log.
+Scouts and the referral reward are switched off by default (Section 17.1). The reward amount is a country setting (Section 16.1). The reward amount and the legal and tax questions are open points in the Decisions Log.
+
+Scouts are built in Release 1, with the other Release 1 features: opting in, reporting vacant properties, inviting landlords and the referral record. The reward can only be paid once the completed rental fee and payouts exist (Release 2); until then each reward is recorded as waiting for a rental (decision 72).
 
 # 4. Property Search
 
@@ -1044,14 +1046,15 @@ Tenants only come to a platform that already has listings, so landlords and agen
 
 This specification is kept as one document and updated in place; earlier versions remain in the code repository history (decision 60). Every decision recorded in the Decisions Log that changes what the platform does is written into this document, with the decision number.
 
-| Version              | What changed                                                                                                                                                          |
-|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.3, 22 October 2026 | The version given at the start of the build. It reflects decisions 1 to 23 of the Decisions Log.                                                                      |
-| 1.4, 23 October 2026 | Includes decisions 24 to 63, listed below with where each appears.                                                                                                    |
-| 1.5, 23 October 2026 | Includes decision 64: any action beyond browsing needs level 1 (Section 3.1).                                                                                         |
-| 1.6, 24 October 2026 | Includes decisions 65 to 71: scouts and the referral reward (decisions 70 and 71; Sections 2, 3.6, 8.3, 16.1, 17.1, 20 and 21), and decisions 65 to 69, listed below. |
+| Version              | What changed                                                                                                                                                                                              |
+|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3, 22 October 2026 | The version given at the start of the build. It reflects decisions 1 to 23 of the Decisions Log.                                                                                                          |
+| 1.4, 23 October 2026 | Includes decisions 24 to 63, listed below with where each appears.                                                                                                                                        |
+| 1.5, 23 October 2026 | Includes decision 64: any action beyond browsing needs level 1 (Section 3.1).                                                                                                                             |
+| 1.6, 24 October 2026 | Includes decisions 65 to 71: scouts and the referral reward (decisions 70 and 71; Sections 2, 3.6, 8.3, 16.1, 17.1, 20 and 21), and decisions 65 to 69, listed below.                                     |
+| 1.7, 24 October 2026 | Includes decisions 72 and 73: scouts built in Release 1, with rewards paid once the completed rental fee exists (Section 3.6); every screen of the app on the website and desktop software (Section 1.4). |
 
-Decisions 24 to 71 in versions 1.4 to 1.6. Some confirm what this specification already said, or only set when something is built; they are listed so that every decision can be traced. Decisions about how the platform is built, rather than what it does, are in the Technical Architecture and the architecture decision records.
+Decisions 24 to 73 in versions 1.4 to 1.7. Some confirm what this specification already said, or only set when something is built; they are listed so that every decision can be traced. Decisions about how the platform is built, rather than what it does, are in the Technical Architecture and the architecture decision records.
 
 | Decision                                                                                        | Where in this specification                                              |
 |-------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
@@ -1103,3 +1106,5 @@ Decisions 24 to 71 in versions 1.4 to 1.6. Some confirm what this specification 
 | 69\. Font: Source Sans 3                                                                        | How the platform is built; not a product change                          |
 | 70\. Scouts and the referral reward                                                             | Sections 2, 3.6, 8.3, 16.1, 17.1, 20 and 21                              |
 | 71\. Scouts: level 1, one reward per unit, no invitation expiry, payouts approved by staff      | Sections 2, 3.6, 16.1, 20 and 21                                         |
+| 72\. Scouts built in Release 1; rewards paid once the completed rental fee exists               | Section 3.6                                                              |
+| 73\. Screens on each platform; the full list in docs/designs.md                                 | Section 1.4                                                              |
