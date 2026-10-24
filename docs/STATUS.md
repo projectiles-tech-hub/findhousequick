@@ -60,7 +60,8 @@ Updated: 24 October 2026. Read this after CLAUDE.md at the start of every build 
   `docs/designs.md`). Group 1, sign-up and sign-in (9 phone screens), was approved the same day (pull requests #20
   and #21); group 2, verification (10 phone screens), was approved on 24 October 2026 (pull request #22), with level
   3 ("Payment ready") shown as "Later". The app screens for both groups may now be built from them (step 6); no app
-  screen built yet. Next design group: search and map.
+  screen built yet. Group 3, search and map, with the bottom bar, was approved on 24 October 2026. Next design group: the
+  property page.
 
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
   #13. The server refuses actions above the user's level (`VERIFICATION_REQUIRED`, decision 64); identity
@@ -122,7 +123,8 @@ Updated: 24 October 2026. Read this after CLAUDE.md at the start of every build 
     changed to Source Sans 3 (decision 69) in pull request #19; the whole design system approved by Emmanuel on
     23 October 2026. Now: the screens, group by group. Group 1, sign-up and sign-in (9 phone
     screens), approved by Emmanuel on 23 October 2026 (pull request #20). Group 2, verification (10 phone screens),
-    approved on 24 October 2026 (pull request #22). Next: group 3, search and map.
+    approved on 24 October 2026 (pull request #22). Group 3, search and map (10 phone screens and
+    the new bottom bar), approved on 24 October 2026 (pull request #24). Next: group 4, the property page.
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
 4. **Reference data endpoints**, then buildings, units and the parts checklist, with the distance to the main
