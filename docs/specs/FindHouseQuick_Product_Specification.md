@@ -6,7 +6,7 @@ Projectiles Tech Hub Limited
 
 Emmanuel Chukwuka Oraegbu, Managing Director
 
-Version 1.5 \| 23 October 2026
+Version 1.6 \| 24 October 2026
 
 # Contents
 
@@ -96,13 +96,14 @@ The platform is delivered on three platforms sharing one central system, so that
 
 # 2. User Types
 
-| **User type** | **Description**                                                                                         |
-|---------------|---------------------------------------------------------------------------------------------------------|
-| Tenant        | A person searching for a property to rent, whether long-term or short let.                              |
-| Landlord      | The owner of a property, or a person with legal ownership rights over it.                               |
-| Agent         | A person or firm authorised by a landlord to let and manage a specific property.                        |
-| Caretaker     | A person added by a landlord with limited access, for example handling repairs but not payments.        |
-| Platform team | Projectiles staff who review documents, handle disputes, carry out site visits and manage the platform. |
+| **User type** | **Description**                                                                                                                                                                                                 |
+|---------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Tenant        | A person searching for a property to rent, whether long-term or short let.                                                                                                                                      |
+| Landlord      | The owner of a property, or a person with legal ownership rights over it.                                                                                                                                       |
+| Agent         | A person or firm authorised by a landlord to let and manage a specific property.                                                                                                                                |
+| Scout         | A user who reports a vacant property and invites its landlord onto the app, for a referral reward paid by Projectiles. A scout is not an agent and never lists, manages or speaks for a property (Section 3.6). |
+| Caretaker     | A person added by a landlord with limited access, for example handling repairs but not payments.                                                                                                                |
+| Platform team | Projectiles staff who review documents, handle disputes, carry out site visits and manage the platform.                                                                                                         |
 
 # 3. Registration and Verification
 
@@ -175,6 +176,40 @@ Further rules:
 - A landlord may authorise more than one agent. All authorised agents are attached to the single listing for that property; the property is never listed more than once.
 
 - Once verified, the landlord has the final say over who may list the property.
+
+## 3.6 Scouts and Referral Rewards
+
+Since decision 43, the platform has no field team capturing properties. Scouts fill that gap: they are ordinary users who spot vacant properties and bring the landlords onto the app. This brings in listings and gives people a reason to talk about FindHouseQuick (decisions 70 and 71).
+
+- **Who can be a scout:** any user at level 1 (phone and email confirmed) can opt in, report properties and invite landlords (decision 71). Withdrawing a reward needs the further verification for payouts: identity checked and a bank account confirmed in the scout's own name.
+
+- **A scout is not an agent:** a scout never lists, manages or speaks for a property.
+
+- **Reporting and inviting:** the scout reports a vacant property in the app and invites the landlord, either by sending an invitation link or by helping the landlord sign up on the landlord's own phone.
+
+- **The landlord acts for himself:** he enters his own details, accepts the terms himself, gets verified and lists the property himself (decision 43). If an agent is involved, the agent goes through the authority process in Section 3.5.
+
+- **Record:** the app records which scout brought in which landlord and property.
+
+Referral reward:
+
+- Projectiles pays the scout a fixed amount from its own money, into the scout's verified bank account in their own name. It is never an extra charge on the tenant or the landlord.
+
+- For this reward only, every unit that can be rented and paid for counts as one property: a building with four flats earns up to four rewards, one for the first rental of each flat (decision 71). Each reward is paid once, for the first rental of that unit only, and only when that rental is completed through the completed rental fee (Section 8.3) and Projectiles has received the fee. A rental paid through escrow earns no referral reward.
+
+- Every reward payout is approved by staff before it is paid.
+
+Checks:
+
+- One scout per property; the first valid invitation wins.
+
+- No reward for a landlord or property already on the app.
+
+- Invitations do not expire (decision 71).
+
+- No reward where the scout is the landlord, the agent or the tenant of that property, or shares a phone number, bank account or device with any of them.
+
+Scouts and the referral reward are switched off by default (Section 17.1). The reward amount is a country setting (Section 16.1). The reward amount, the release it goes in, and the legal and tax questions are open points in the Decisions Log.
 
 # 4. Property Search
 
@@ -451,6 +486,8 @@ Agency and agreement fees are set by the landlord or agent in line with prevaili
 - Because the escrow fee is lower, escrow is always the cheaper route for users.
 
 - The landlord's share is deducted from the amount released to him, so he never has to send money separately.
+
+- Referral rewards for scouts (Section 3.6) are paid by Projectiles from its own money; they are never added to any fee.
 
 ## 8.4 Worked Example
 
@@ -803,6 +840,7 @@ The platform is built once and runs in any country. Nothing is fixed to Nigeria 
 | Payment provider         | The licensed payment provider used for escrow and payouts in that country.                                                               |
 | Legal templates          | Tenancy agreements, letters of authority and notices that follow local law.                                                              |
 | Short let rules          | Whether short lets are allowed, and any limits, by country or city.                                                                      |
+| Scout referral reward    | The fixed amount paid to a scout for the first rental of each unit they bring in (Section 3.6), in the country's currency.               |
 | Fees shown on listings   | The fee types that appear in the total move-in cost box, matching local practice.                                                        |
 | Data protection          | Consent wording, data retention periods and where data is stored, as each country's law requires.                                        |
 | Units and formats        | Square metres or square feet, address format, date format and time zone.                                                                 |
@@ -844,6 +882,7 @@ Every feature of the platform can be switched on or off by authorised staff from
 | Market information | Fair rent indicator; area rent reports; neighbourhood ratings                                                                                               |
 | Trust              | Ratings and reviews; report button; chat monitoring                                                                                                         |
 | Media protection   | Screenshot blocking; automatic blurring; web monitoring                                                                                                     |
+| Growth             | Scouts and referral rewards (off by default)                                                                                                                |
 | Languages          | Each language individually                                                                                                                                  |
 
 ## 17.2 Levels of Control
@@ -955,7 +994,7 @@ Tenants only come to a platform that already has listings, so landlords and agen
 
 1.  **Choose the launch city** and the areas within it to cover first.
 
-2.  **Field team:** field officers carry out verification checks only, such as site visits and random audits. Landlords register their own buildings and capture their own properties in the app; the platform does not do this for them, because the manpower needed is not realistic (decision 43).
+2.  **Field team:** field officers carry out verification checks only, such as site visits and random audits. Landlords register their own buildings and capture their own properties in the app; the platform does not do this for them, because the manpower needed is not realistic (decision 43). Scouts, ordinary users, can also bring landlords onto the app for a referral reward (Section 3.6).
 
 3.  **Agent onboarding sessions:** group sessions where agents are trained on registration, authority letters and listing.
 
@@ -969,47 +1008,50 @@ Tenants only come to a platform that already has listings, so landlords and agen
 
 # 21. Explanation of Terms
 
-| **Term**                          | **Meaning**                                                                                                                         |
-|-----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| App / platform                    | The full system, including mobile app, web app and desktop software.                                                                |
-| Boundary beacons                  | Concrete markers placed at the corners of a surveyed plot, whose coordinates are written on the survey plan.                        |
-| Coordinate conversion             | Survey plans in Nigeria often use a different mapping system from phone GPS, so coordinates must be converted before comparison.    |
-| Desk review                       | A team member checks documents from the office without visiting the property.                                                       |
-| Escrow                            | A neutral holding arrangement in which money is kept safe and only released when agreed conditions are met.                         |
-| GPS                               | The phone's satellite location feature, which records exactly where the user is standing.                                           |
-| KYC (Know Your Customer)          | The process of confirming a user's identity with official documents.                                                                |
-| Licensed payment provider         | A company approved by the Central Bank of Nigeria, or the equivalent authority in another country, to hold and move money.          |
-| Liveness check                    | The app asks the user to blink or turn their head on camera, proving a real person is present.                                      |
-| NIN                               | National Identification Number in Nigeria; in this document, also the equivalent national identity number in other countries.       |
-| Feature controls                  | Switches managed by authorised staff that turn individual features on or off, for everyone or for selected places or users.         |
-| Gradual release                   | Switching a feature on for a small share of users first, then increasing it step by step.                                           |
-| Emergency switch                  | A control that instantly pauses an activity, such as payments, across the platform or a country.                                    |
-| Fair rent indicator               | A label showing whether a rent is below, about or above the average for similar properties in the area.                             |
-| Support ticket                    | A record of a user's enquiry, with a reference number, kept until the matter is resolved.                                           |
-| Country controls                  | Settings managed by the platform team that decide how the platform works in each country.                                           |
-| Photo fingerprint                 | A short digital code made from an image, allowing the system to spot the same picture even if resized or cropped.                   |
-| Data Protection Officer           | The person responsible for making sure the company handles personal information lawfully.                                           |
-| Data protection impact assessment | A written review of the risks to users' personal information, carried out before launching a system.                                |
-| Ledger                            | The app's own detailed record of every amount held, paid in and paid out.                                                           |
-| Reconciliation                    | Checking that the money in the bank account matches the app's ledger exactly.                                                       |
-| Watermark                         | A mark placed on an image or video to show where it came from; it can be visible or hidden.                                         |
-| 360-degree photo                  | A photo that lets the viewer look all around a room by dragging or turning the phone.                                               |
-| Expiring link                     | A web address for an image or video that stops working after a short time.                                                          |
-| Risk score                        | A single rating calculated from all verification checks, used to decide whether a listing is approved, reviewed or visited.         |
-| Authenticator app                 | A phone app, such as Google Authenticator, that shows a new six-digit code every 30 seconds, used as a second step when signing in. |
-| Push notification                 | A message that appears on the phone's screen even when the app is closed.                                                           |
+| **Term**                          | **Meaning**                                                                                                                                                           |
+|-----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| App / platform                    | The full system, including mobile app, web app and desktop software.                                                                                                  |
+| Boundary beacons                  | Concrete markers placed at the corners of a surveyed plot, whose coordinates are written on the survey plan.                                                          |
+| Coordinate conversion             | Survey plans in Nigeria often use a different mapping system from phone GPS, so coordinates must be converted before comparison.                                      |
+| Desk review                       | A team member checks documents from the office without visiting the property.                                                                                         |
+| Escrow                            | A neutral holding arrangement in which money is kept safe and only released when agreed conditions are met.                                                           |
+| GPS                               | The phone's satellite location feature, which records exactly where the user is standing.                                                                             |
+| KYC (Know Your Customer)          | The process of confirming a user's identity with official documents.                                                                                                  |
+| Licensed payment provider         | A company approved by the Central Bank of Nigeria, or the equivalent authority in another country, to hold and move money.                                            |
+| Liveness check                    | The app asks the user to blink or turn their head on camera, proving a real person is present.                                                                        |
+| NIN                               | National Identification Number in Nigeria; in this document, also the equivalent national identity number in other countries.                                         |
+| Feature controls                  | Switches managed by authorised staff that turn individual features on or off, for everyone or for selected places or users.                                           |
+| Gradual release                   | Switching a feature on for a small share of users first, then increasing it step by step.                                                                             |
+| Emergency switch                  | A control that instantly pauses an activity, such as payments, across the platform or a country.                                                                      |
+| Fair rent indicator               | A label showing whether a rent is below, about or above the average for similar properties in the area.                                                               |
+| Support ticket                    | A record of a user's enquiry, with a reference number, kept until the matter is resolved.                                                                             |
+| Country controls                  | Settings managed by the platform team that decide how the platform works in each country.                                                                             |
+| Photo fingerprint                 | A short digital code made from an image, allowing the system to spot the same picture even if resized or cropped.                                                     |
+| Data Protection Officer           | The person responsible for making sure the company handles personal information lawfully.                                                                             |
+| Data protection impact assessment | A written review of the risks to users' personal information, carried out before launching a system.                                                                  |
+| Ledger                            | The app's own detailed record of every amount held, paid in and paid out.                                                                                             |
+| Reconciliation                    | Checking that the money in the bank account matches the app's ledger exactly.                                                                                         |
+| Watermark                         | A mark placed on an image or video to show where it came from; it can be visible or hidden.                                                                           |
+| 360-degree photo                  | A photo that lets the viewer look all around a room by dragging or turning the phone.                                                                                 |
+| Expiring link                     | A web address for an image or video that stops working after a short time.                                                                                            |
+| Risk score                        | A single rating calculated from all verification checks, used to decide whether a listing is approved, reviewed or visited.                                           |
+| Authenticator app                 | A phone app, such as Google Authenticator, that shows a new six-digit code every 30 seconds, used as a second step when signing in.                                   |
+| Push notification                 | A message that appears on the phone's screen even when the app is closed.                                                                                             |
+| Scout                             | A user who brings a landlord and a vacant property onto the app. Not an agent.                                                                                        |
+| Referral reward                   | A fixed amount Projectiles pays a scout from its own money when the first rental of a property they brought in is completed and the completed rental fee is received. |
 
 # 22. Version History
 
 This specification is kept as one document and updated in place; earlier versions remain in the code repository history (decision 60). Every decision recorded in the Decisions Log that changes what the platform does is written into this document, with the decision number.
 
-| Version              | What changed                                                                                     |
-|----------------------|--------------------------------------------------------------------------------------------------|
-| 1.3, 22 October 2026 | The version given at the start of the build. It reflects decisions 1 to 23 of the Decisions Log. |
-| 1.4, 23 October 2026 | Includes decisions 24 to 63, listed below with where each appears.                               |
-| 1.5, 23 October 2026 | Includes decision 64: any action beyond browsing needs level 1 (Section 3.1).                    |
+| Version              | What changed                                                                                                                                                          |
+|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3, 22 October 2026 | The version given at the start of the build. It reflects decisions 1 to 23 of the Decisions Log.                                                                      |
+| 1.4, 23 October 2026 | Includes decisions 24 to 63, listed below with where each appears.                                                                                                    |
+| 1.5, 23 October 2026 | Includes decision 64: any action beyond browsing needs level 1 (Section 3.1).                                                                                         |
+| 1.6, 24 October 2026 | Includes decisions 65 to 71: scouts and the referral reward (decisions 70 and 71; Sections 2, 3.6, 8.3, 16.1, 17.1, 20 and 21), and decisions 65 to 69, listed below. |
 
-Decisions 24 to 64 in versions 1.4 and 1.5. Some confirm what this specification already said, or only set when something is built; they are listed so that every decision can be traced. Decisions about how the platform is built, rather than what it does, are in the Technical Architecture and the architecture decision records.
+Decisions 24 to 71 in versions 1.4 to 1.6. Some confirm what this specification already said, or only set when something is built; they are listed so that every decision can be traced. Decisions about how the platform is built, rather than what it does, are in the Technical Architecture and the architecture decision records.
 
 | Decision                                                                                        | Where in this specification                                              |
 |-------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
@@ -1054,3 +1096,10 @@ Decisions 24 to 64 in versions 1.4 and 1.5. Some confirm what this specification
 | 62\. Index of documents                                                                         | Not a product change                                                     |
 | 63\. Decision procedure                                                                         | Not a product change                                                     |
 | 64\. Actions need level 1 (phone and email confirmed)                                           | Section 3.1                                                              |
+| 65\. Passwords keep at least 8 characters                                                       | Not a product change (sign-in rules, ADR 0004)                           |
+| 66\. Sign in with Google and Apple in a later release                                           | Section 3.1, already as specified; sets the timing                       |
+| 67\. Screen designs made in Penpot                                                              | How the platform is built; not a product change                          |
+| 68\. The app's own icon set                                                                     | How the platform is built; not a product change                          |
+| 69\. Font: Source Sans 3                                                                        | How the platform is built; not a product change                          |
+| 70\. Scouts and the referral reward                                                             | Sections 2, 3.6, 8.3, 16.1, 17.1, 20 and 21                              |
+| 71\. Scouts: level 1, one reward per unit, no invitation expiry, payouts approved by staff      | Sections 2, 3.6, 16.1, 20 and 21                                         |
