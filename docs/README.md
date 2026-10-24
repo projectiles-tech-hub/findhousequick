@@ -36,7 +36,7 @@ How particular parts are built, and why. Read the one for the area you are worki
 | `0005-staff-accounts-and-two-step-login.md` | Staff roles, the first super admin, and the staff second step. |
 | `0006-email-and-contacts.md` | Email as a second contact: confirming phone and email, sign-in and codes by either, and replacing a contact. |
 | `0007-verification-ladder-and-identity-checks.md` | How the server enforces verification levels, how identity checks run and what each result means, and agent company details. |
-| `0008-scouts-and-referral-rewards.md` | Proposed build plan for scouts and the referral reward (decision 70): reporting, invitations, the referral record, conflict checks and reward payouts kept apart from the escrow ledger. Not built yet. |
+| `0008-scouts-and-referral-rewards.md` | Proposed build plan for scouts and the referral reward (decisions 70 and 71): reporting, invitations, the referral record, conflict checks and reward payouts kept apart from the escrow ledger. Not built yet. |
 
 ## Reviews (`docs/reviews/`)
 

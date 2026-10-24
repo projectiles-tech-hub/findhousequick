@@ -92,10 +92,9 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
 - A company dollar card, so the hosting account (and the test system) can be opened (decision 42).
 - Whether to build country settings changes (`PATCH /admin/countries`, still to do from step 2) as a small step
   before step 4 (suggested 22 October 2026, when it was proposed for before step 3; step 3 is now done).
-- Scouts and the referral reward (decision 70): the five questions at the end of ADR 0008 (level to be a scout,
-  what counts as one property, which fee payment earns the reward, invitation expiry, payout approval), and
-  Decisions Log open points 16 to 19: the reward amount, which release, and, before it goes live, state estate
-  agency rules and withholding tax.
+- Scouts and the referral reward (decisions 70 and 71): Decisions Log open points 16 to 20: the reward amount,
+  which release, and, before it goes live, state estate agency rules, withholding tax, and whether both sides'
+  completed rental fees or either one must be received before a reward is due.
 - Decisions Log open points: the five escrow settings, escrow legal structure, launch city, partner API,
   mention of the Agent Emma channel in the launch plan, budget, hiring.
 
@@ -143,11 +142,12 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
 
 ## Decided, release not yet chosen
 
-- **Scouts and the referral reward** (decision 70; Product Specification 1.6, Section 3.6): verified users report
-  vacant properties and invite the landlords, who sign up, get verified and list for themselves; Projectiles pays the
-  scout a fixed reward from its own money for the first rental completed through the completed rental fee. Build plan
-  in `docs/adr/0008-scouts-and-referral-rewards.md` (proposed). No code until the release is chosen (open point 17)
-  and the questions in ADR 0008 are answered. It needs buildings and listings (steps 4 and 5), the completed rental
+- **Scouts and the referral reward** (decisions 70 and 71; Product Specification 1.6, Section 3.6): users at level
+  1 report vacant properties and invite the landlords, who sign up, get verified and list for themselves;
+  Projectiles pays the scout a fixed reward from its own money for the first rental of each unit completed through
+  the completed rental fee, after staff approve each payout; withdrawing needs identity checked and a bank account in
+  the scout's own name. Build plan
+  in `docs/adr/0008-scouts-and-referral-rewards.md` (proposed). No code until the release is chosen (open point 17). It needs buildings and listings (steps 4 and 5), the completed rental
   fee, bank accounts in the user's own name and a payout adapter, so rewards cannot be paid before those exist.
 
 ## Later releases (decided)

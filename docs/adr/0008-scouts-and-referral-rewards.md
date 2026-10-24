@@ -1,8 +1,7 @@
 # ADR 0008: Scouts and the referral reward (build plan)
 
-- Status: Proposed. A plan only: nothing is built until Emmanuel chooses the release (Decisions Log open point 17)
-  and answers the questions at the end.
-- Context: decision 70 (scouts and the referral reward); decisions 7 (agent authority), 14 and 15 (completed rental
+- Status: Proposed. A plan only: nothing is built until Emmanuel chooses the release (Decisions Log open point 17).
+- Context: decisions 70 and 71 (scouts and the referral reward); decisions 7 (agent authority), 14 and 15 (completed rental
   fee), 43 (landlords register their own properties), 58 (duplicate checks) and 64 (actions need level 1); Product
   Specification 1.6, Section 3.6; ADR 0002 (feature controls), ADR 0003 (money and ledger), ADR 0007 (verification).
 
@@ -25,8 +24,10 @@ rewards recorded as "waiting for a rental" until the fee and payouts exist.
 
 ### 1. Becoming a scout
 
-- A user opts in from their profile (`POST /me/scout`). Opting in, reporting and inviting need verification, which
-  is unchanged (see question 1 on the level). The server checks the level, as for every action (ADR 0007).
+- A user opts in from their profile (`POST /me/scout`). Opting in, reporting and inviting need level 1, like every
+  action beyond browsing (decisions 64 and 71). The server checks the level, as for every action (ADR 0007).
+- Withdrawing a reward needs the further verification for payouts: identity checked (level 2) and a bank account
+  confirmed in the scout's own name (decision 71). A scout can earn rewards before then; they wait until it is done.
 - A scout profile records the opt-in date and a status (active or suspended). Staff can suspend a scout.
 - Being a scout gives no rights over any property: a scout never lists, manages or speaks for a property. The server
   never lets a scout's account act on a building or listing because of a referral.
@@ -42,8 +43,8 @@ rewards recorded as "waiting for a rental" until the fee and payouts exist.
 
 ### 3. Inviting the landlord
 
-- `POST /scout/reports/{reportId}/invitations` creates an invitation with a single-use code, stored only as a hash,
-  and an expiry date taken from the country setting `scouts.invitationExpiryDays`.
+- `POST /scout/reports/{reportId}/invitations` creates an invitation with a single-use code, stored only as a hash.
+  Invitations do not expire (decision 71).
 - Two ways, both ending with the landlord on his own phone:
   - **Link:** the scout shares the link (WhatsApp, SMS). It opens the app, or the website if the app is not
     installed, on a page that says who invited him and what FindHouseQuick is.
@@ -55,26 +56,31 @@ rewards recorded as "waiting for a rental" until the fee and payouts exist.
 - An invitation can be accepted only by a new account. A person already on the app (by phone, email or, once
   verified, NIN) cannot accept it, so no reward arises for a landlord already on the app.
 - When the invited landlord adds his building (decision 43), the app asks him to confirm whether it is the property
-  the scout reported, and checks that it is near the reported pin. If an agent is involved, the agent goes through
+  the scout reported, and checks that it is near the reported pin. Every unit he adds to that building is linked to
+  the referral (section 4). If an agent is involved, the agent goes through
   the normal authority process (decision 7); the scout plays no part in it.
 
 ### 4. The referral record
 
-- A referral links one scout, one invitation, one landlord and one property. It is unique per property, so there is
-  only ever one scout per property. If two valid invitations exist for the same property, the earliest one wins.
-- Statuses: `WAITING_FOR_RENTAL`, `ELIGIBLE`, `PAID`, and `VOID` with a reason (expired, already on the app, rented
-  through escrow, conflict of interest, cancelled by staff).
+- A referral links one scout, one invitation, one landlord and one building. For the reward, every unit that can be
+  rented and paid for counts as one property (decision 71), so the referral holds one reward line per unit: a
+  building with four flats has four lines and can earn four rewards. A unit can belong to only one referral, so
+  there is only ever one scout per unit. If two valid invitations exist for the same property, the earliest wins.
+- Each reward line has a status: `WAITING_FOR_RENTAL`, `ELIGIBLE`, `APPROVED`, `PAID`, and `VOID` with a reason
+  (already on the app, rented through escrow, conflict of interest, put right by staff after review).
 - The scout sees their referrals and statuses in the app (`GET /me/scout/referrals`); staff see all of them.
 
 ### 5. When the reward is earned
 
-- Only the first rental of the property counts. When it is recorded:
-  - If it went through escrow, the referral becomes `VOID` (rented through escrow); no reward, now or later.
-  - If it was completed outside escrow, the referral waits until Projectiles has received the completed rental fee
-    for that rental (see question 3), then becomes `ELIGIBLE`.
+- Only the first rental of each unit counts. When it is recorded:
+  - If it went through escrow, that unit's reward line becomes `VOID` (rented through escrow); no reward for that
+    unit, now or later. The other units are not affected.
+  - If it was completed outside escrow, the line waits until Projectiles has received the completed rental fee for
+    that rental, then becomes `ELIGIBLE`. Whether that means both sides' fees or either one is Decisions Log open
+    point 20; payouts are not built until it is settled.
 - The reward amount is read from the country setting `scouts.rewardMinor` (whole minor units, kobo in Nigeria) when
-  the referral becomes eligible, and saved on the referral, so a later change of the setting does not alter a reward
-  already earned. While the setting is not set (open point 16), no referral can become eligible.
+  a line becomes eligible, and saved on that line, so a later change of the setting does not alter a reward already
+  earned. While the setting is not set (open point 16), no line can become eligible.
 
 ### 6. Conflict checks
 
@@ -84,18 +90,20 @@ Run when the invitation is accepted, again when the property is linked, and agai
 - The scout must not share, with any of them, a phone number or email address ever confirmed on either account, a
   bank account (compared by its fingerprint, as ID numbers are in ADR 0007), or a device (by the install identifier
   still to be added).
-- A failed check makes the referral `VOID` with the reason recorded and goes to the staff review list, so a mistaken
+- A failed check makes the reward line `VOID` with the reason recorded and goes to the staff review list, so a mistaken
   match can be put right by a person.
 
 ### 7. Paying the reward
 
 - Rewards are Projectiles' own money, so they are **not** written to the escrow ledger (ADR 0003). They have their own
-  table of reward payouts: referral (unique), amount in minor units with the currency, the scout's bank account,
-  status, provider reference and an **idempotency key**, like every payout.
+  table of reward payouts: the reward line (unique), amount in minor units with the currency, the scout's bank
+  account, the staff member who approved it and when, status, provider reference and an **idempotency key**, like
+  every payout.
 - A payout goes only to a bank account confirmed in the scout's own name. Without one, the reward waits and the scout
   is told to add one.
-- Payouts go through the payout provider adapter (`server/src/integrations`). See question 5 on whether staff approve
-  each payout first.
+- **Every payout is approved by staff before it is paid** (decision 71): an eligible line goes to the staff payout
+  list, a staff member approves it (recorded in the audit log), and only then is it sent through the payout provider
+  adapter (`server/src/integrations`).
 - Payouts stay blocked until open points 18 and 19 (estate agency rules and withholding tax) are settled, so no
   guess about tax is built in.
 
@@ -103,16 +111,15 @@ Run when the invitation is accepted, again when the property is linked, and agai
 
 - New feature switch `growth.scouts` ("Scouts and referral rewards"), off by default, in a new "Growth" area
   (Specification Section 17.1). The server refuses every scout route while it is off.
-- New country settings: `scouts.rewardMinor` (not set, open point 16) and `scouts.invitationExpiryDays` (see
-  question 4). Both are recorded in `docs/DEPLOYMENT.md` and `server/.env.example`, if needed, in the pull request
-  that adds them.
+- New country setting: `scouts.rewardMinor` (not set, open point 16). There is no invitation expiry setting
+  (decision 71). The setting is recorded in `docs/DEPLOYMENT.md` in the pull request that adds it.
 
 ### 9. API (added to `docs/api/openapi.yaml` when the work is scheduled)
 
 `POST` and `GET /me/scout`; `POST` and `GET /scout/reports`; `POST /scout/reports/{reportId}/invitations`;
 `GET /invitations/{code}` (public: who invited you, nothing private); `invitationCode` on `POST /auth/register`;
 `GET /me/scout/referrals`; staff: `GET /admin/scout-referrals`, `POST /admin/scout-referrals/{id}/void`,
-`GET /admin/scout-payouts`. Each states its verification level and feature switch, as the existing routes do.
+`GET /admin/scout-payouts`, `POST /admin/scout-payouts/{id}/approve`. Each states its verification level and feature switch, as the existing routes do.
 
 ### 10. Screens (a design group of their own, approved before any app screen is built)
 
@@ -121,18 +128,13 @@ the landlord's invitation page; my referrals and rewards; staff screens for refe
 
 ### 11. Tests
 
-Unit tests for the rules (one scout per property, earliest valid invitation wins, expiry, escrow voids, the amount
-saved at eligibility, every conflict check) and API tests for each route, including the switch being off, a landlord
-already on the app, an expired invitation, and a repeated payout request returning the same payout.
+Unit tests for the rules (one scout per unit, one reward per unit, earliest valid invitation wins, escrow voids only
+that unit, the amount saved at eligibility, every conflict check, no payout without staff approval) and API tests for each route, including the switch being off, a landlord
+already on the app, a second invitation for the same property, and a repeated payout request returning the same payout.
 
-## Questions for Emmanuel
+## Settled by decision 71 (24 October 2026)
 
-1. **Level to be a scout.** "Verified first" could mean level 1 (phone and email confirmed, as for every action) or
-   level 2 (identity checked). Level 2 is suggested, because rewards are money and a checked identity makes fraud
-   harder. Payment always needs the bank account in the scout's own name.
-2. **What counts as one property.** One reward per listed unit (each flat or shop), or one per building?
-3. **"Projectiles has received the fee".** The completed rental fee is paid by both sides (2% each). Is the reward due
-   when both have paid, or when either has?
-4. **Invitation expiry.** A starting value for the country setting; 30 days is suggested.
-5. **Payout approval.** Should each reward payout wait for a staff member to approve it, or go out automatically once
-   eligible (with the checks above)?
+Level 1 is enough to be a scout; withdrawing needs identity checked and a bank account in the scout's own name. Each
+unit that can be rented and paid for counts as one property for the reward. Invitations do not expire. Every payout
+is approved by staff. Still open: Decisions Log open points 16 (amount), 17 (release), 18 and 19 (legal and tax), and
+20 (whether both sides' completed rental fees, or either, must be received).

@@ -96,14 +96,14 @@ The platform is delivered on three platforms sharing one central system, so that
 
 # 2. User Types
 
-| **User type** | **Description**                                                                                                                                                                                                          |
-|---------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Tenant        | A person searching for a property to rent, whether long-term or short let.                                                                                                                                               |
-| Landlord      | The owner of a property, or a person with legal ownership rights over it.                                                                                                                                                |
-| Agent         | A person or firm authorised by a landlord to let and manage a specific property.                                                                                                                                         |
-| Scout         | A verified user who reports a vacant property and invites its landlord onto the app, for a referral reward paid by Projectiles. A scout is not an agent and never lists, manages or speaks for a property (Section 3.6). |
-| Caretaker     | A person added by a landlord with limited access, for example handling repairs but not payments.                                                                                                                         |
-| Platform team | Projectiles staff who review documents, handle disputes, carry out site visits and manage the platform.                                                                                                                  |
+| **User type** | **Description**                                                                                                                                                                                                 |
+|---------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Tenant        | A person searching for a property to rent, whether long-term or short let.                                                                                                                                      |
+| Landlord      | The owner of a property, or a person with legal ownership rights over it.                                                                                                                                       |
+| Agent         | A person or firm authorised by a landlord to let and manage a specific property.                                                                                                                                |
+| Scout         | A user who reports a vacant property and invites its landlord onto the app, for a referral reward paid by Projectiles. A scout is not an agent and never lists, manages or speaks for a property (Section 3.6). |
+| Caretaker     | A person added by a landlord with limited access, for example handling repairs but not payments.                                                                                                                |
+| Platform team | Projectiles staff who review documents, handle disputes, carry out site visits and manage the platform.                                                                                                         |
 
 # 3. Registration and Verification
 
@@ -179,9 +179,9 @@ Further rules:
 
 ## 3.6 Scouts and Referral Rewards
 
-Since decision 43, the platform has no field team capturing properties. Scouts fill that gap: they are ordinary users who spot vacant properties and bring the landlords onto the app. This brings in listings and gives people a reason to talk about FindHouseQuick (decision 70).
+Since decision 43, the platform has no field team capturing properties. Scouts fill that gap: they are ordinary users who spot vacant properties and bring the landlords onto the app. This brings in listings and gives people a reason to talk about FindHouseQuick (decisions 70 and 71).
 
-- **Who can be a scout:** any user can opt in. As with every action beyond browsing, the scout must be verified first; verification is unchanged.
+- **Who can be a scout:** any user at level 1 (phone and email confirmed) can opt in, report properties and invite landlords (decision 71). Withdrawing a reward needs the further verification for payouts: identity checked and a bank account confirmed in the scout's own name.
 
 - **A scout is not an agent:** a scout never lists, manages or speaks for a property.
 
@@ -195,7 +195,9 @@ Referral reward:
 
 - Projectiles pays the scout a fixed amount from its own money, into the scout's verified bank account in their own name. It is never an extra charge on the tenant or the landlord.
 
-- It is paid once, for the first rental of that property only, and only when that rental is completed through the completed rental fee (Section 8.3) and Projectiles has received the fee. A rental paid through escrow earns no referral reward.
+- For this reward only, every unit that can be rented and paid for counts as one property: a building with four flats earns up to four rewards, one for the first rental of each flat (decision 71). Each reward is paid once, for the first rental of that unit only, and only when that rental is completed through the completed rental fee (Section 8.3) and Projectiles has received the fee. A rental paid through escrow earns no referral reward.
+
+- Every reward payout is approved by staff before it is paid.
 
 Checks:
 
@@ -203,11 +205,11 @@ Checks:
 
 - No reward for a landlord or property already on the app.
 
-- Invitations expire after a set period.
+- Invitations do not expire (decision 71).
 
 - No reward where the scout is the landlord, the agent or the tenant of that property, or shares a phone number, bank account or device with any of them.
 
-Scouts and the referral reward are switched off by default (Section 17.1). The reward amount and the invitation expiry are country settings (Section 16.1). The reward amount, the release it goes in, and the legal and tax questions are open points in the Decisions Log.
+Scouts and the referral reward are switched off by default (Section 17.1). The reward amount is a country setting (Section 16.1). The reward amount, the release it goes in, and the legal and tax questions are open points in the Decisions Log.
 
 # 4. Property Search
 
@@ -838,8 +840,7 @@ The platform is built once and runs in any country. Nothing is fixed to Nigeria 
 | Payment provider         | The licensed payment provider used for escrow and payouts in that country.                                                               |
 | Legal templates          | Tenancy agreements, letters of authority and notices that follow local law.                                                              |
 | Short let rules          | Whether short lets are allowed, and any limits, by country or city.                                                                      |
-| Scout referral reward    | The fixed amount paid to a scout for each first rental they bring in (Section 3.6), in the country's currency.                           |
-| Scout invitation expiry  | How long a scout's invitation to a landlord stays valid.                                                                                 |
+| Scout referral reward    | The fixed amount paid to a scout for the first rental of each unit they bring in (Section 3.6), in the country's currency.               |
 | Fees shown on listings   | The fee types that appear in the total move-in cost box, matching local practice.                                                        |
 | Data protection          | Consent wording, data retention periods and where data is stored, as each country's law requires.                                        |
 | Units and formats        | Square metres or square feet, address format, date format and time zone.                                                                 |
@@ -993,7 +994,7 @@ Tenants only come to a platform that already has listings, so landlords and agen
 
 1.  **Choose the launch city** and the areas within it to cover first.
 
-2.  **Field team:** field officers carry out verification checks only, such as site visits and random audits. Landlords register their own buildings and capture their own properties in the app; the platform does not do this for them, because the manpower needed is not realistic (decision 43). Scouts, ordinary verified users, can also bring landlords onto the app for a referral reward (Section 3.6).
+2.  **Field team:** field officers carry out verification checks only, such as site visits and random audits. Landlords register their own buildings and capture their own properties in the app; the platform does not do this for them, because the manpower needed is not realistic (decision 43). Scouts, ordinary users, can also bring landlords onto the app for a referral reward (Section 3.6).
 
 3.  **Agent onboarding sessions:** group sessions where agents are trained on registration, authority letters and listing.
 
@@ -1036,21 +1037,21 @@ Tenants only come to a platform that already has listings, so landlords and agen
 | Risk score                        | A single rating calculated from all verification checks, used to decide whether a listing is approved, reviewed or visited.                                           |
 | Authenticator app                 | A phone app, such as Google Authenticator, that shows a new six-digit code every 30 seconds, used as a second step when signing in.                                   |
 | Push notification                 | A message that appears on the phone's screen even when the app is closed.                                                                                             |
-| Scout                             | A verified user who brings a landlord and a vacant property onto the app. Not an agent.                                                                               |
+| Scout                             | A user who brings a landlord and a vacant property onto the app. Not an agent.                                                                                        |
 | Referral reward                   | A fixed amount Projectiles pays a scout from its own money when the first rental of a property they brought in is completed and the completed rental fee is received. |
 
 # 22. Version History
 
 This specification is kept as one document and updated in place; earlier versions remain in the code repository history (decision 60). Every decision recorded in the Decisions Log that changes what the platform does is written into this document, with the decision number.
 
-| Version              | What changed                                                                                                                                     |
-|----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.3, 22 October 2026 | The version given at the start of the build. It reflects decisions 1 to 23 of the Decisions Log.                                                 |
-| 1.4, 23 October 2026 | Includes decisions 24 to 63, listed below with where each appears.                                                                               |
-| 1.5, 23 October 2026 | Includes decision 64: any action beyond browsing needs level 1 (Section 3.1).                                                                    |
-| 1.6, 24 October 2026 | Includes decisions 65 to 70: scouts and the referral reward (Sections 2, 3.6, 8.3, 16.1, 17.1, 20 and 21), and decisions 65 to 69, listed below. |
+| Version              | What changed                                                                                                                                                          |
+|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3, 22 October 2026 | The version given at the start of the build. It reflects decisions 1 to 23 of the Decisions Log.                                                                      |
+| 1.4, 23 October 2026 | Includes decisions 24 to 63, listed below with where each appears.                                                                                                    |
+| 1.5, 23 October 2026 | Includes decision 64: any action beyond browsing needs level 1 (Section 3.1).                                                                                         |
+| 1.6, 24 October 2026 | Includes decisions 65 to 71: scouts and the referral reward (decisions 70 and 71; Sections 2, 3.6, 8.3, 16.1, 17.1, 20 and 21), and decisions 65 to 69, listed below. |
 
-Decisions 24 to 70 in versions 1.4 to 1.6. Some confirm what this specification already said, or only set when something is built; they are listed so that every decision can be traced. Decisions about how the platform is built, rather than what it does, are in the Technical Architecture and the architecture decision records.
+Decisions 24 to 71 in versions 1.4 to 1.6. Some confirm what this specification already said, or only set when something is built; they are listed so that every decision can be traced. Decisions about how the platform is built, rather than what it does, are in the Technical Architecture and the architecture decision records.
 
 | Decision                                                                                        | Where in this specification                                              |
 |-------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
@@ -1101,3 +1102,4 @@ Decisions 24 to 70 in versions 1.4 to 1.6. Some confirm what this specification 
 | 68\. The app's own icon set                                                                     | How the platform is built; not a product change                          |
 | 69\. Font: Source Sans 3                                                                        | How the platform is built; not a product change                          |
 | 70\. Scouts and the referral reward                                                             | Sections 2, 3.6, 8.3, 16.1, 17.1, 20 and 21                              |
+| 71\. Scouts: level 1, one reward per unit, no invitation expiry, payouts approved by staff      | Sections 2, 3.6, 16.1, 20 and 21                                         |
