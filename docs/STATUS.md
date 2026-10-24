@@ -92,9 +92,8 @@ Updated: 23 October 2026. Read this after CLAUDE.md at the start of every build 
 - A company dollar card, so the hosting account (and the test system) can be opened (decision 42).
 - Whether to build country settings changes (`PATCH /admin/countries`, still to do from step 2) as a small step
   before step 4 (suggested 22 October 2026, when it was proposed for before step 3; step 3 is now done).
-- Scouts and the referral reward (decisions 70 and 71): Decisions Log open points 16 to 20: the reward amount,
-  which release, and, before it goes live, state estate agency rules, withholding tax, and whether both sides'
-  completed rental fees or either one must be received before a reward is due.
+- Scouts and the referral reward (decisions 70 and 71): Decisions Log open points 16 to 19: the reward amount,
+  which release, and, before it goes live, state estate agency rules and withholding tax.
 - Decisions Log open points: the five escrow settings, escrow legal structure, launch city, partner API,
   mention of the Agent Emma channel in the launch plan, budget, hiring.
 

@@ -75,9 +75,8 @@ rewards recorded as "waiting for a rental" until the fee and payouts exist.
 - Only the first rental of each unit counts. When it is recorded:
   - If it went through escrow, that unit's reward line becomes `VOID` (rented through escrow); no reward for that
     unit, now or later. The other units are not affected.
-  - If it was completed outside escrow, the line waits until Projectiles has received the completed rental fee for
-    that rental, then becomes `ELIGIBLE`. Whether that means both sides' fees or either one is Decisions Log open
-    point 20; payouts are not built until it is settled.
+  - If it was completed outside escrow, the line waits until Projectiles has received its full completed rental fee
+    for that rental, then becomes `ELIGIBLE`.
 - The reward amount is read from the country setting `scouts.rewardMinor` (whole minor units, kobo in Nigeria) when
   a line becomes eligible, and saved on that line, so a later change of the setting does not alter a reward already
   earned. While the setting is not set (open point 16), no line can become eligible.
@@ -136,5 +135,4 @@ already on the app, a second invitation for the same property, and a repeated pa
 
 Level 1 is enough to be a scout; withdrawing needs identity checked and a bank account in the scout's own name. Each
 unit that can be rented and paid for counts as one property for the reward. Invitations do not expire. Every payout
-is approved by staff. Still open: Decisions Log open points 16 (amount), 17 (release), 18 and 19 (legal and tax), and
-20 (whether both sides' completed rental fees, or either, must be received).
+is approved by staff. Still open: Decisions Log open points 16 (amount), 17 (release), and 18 and 19 (legal and tax).

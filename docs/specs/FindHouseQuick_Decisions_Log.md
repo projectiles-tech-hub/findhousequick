@@ -100,27 +100,26 @@ This log records every decision made about FindHouseQuick and every point still 
 
 # 3. Open Points
 
-| **No.** | **Open point**                                                                                                                                | **Notes**                                                   |
-|---------|-----------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------|
-| 1       | Days after key handover before automatic escrow release                                                                                       | To be decided                                               |
-| 2       | Days a landlord has to hand over keys after escrow is funded                                                                                  | To be decided                                               |
-| 3       | Whether the tenant's 1.5% fee is refunded when the landlord is at fault                                                                       | To be decided                                               |
-| 4       | Who keeps interest earned on money held in escrow                                                                                             | To be decided                                               |
-| 5       | Whether yearly rent renewals paid through the platform attract a fee                                                                          | To be decided                                               |
-| 6       | Legal structure of the escrow service                                                                                                         | To be confirmed with a lawyer before Release 2              |
-| 7       | Launch city and areas                                                                                                                         | Benin City was discussed; not yet confirmed                 |
-| 8       | Partner API for agencies, developers and lenders                                                                                              | Proposed; not yet approved                                  |
-| 9       | Mention of the Agent Emma channel in the launch plan                                                                                          | Keep or remove                                              |
-| 10      | Budget for development and first 12 to 18 months of running costs                                                                             | To be prepared                                              |
-| 11      | Hiring of technical lead and team                                                                                                             | To be started                                               |
-| 12      | Domain name, trademark and app store name checks for FindHouseQuick                                                                           | To be done                                                  |
-| 13      | Whether to make the code repository private again before launch                                                                               | To be decided                                               |
-| 15      | How long identity images are kept after verification (Specification 15.2: "the period required by law")                                       | To be confirmed with a lawyer; held in the country settings |
-| 16      | The scout referral reward amount (decision 70)                                                                                                | To be decided; held in the country settings                 |
-| 17      | Which release scouts and the referral reward go in (decision 70)                                                                              | To be decided                                               |
-| 18      | Whether paying for property introductions needs registration under state estate agency rules (decision 70)                                    | To be confirmed with a lawyer before it goes live           |
-| 19      | How withholding tax applies to scout referral rewards (decision 70)                                                                           | To be confirmed with a tax adviser before it goes live      |
-| 20      | Whether the scout reward is due once both the tenant's and the landlord's completed rental fees are received, or once either is (decision 70) | To be decided before payouts are built                      |
+| **No.** | **Open point**                                                                                             | **Notes**                                                   |
+|---------|------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------|
+| 1       | Days after key handover before automatic escrow release                                                    | To be decided                                               |
+| 2       | Days a landlord has to hand over keys after escrow is funded                                               | To be decided                                               |
+| 3       | Whether the tenant's 1.5% fee is refunded when the landlord is at fault                                    | To be decided                                               |
+| 4       | Who keeps interest earned on money held in escrow                                                          | To be decided                                               |
+| 5       | Whether yearly rent renewals paid through the platform attract a fee                                       | To be decided                                               |
+| 6       | Legal structure of the escrow service                                                                      | To be confirmed with a lawyer before Release 2              |
+| 7       | Launch city and areas                                                                                      | Benin City was discussed; not yet confirmed                 |
+| 8       | Partner API for agencies, developers and lenders                                                           | Proposed; not yet approved                                  |
+| 9       | Mention of the Agent Emma channel in the launch plan                                                       | Keep or remove                                              |
+| 10      | Budget for development and first 12 to 18 months of running costs                                          | To be prepared                                              |
+| 11      | Hiring of technical lead and team                                                                          | To be started                                               |
+| 12      | Domain name, trademark and app store name checks for FindHouseQuick                                        | To be done                                                  |
+| 13      | Whether to make the code repository private again before launch                                            | To be decided                                               |
+| 15      | How long identity images are kept after verification (Specification 15.2: "the period required by law")    | To be confirmed with a lawyer; held in the country settings |
+| 16      | The scout referral reward amount (decision 70)                                                             | To be decided; held in the country settings                 |
+| 17      | Which release scouts and the referral reward go in (decision 70)                                           | To be decided                                               |
+| 18      | Whether paying for property introductions needs registration under state estate agency rules (decision 70) | To be confirmed with a lawyer before it goes live           |
+| 19      | How withholding tax applies to scout referral rewards (decision 70)                                        | To be confirmed with a tax adviser before it goes live      |
 
 # 4. Related Documents
 
