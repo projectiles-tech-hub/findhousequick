@@ -1,7 +1,8 @@
 # ADR 0008: Scouts and the referral reward (build plan)
 
-- Status: Proposed. A plan only: nothing is built until Emmanuel chooses the release (Decisions Log open point 17).
-- Context: decisions 70 and 71 (scouts and the referral reward); decisions 7 (agent authority), 14 and 15 (completed rental
+- Status: Proposed. Scheduled for Release 1, step 5a (decision 72): sections 1 to 6 and 8 to 11 are built in Release 1;
+  reward payouts (section 7) come with the completed rental fee in Release 2.
+- Context: decisions 70 to 72 (scouts and the referral reward); decisions 7 (agent authority), 14 and 15 (completed rental
   fee), 43 (landlords register their own properties), 58 (duplicate checks) and 64 (actions need level 1); Product
   Specification 1.6, Section 3.6; ADR 0002 (feature controls), ADR 0003 (money and ledger), ADR 0007 (verification).
 
@@ -17,8 +18,9 @@ Scouts lean on parts that are not built yet:
 | A payout provider adapter | To send the reward | Needs the payment provider account (`docs/DEPLOYMENT.md`) |
 | A stable device identifier | For the "shares a device" check | Sign-in records only a device name today (ADR 0004); an install identifier must be added |
 
-So scouts cannot go live before those parts. The scout reporting and invitation steps could be built earlier, with
-rewards recorded as "waiting for a rental" until the fee and payouts exist.
+So rewards cannot be paid before those parts exist. Decision 72: the scout reporting and invitation steps are built
+in Release 1, after buildings and listings, with rewards recorded as "waiting for a rental" until the fee and payouts
+exist in Release 2.
 
 ## Plan
 
@@ -113,14 +115,14 @@ Run when the invitation is accepted, again when the property is linked, and agai
 - New country setting: `scouts.rewardMinor` (not set, open point 16). There is no invitation expiry setting
   (decision 71). The setting is recorded in `docs/DEPLOYMENT.md` in the pull request that adds it.
 
-### 9. API (added to `docs/api/openapi.yaml` when the work is scheduled)
+### 9. API (added to `docs/api/openapi.yaml` at the start of step 5a)
 
 `POST` and `GET /me/scout`; `POST` and `GET /scout/reports`; `POST /scout/reports/{reportId}/invitations`;
 `GET /invitations/{code}` (public: who invited you, nothing private); `invitationCode` on `POST /auth/register`;
 `GET /me/scout/referrals`; staff: `GET /admin/scout-referrals`, `POST /admin/scout-referrals/{id}/void`,
 `GET /admin/scout-payouts`, `POST /admin/scout-payouts/{id}/approve`. Each states its verification level and feature switch, as the existing routes do.
 
-### 10. Screens (a design group of their own, approved before any app screen is built)
+### 10. Screens (a design group of their own, approved before any app screen is built; screens 81 to 87 and 105 in `docs/designs.md`)
 
 Become a scout; report a vacant property (pin, photos, description); invite the landlord (share link, show QR code);
 the landlord's invitation page; my referrals and rewards; staff screens for referrals, the review list and payouts.
@@ -135,4 +137,8 @@ already on the app, a second invitation for the same property, and a repeated pa
 
 Level 1 is enough to be a scout; withdrawing needs identity checked and a bank account in the scout's own name. Each
 unit that can be rented and paid for counts as one property for the reward. Invitations do not expire. Every payout
-is approved by staff. Still open: Decisions Log open points 16 (amount), 17 (release), and 18 and 19 (legal and tax).
+is approved by staff. Still open: Decisions Log open points 16 (amount), and 18 and 19 (legal and tax).
+
+## Settled by decision 72 (24 October 2026)
+
+Scouts are built in Release 1 (step 5a); reward payouts come with the completed rental fee in Release 2.
