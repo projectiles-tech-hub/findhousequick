@@ -61,8 +61,8 @@ Updated: 24 October 2026. Read this after CLAUDE.md at the start of every build 
   and #21); group 2, verification (10 phone screens), was approved on 24 October 2026 (pull request #22), with level
   3 ("Payment ready") shown as "Later". The app screens for both groups may now be built from them (step 6); no app
   screen built yet. Group 3, search and map, with the bottom bar, was approved on 24 October 2026. Group 4, the property page (screens 30 to 36), was approved on 24 October 2026 (pull request #27).
-  Group 5, listing creation (screens 50 to 65, phone), with a bottom bar for landlords and agents, is in pull request
-  #28, awaiting approval. Next design group after it: agents and authority (screens 66 to 69).
+  Group 5, listing creation (screens 50 to 65, phone), with a bottom bar for landlords and agents, was approved on
+  24 October 2026 (pull request #28). Next design group: agents and authority (screens 66 to 69).
 
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
   #13. The server refuses actions above the user's level (`VERIFICATION_REQUIRED`, decision 64); identity
@@ -131,7 +131,8 @@ Updated: 24 October 2026. Read this after CLAUDE.md at the start of every build 
     approved on 24 October 2026 (pull request #22). Group 3, search and map (10 phone screens and
     the new bottom bar), approved on 24 October 2026 (pull request #24). Group 4, the property page (screens 30 to 36),
     approved on 24 October 2026 (pull request #27). Group 5, listing creation (screens 50 to 65, phone, and the
-    bottom bar for landlords and agents): in pull request #28, awaiting approval. Still to do after it: agents and
+    bottom bar for landlords and agents), approved on 24 October 2026 (pull request #28). Next: agents and authority
+    (screens 66 to 69). Still to do after it: agents and
     authority, messaging and calls, inspections, saved items, me and settings, scouts, staff screens; then the
     website and desktop layouts.
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
