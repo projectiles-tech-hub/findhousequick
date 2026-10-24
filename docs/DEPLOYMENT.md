@@ -108,6 +108,7 @@ company and its lawyer, not the developers, but no real user may sign up until t
 | Data Protection Officer appointed | Not yet |
 | Data protection impact assessment written | Not yet |
 | How long identity images are kept after verification (Decisions Log open point 15) | Not yet |
+| Before scouts go live (decision 70): whether paying for property introductions needs registration under state estate agency rules, and how withholding tax applies to referral rewards (Decisions Log open points 18 and 19) | Not yet |
 
 ## 5. Checklist before any server goes live
 
