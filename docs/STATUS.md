@@ -127,7 +127,7 @@ Updated: 24 October 2026. Read this after CLAUDE.md at the start of every build 
     screens), approved by Emmanuel on 23 October 2026 (pull request #20). Group 2, verification (10 phone screens),
     approved on 24 October 2026 (pull request #22). Group 3, search and map (10 phone screens and
     the new bottom bar), approved on 24 October 2026 (pull request #24). Group 4, the property page (10 phone screens),
-    is in pull request #26, awaiting Emmanuel's review.
+    is in pull request #27, awaiting Emmanuel's review.
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
 4. **Reference data endpoints**, then buildings, units and the parts checklist, with the distance to the main
