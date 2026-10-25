@@ -79,12 +79,12 @@ Penpot screen number, and its row is added to the tables further down with its l
 | 37 | Saved properties | Saved | To design | To design | To design |
 | 38 | Saved areas and alerts | Saved | To design | To design | To design |
 | 39 | Saved places (office, school) | Saved | To design | To design | To design |
-| 40 | Messages list | Messages and calls | To design | To design | To design |
-| 41 | Conversation | Messages and calls | To design | To design | To design |
-| 42 | Calling | Messages and calls | To design | To design | To design |
-| 43 | Incoming call | Messages and calls | To design | To design | To design |
-| 44 | In call and call ended | Messages and calls | To design | To design | To design |
-| 45 | Agree to share phone numbers | Messages and calls | To design | To design | To design |
+| 40 | Messages list | Messages and calls | To review (Penpot 40) | To design | To design |
+| 41 | Conversation | Messages and calls | To review (Penpot 41) | To design | To design |
+| 42 | Calling | Messages and calls | To review (Penpot 42) | To design | To design |
+| 43 | Incoming call | Messages and calls | To review (Penpot 43) | To design | To design |
+| 44 | In call and call ended | Messages and calls | To review (Penpot 44) | To design | To design |
+| 45 | Agree to share phone numbers | Messages and calls | To review (Penpot 45) | To design | To design |
 | 46 | Book an inspection (time slots) | Inspections (tenant) | To design | To design | To design |
 | 47 | My inspections | Inspections (tenant) | To design | To design | To design |
 | 48 | Inspection details (reschedule, cancel) | Inspections (tenant) | To design | To design | To design |
@@ -174,6 +174,8 @@ page and names the part (board) it is for, so Penpot can go straight to it.
 
 ## Screens
 
+Page "07 Messages and calls (phone)": [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d869e77d62ea).
+
 Page "06 Agents and authority (phone)": [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=f8ae3700-ca4d-80f4-8008-d730181a64ba).
 
 Page "05 Listing creation (phone)": [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=a1d0afb0-4097-80c4-8008-d67477c131f7).
@@ -247,3 +249,10 @@ Page "01 Sign-up and sign-in (phone)": [open the page](https://design.penpot.app
 | 68 Request authority | Agents and authority | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=f8ae3700-ca4d-80f4-8008-d730181a64ba&board-id=f8ae3700-ca4d-80f4-8008-d735b1130635) | To review | Agent: is the landlord on the app; if yes, the landlord's phone number and an optional end date, then the request goes to the landlord |
 | 69 Letter of authority | Agents and authority | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=f8ae3700-ca4d-80f4-8008-d730181a64ba&board-id=f8ae3700-ca4d-80f4-8008-d736a067590e) | To review | Agent, landlord not on the app: download the standard letter, upload the signed letter and the landlord's ID, landlord's name and phone; the team calls the landlord to confirm |
 | 70 Authorised properties | Agents and authority | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=f8ae3700-ca4d-80f4-8008-d730181a64ba&board-id=f8ae3700-ca4d-80f4-8008-d737f2667947) | To review | Agent: buildings with their authority state (authorised with end date, waiting for the landlord, being checked, ended); Request authority; bottom bar for landlords and agents |
+| 40 Messages list | Messages and calls | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d869e77d62ea&board-id=7edfee8f-ebaa-8084-8008-d86a0e3e07bf) | To review | One chat per property, with the other person, last message, time and unread count; tenant bottom bar with Messages selected |
+| 41 Conversation | Messages and calls | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d869e77d62ea&board-id=7edfee8f-ebaa-8084-8008-d86a3e2ee6d0) | To review | Name, verified badge and typical reply time; call button; the property the chat is about with Book inspection; the warning shown when a message contains a phone number (decision 44, Specification 7.1) |
+| 42 Calling | Messages and calls | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d869e77d62ea&board-id=7edfee8f-ebaa-8084-8008-d86abf22449b) | To review | Voice call inside the app, ringing; numbers stay hidden (decision 44) |
+| 43 Incoming call | Messages and calls | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d869e77d62ea&board-id=7edfee8f-ebaa-8084-8008-d86af40db872) | To review | Caller and the property the call is about; Decline or Answer |
+| 44 In call | Messages and calls | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d869e77d62ea&board-id=7edfee8f-ebaa-8084-8008-d86b296a6691) | To review | Call time; Mute and Speaker as labelled round buttons (no microphone or speaker icon in the approved set); End |
+| 44 In call: call ended | Messages and calls | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d869e77d62ea&board-id=7edfee8f-ebaa-8084-8008-d86b5c0ef80b) | To review | Length of the call; Book an inspection, Back to chat, Call again |
+| 45 Share phone numbers | Messages and calls | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d869e77d62ea&board-id=7edfee8f-ebaa-8084-8008-d86baa6c2d89) | To review | Only once an inspection is booked; shows who has agreed; numbers appear only when both agree (Specification 7.1) |
