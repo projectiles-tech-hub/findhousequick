@@ -65,8 +65,9 @@ Updated: 24 October 2026. Read this after CLAUDE.md at the start of every build 
   24 October 2026 (pull request #28). Group 6, agents and authority (screens 66 to 70, phone), is in pull request
   #29, awaiting approval. Group 7, messages and calls (screens 40 to 45, phone), is in pull request #30, awaiting
   approval. Group 8, inspections for tenants (screens 46 to 49, phone), is in pull request #31, awaiting approval.
-  Group 9, saved items (screens 37 to 39, phone), is in pull request #32, awaiting approval. Next design group: me
-  and settings (screens 71 to 80).
+  Group 9, saved items (screens 37 to 39, phone), is in pull request #32, awaiting approval. Group 10, me and
+  settings (screens 71 to 80, phone), is in pull request #33, awaiting approval. Next design group: scouts (screens
+  81 to 87).
 
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
   #13. The server refuses actions above the user's level (`VERIFICATION_REQUIRED`, decision 64); identity
@@ -139,8 +140,8 @@ Updated: 24 October 2026. Read this after CLAUDE.md at the start of every build 
     authority (screens 66 to 70, phone): in pull request #29, awaiting approval. Group 7, messages and calls (screens
     40 to 45, phone): in pull request #30, awaiting approval. Group 8, inspections for tenants (screens 46 to 49,
     phone): in pull request #31, awaiting approval. Group 9, saved items (screens 37 to 39, phone): in pull request
-    #32, awaiting approval. Still to do after them: me and settings, scouts, staff screens; then the website and
-    desktop layouts.
+    #32, awaiting approval. Group 10, me and settings (screens 71 to 80, phone): in pull request #33, awaiting
+    approval. Still to do after them: scouts, staff screens; then the website and desktop layouts.
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
 4. **Reference data endpoints**, then buildings, units and the parts checklist, with the distance to the main

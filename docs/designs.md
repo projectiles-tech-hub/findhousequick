@@ -110,16 +110,16 @@ Penpot screen number, and its row is added to the tables further down with its l
 | 68 | Request authority over a property (agent) | Agents and authority | To review (Penpot 68) | To design | To design |
 | 69 | Letter of authority upload (landlord not registered) | Agents and authority | To review (Penpot 69) | To design | To design |
 | 70 | Authorised properties (agent) | Agents and authority | To review (Penpot 70) | To design | To design |
-| 71 | Me (profile) | Me and settings | To design | To design | To design |
-| 72 | Edit profile | Me and settings | To design | To design | To design |
-| 73 | Change phone or email | Me and settings | To design | To design | To design |
-| 74 | Language | Me and settings | To design | To design | To design |
-| 75 | Notification settings | Me and settings | To design | To design | To design |
-| 76 | Notifications list | Me and settings | To design | To design | To design |
-| 77 | Help (WhatsApp and phone lines) | Me and settings | To design | To design | To design |
-| 78 | Download my data | Me and settings | To design | To design | To design |
-| 79 | Delete account | Me and settings | To design | To design | To design |
-| 80 | Sign out | Me and settings | To design | To design | To design |
+| 71 | Me (profile) | Me and settings | To review (Penpot 71) | To design | To design |
+| 72 | Edit profile | Me and settings | To review (Penpot 72) | To design | To design |
+| 73 | Change phone or email | Me and settings | To review (Penpot 73) | To design | To design |
+| 74 | Language | Me and settings | To review (Penpot 74) | To design | To design |
+| 75 | Notification settings | Me and settings | To review (Penpot 75) | To design | To design |
+| 76 | Notifications list | Me and settings | To review (Penpot 76) | To design | To design |
+| 77 | Help (WhatsApp and phone lines) | Me and settings | To review (Penpot 77) | To design | To design |
+| 78 | Download my data | Me and settings | To review (Penpot 78) | To design | To design |
+| 79 | Delete account | Me and settings | To review (Penpot 79) | To design | To design |
+| 80 | Sign out | Me and settings | To review (Penpot 80) | To design | To design |
 | 81 | Become a scout | Scouts (decisions 70 to 72) | To design | To design | To design |
 | 82 | Report a vacant property | Scouts (decisions 70 to 72) | To design | To design | To design |
 | 83 | Invite the landlord (link, or sign-up on the landlord's own phone) | Scouts (decisions 70 to 72) | To design | To design | To design |
@@ -173,6 +173,8 @@ page and names the part (board) it is for, so Penpot can go straight to it.
 | Navigation (bottom bar for landlords and agents) | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=a1d0afb0-4097-80c4-8008-d67477c131f7&board-id=a1d0afb0-4097-80c4-8008-d6744914e63e) | Approved | Approved by Emmanuel on 24 October 2026 with the listing creation screens. Added with the listing creation screens: five tabs (Search, Properties, Messages, Inspections, Me), in the same style as the approved tenant bar |
 
 ## Screens
+
+Page "10 Me and settings (phone)": [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87589776a94).
 
 Page "09 Saved (phone)": [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d86f3ce35be4).
 
@@ -267,3 +269,13 @@ Page "01 Sign-up and sign-in (phone)": [open the page](https://design.penpot.app
 | 37 Saved properties | Saved | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d86f3ce35be4&board-id=7edfee8f-ebaa-8084-8008-d86f4c43d38e) | To review | Saved homes as compact property cards; compare up to three; tabs for properties, areas and places; tenant bottom bar with Saved selected |
 | 38 Saved areas and alerts | Saved | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d86f3ce35be4&board-id=7edfee8f-ebaa-8084-8008-d8705d99b4a4) | To review | Each saved area with its filters, an alert switch and new homes this week; alert channels are chosen in notification settings |
 | 39 Saved places | Saved | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d86f3ce35be4&board-id=7edfee8f-ebaa-8084-8008-d8713a5cdd12) | To review | Places such as an office or school, used to show the travel distance on each property (decision 48); add, edit |
+| 71 Me | Me and settings | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87589776a94&board-id=7edfee8f-ebaa-8084-8008-d875956ab961) | To review | Name, account types and verification level; links to every setting; sign out and delete account; tenant bottom bar with Me selected |
+| 72 Edit profile | Me and settings | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87589776a94&board-id=7edfee8f-ebaa-8084-8008-d875d478dc11) | To review | Name fixed to the verified ID (support changes it); account types, more than one allowed, as on approved screen 02 |
+| 73 Change phone or email | Me and settings | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87589776a94&board-id=7edfee8f-ebaa-8084-8008-d8761aeccccf) | To review | Current phone and email, both confirmed; a new number gets a code; the old one works until the new one is confirmed (ADR 0006) |
+| 74 Language | Me and settings | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87589776a94&board-id=7edfee8f-ebaa-8084-8008-d8763cc4f412) | To review | English and Pidgin; the other languages are added when their translations are ready (decision 40) |
+| 75 Notification settings | Me and settings | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87589776a94&board-id=7edfee8f-ebaa-8084-8008-d876663392cb) | To review | For each kind of notification, app, email or SMS; security messages always sent (decision 46) |
+| 76 Notifications | Me and settings | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87589776a94&board-id=7edfee8f-ebaa-8084-8008-d876cb1c8ca9) | To review | Recent notifications, unread ones highlighted |
+| 77 Help | Me and settings | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87589776a94&board-id=7edfee8f-ebaa-8084-8008-d876f7a4d554) | To review | WhatsApp and phone lines run by the support team (decision 41); common questions. The numbers shown are placeholders |
+| 78 Download my data | Me and settings | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87589776a94&board-id=7edfee8f-ebaa-8084-8008-d87725c583a9) | To review | What the copy includes; the user is told when the file is ready |
+| 79 Delete account | Me and settings | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87589776a94&board-id=7edfee8f-ebaa-8084-8008-d8774ede6a76) | To review | Cannot be undone; personal data deleted except records the law requires, kept only for the legal period; confirm box |
+| 80 Sign out | Me and settings | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87589776a94&board-id=7edfee8f-ebaa-8084-8008-d87777158876) | To review | Confirmation sheet over the Me screen; signs out this phone only |
