@@ -76,9 +76,9 @@ Penpot screen number, and its row is added to the tables further down with its l
 | 34 | Compare (up to three) | Property page | Approved (Penpot 34) | To design | To design |
 | 35 | Share property | Property page | Approved (Penpot 35) | To design | To design |
 | 36 | Report (fake listing, already taken, inspection fee demand) | Property page | Approved (Penpot 36) | To design | To design |
-| 37 | Saved properties | Saved | To design | To design | To design |
-| 38 | Saved areas and alerts | Saved | To design | To design | To design |
-| 39 | Saved places (office, school) | Saved | To design | To design | To design |
+| 37 | Saved properties | Saved | To review (Penpot 37) | To design | To design |
+| 38 | Saved areas and alerts | Saved | To review (Penpot 38) | To design | To design |
+| 39 | Saved places (office, school) | Saved | To review (Penpot 39) | To design | To design |
 | 40 | Messages list | Messages and calls | To review (Penpot 40) | To design | To design |
 | 41 | Conversation | Messages and calls | To review (Penpot 41) | To design | To design |
 | 42 | Calling | Messages and calls | To review (Penpot 42) | To design | To design |
@@ -174,6 +174,8 @@ page and names the part (board) it is for, so Penpot can go straight to it.
 
 ## Screens
 
+Page "09 Saved (phone)": [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d86f3ce35be4).
+
 Page "08 Inspections, tenant (phone)": [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d86c4f93550c).
 
 Page "07 Messages and calls (phone)": [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d869e77d62ea).
@@ -262,3 +264,6 @@ Page "01 Sign-up and sign-in (phone)": [open the page](https://design.penpot.app
 | 47 My inspections | Inspections (tenant) | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d86c4f93550c&board-id=7edfee8f-ebaa-8084-8008-d86c8fff7ae6) | To review | Upcoming and past; confirmed (with the exact address), requested, and a new time offered by the landlord (accept or pick another); tenant bottom bar with Inspections selected |
 | 48 Inspection details | Inspections (tenant) | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d86c4f93550c&board-id=7edfee8f-ebaa-8084-8008-d86e6e2a89b1) | To review | Time, exact address and directions once confirmed (Specification 4.3); the verified host with chat; share with family or a friend; reschedule, cancel, report a fee demand |
 | 49 Share inspection details | Inspections (tenant) | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d86c4f93550c&board-id=7edfee8f-ebaa-8084-8008-d86ed5d453d5) | To review | One text message to a trusted contact with the address, time and agent's name (Specification 7.2) |
+| 37 Saved properties | Saved | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d86f3ce35be4&board-id=7edfee8f-ebaa-8084-8008-d86f4c43d38e) | To review | Saved homes as compact property cards; compare up to three; tabs for properties, areas and places; tenant bottom bar with Saved selected |
+| 38 Saved areas and alerts | Saved | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d86f3ce35be4&board-id=7edfee8f-ebaa-8084-8008-d8705d99b4a4) | To review | Each saved area with its filters, an alert switch and new homes this week; alert channels are chosen in notification settings |
+| 39 Saved places | Saved | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d86f3ce35be4&board-id=7edfee8f-ebaa-8084-8008-d8713a5cdd12) | To review | Places such as an office or school, used to show the travel distance on each property (decision 48); add, edit |
