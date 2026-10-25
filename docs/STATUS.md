@@ -61,9 +61,7 @@ Updated: 25 October 2026. Read this after CLAUDE.md at the start of every build 
   and #21); group 2, verification (10 phone screens), was approved on 24 October 2026 (pull request #22), with level
   3 ("Payment ready") shown as "Later". Group 3, search and map, with the bottom bar, was approved on 24 October 2026. Group 4, the property page (screens 30 to 36), was approved on 24 October 2026 (pull request #27).
   Group 5, listing creation (screens 50 to 65, phone), with a bottom bar for landlords and agents, was approved on
-  24 October 2026 (pull request #28). On 24 October 2026 Emmanuel asked for the remaining groups to be made one
-  after another, each in its own pull request, without waiting for his approval between groups, and for nothing
-  else in the way of working to change without his say. Groups 6 to 11 were made on 24 and 25 October 2026:
+  24 October 2026 (pull request #28). Groups 6 to 11 were made on 24 and 25 October 2026:
   agents and authority (screens 66 to 70, pull request #29), messages and calls (40 to 45, #30), inspections for
   tenants (46 to 49, #31), saved items (37 to 39, #32), me and settings (71 to 80, #33) and scouts (81 to 87, #34).
   Each pull request is built on the one before, so they are merged in that order. Emmanuel approved all of them on
@@ -72,8 +70,7 @@ Updated: 25 October 2026. Read this after CLAUDE.md at the start of every build 
   Speaker as worded buttons, a call leaving a line in the chat, and the dark background of the call screens. The
   support phone numbers (screen 77), the scout reward amount (screens 81 and 85, open point 16) and the web address
   in invitation links (screen 83) are placeholders. Next: the website and desktop layouts, starting with the staff
-  screens (88 to 105), which exist only there; the screen width and the website's responsive layouts are waiting
-  for Emmanuel (below).
+  screens (88 to 105), which exist only there.
 
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
   #13. The server refuses actions above the user's level (`VERIFICATION_REQUIRED`, decision 64); identity
@@ -101,12 +98,7 @@ Updated: 25 October 2026. Read this after CLAUDE.md at the start of every build 
 
 ## Waiting for Emmanuel
 
-- Review of each group of screens as it is sent (step 2c). Groups are made one after another, each in its own pull
-  request, while earlier ones are reviewed (Emmanuel, 24 October 2026).
-- Before the website and desktop layouts start: the screen width to design them at, and the widths at which the
-  website's responsive layout is designed (suggested 25 October 2026: design the wide layouts at 1366 by 768, the
-  most common desktop screen in Nigeria, and the website also at a tablet width; the approved phone screens are the
-  website's phone layout).
+- Review of each group of screens as it is sent (step 2c); each group waits for approval before the next starts.
 - Before identity checks go live: how long identity images are kept after verification, after legal advice
   (Decisions Log open point 15). Step 3 is built with this as a country setting (decision 55) that is not yet set.
 - A company dollar card, so the hosting account (and the test system) can be opened (decision 42).
@@ -138,13 +130,8 @@ Updated: 25 October 2026. Read this after CLAUDE.md at the start of every build 
     signed-in website, then the public website pages. Every screen, its Penpot link, its group and its review state are listed in
     `docs/designs.md`. Emmanuel is told before each design session so he can keep the file open. **No app screen
     is built until its design is approved.**
-    Done after the email step, so the sign-up and sign-in designs match what is built. On 24 October 2026
-    Emmanuel asked for the screen designs to be finished before the server work continues; step 4 was started that
-    day and stopped at his request before anything was pushed.
-    The Penpot connection can drop during long sessions (a known Penpot fault: it breaks when another plugin is
-    opened, when the tab loses focus, or when a request runs past about 30 seconds). To recover: close plugin
-    windows, reload the Penpot tab, then MCP, Disconnect, Connect; in Chrome, keep design.penpot.app in "Always keep
-    these sites active". Keep each request to Penpot small.
+    Done after the email step, so the sign-up and sign-in designs match what is built; the server steps below
+    continue in other sessions while the designs are reviewed.
     Progress: decision 67 and the design system merged in pull request #16. Icons redrawn (decision 68) and font
     changed to Source Sans 3 (decision 69) in pull request #19; the whole design system approved by Emmanuel on
     23 October 2026. Now: the screens, group by group. Group 1, sign-up and sign-in (9 phone
