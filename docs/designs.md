@@ -30,6 +30,12 @@ screens. Screens are added to or removed from this list only by a recorded decis
 | Desktop software | 1 to 87 and the staff screens 88 to 105 | 105 |
 | **All designs** | | **304** |
 
+Screen widths (decision 74): phone screens are 360 by 800. The website is responsive and must work on every screen
+size without breaking: each website design is drawn at the desktop width of 1366, with its tablet layout at 768; at
+phone width the user screens follow the approved phone screens, and the public pages are drawn at 360 too. The
+desktop software is designed at 1366 by 768, in a window the user can resize. A website design includes its tablet
+and phone layouts, so the count of 304 is unchanged.
+
 Screens 51, 57 and 58 (adding a building, camera capture and the walkthrough video) are done on site with the
 phone's camera and GPS (Specification Sections 5.3 and 6.2). On the website and desktop, those screens send the user
 to the phone.

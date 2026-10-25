@@ -69,8 +69,10 @@ Updated: 25 October 2026. Read this after CLAUDE.md at the start of every build 
   (step 6); no app screen is built yet. The points raised in those pull requests were approved as shown: Mute and
   Speaker as worded buttons, a call leaving a line in the chat, and the dark background of the call screens. The
   support phone numbers (screen 77), the scout reward amount (screens 81 and 85, open point 16) and the web address
-  in invitation links (screen 83) are placeholders. Next: the website and desktop layouts, starting with the staff
-  screens (88 to 105), which exist only there.
+  in invitation links (screen 83) are placeholders. Screen widths for the website and desktop designs (decision 74):
+  the website is responsive, drawn at 1366 (desktop) and 768 (tablet), following the phone screens at phone width;
+  the desktop software at 1366 by 768 in a resizable window. Decision 74 is in pull request #35, awaiting approval.
+  Next: the website and desktop layouts, starting with the staff screens (88 to 105), which exist only there.
 
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
   #13. The server refuses actions above the user's level (`VERIFICATION_REQUIRED`, decision 64); identity
@@ -142,7 +144,7 @@ Updated: 25 October 2026. Read this after CLAUDE.md at the start of every build 
     bottom bar for landlords and agents), approved on 24 October 2026 (pull request #28). Groups 6 to 11 (screens
     37 to 49 and 66 to 87, phone), approved on 25 October 2026 (pull requests #29 to #34): every phone layout is
     approved. Still to do: the staff screens (88 to 105, website and desktop only); the website and desktop
-    layouts of screens 1 to 87; the public website pages (106 to 112).
+    layouts of screens 1 to 87; the public website pages (106 to 112). Widths as in decision 74.
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
 4. **Reference data endpoints**, then buildings, units and the parts checklist, with the distance to the main
