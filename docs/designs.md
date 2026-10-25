@@ -105,11 +105,11 @@ Penpot screen number, and its row is added to the tables further down with its l
 | 63 | Confirm still available or mark as rented | Listing creation (landlord, authorised agent) | Approved (Penpot 63) | To design | To design |
 | 64 | Set inspection times | Listing creation (landlord, authorised agent) | Approved (Penpot 64) | To design | To design |
 | 65 | Inspection requests (confirm, reschedule) | Listing creation (landlord, authorised agent) | Approved (Penpot 65) | To design | To design |
-| 66 | Agent requests (landlord approves or rejects) | Agents and authority | To design | To design | To design |
-| 67 | My agents (end date, withdraw) | Agents and authority | To design | To design | To design |
-| 68 | Request authority over a property (agent) | Agents and authority | To design | To design | To design |
-| 69 | Letter of authority upload (landlord not registered) | Agents and authority | To design | To design | To design |
-| 70 | Authorised properties (agent) | Agents and authority | To design | To design | To design |
+| 66 | Agent requests (landlord approves or rejects) | Agents and authority | To review (Penpot 66) | To design | To design |
+| 67 | My agents (end date, withdraw) | Agents and authority | To review (Penpot 67) | To design | To design |
+| 68 | Request authority over a property (agent) | Agents and authority | To review (Penpot 68) | To design | To design |
+| 69 | Letter of authority upload (landlord not registered) | Agents and authority | To review (Penpot 69) | To design | To design |
+| 70 | Authorised properties (agent) | Agents and authority | To review (Penpot 70) | To design | To design |
 | 71 | Me (profile) | Me and settings | To design | To design | To design |
 | 72 | Edit profile | Me and settings | To design | To design | To design |
 | 73 | Change phone or email | Me and settings | To design | To design | To design |
@@ -173,6 +173,8 @@ page and names the part (board) it is for, so Penpot can go straight to it.
 | Navigation (bottom bar for landlords and agents) | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=a1d0afb0-4097-80c4-8008-d67477c131f7&board-id=a1d0afb0-4097-80c4-8008-d6744914e63e) | Approved | Approved by Emmanuel on 24 October 2026 with the listing creation screens. Added with the listing creation screens: five tabs (Search, Properties, Messages, Inspections, Me), in the same style as the approved tenant bar |
 
 ## Screens
+
+Page "06 Agents and authority (phone)": [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=f8ae3700-ca4d-80f4-8008-d730181a64ba).
 
 Page "05 Listing creation (phone)": [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=a1d0afb0-4097-80c4-8008-d67477c131f7).
 
@@ -240,3 +242,8 @@ Page "01 Sign-up and sign-in (phone)": [open the page](https://design.penpot.app
 | 63 Confirm still available or mark as rented | Listing creation | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=a1d0afb0-4097-80c4-8008-d67477c131f7&board-id=a1d0afb0-4097-80c4-8008-d721adef6512) | Approved | Approved by Emmanuel on 24 October 2026. Still available, or rented (the listing closes); asked before the confirmation date |
 | 64 Set inspection times | Listing creation | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=a1d0afb0-4097-80c4-8008-d67477c131f7&board-id=a1d0afb0-4097-80c4-8008-d722872afea7) | Approved | Approved by Emmanuel on 24 October 2026. Times for each day of the week, slot length, dates away (decision 45) |
 | 65 Inspection requests | Listing creation | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=a1d0afb0-4097-80c4-8008-d67477c131f7&board-id=a1d0afb0-4097-80c4-8008-d723b0d4914d) | Approved | Approved by Emmanuel on 24 October 2026. Requests from verified tenants with Confirm or Reschedule (decision 45) |
+| 66 Agent requests | Agents and authority | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=f8ae3700-ca4d-80f4-8008-d730181a64ba&board-id=f8ae3700-ca4d-80f4-8008-d734dd979977) | To review | Landlord: each agent who asked, with the building and the end date asked for; Approve or Reject |
+| 67 My agents | Agents and authority | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=f8ae3700-ca4d-80f4-8008-d730181a64ba&board-id=f8ae3700-ca4d-80f4-8008-d735341df895) | To review | Landlord: authorised agents with their buildings and end dates; change the end date or withdraw (removes the agent from the listings at once) |
+| 68 Request authority | Agents and authority | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=f8ae3700-ca4d-80f4-8008-d730181a64ba&board-id=f8ae3700-ca4d-80f4-8008-d735b1130635) | To review | Agent: is the landlord on the app; if yes, the landlord's phone number and an optional end date, then the request goes to the landlord |
+| 69 Letter of authority | Agents and authority | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=f8ae3700-ca4d-80f4-8008-d730181a64ba&board-id=f8ae3700-ca4d-80f4-8008-d736a067590e) | To review | Agent, landlord not on the app: download the standard letter, upload the signed letter and the landlord's ID, landlord's name and phone; the team calls the landlord to confirm |
+| 70 Authorised properties | Agents and authority | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=f8ae3700-ca4d-80f4-8008-d730181a64ba&board-id=f8ae3700-ca4d-80f4-8008-d737f2667947) | To review | Agent: buildings with their authority state (authorised with end date, waiting for the landlord, being checked, ended); Request authority; bottom bar for landlords and agents |
