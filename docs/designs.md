@@ -120,13 +120,13 @@ Penpot screen number, and its row is added to the tables further down with its l
 | 78 | Download my data | Me and settings | To review (Penpot 78) | To design | To design |
 | 79 | Delete account | Me and settings | To review (Penpot 79) | To design | To design |
 | 80 | Sign out | Me and settings | To review (Penpot 80) | To design | To design |
-| 81 | Become a scout | Scouts (decisions 70 to 72) | To design | To design | To design |
-| 82 | Report a vacant property | Scouts (decisions 70 to 72) | To design | To design | To design |
-| 83 | Invite the landlord (link, or sign-up on the landlord's own phone) | Scouts (decisions 70 to 72) | To design | To design | To design |
-| 84 | My reported properties and invitations | Scouts (decisions 70 to 72) | To design | To design | To design |
-| 85 | My rewards | Scouts (decisions 70 to 72) | To design | To design | To design |
-| 86 | Withdraw a reward | Scouts (decisions 70 to 72) | To design | To design | To design |
-| 87 | Add bank account | Scouts (decisions 70 to 72) | To design | To design | To design |
+| 81 | Become a scout | Scouts (decisions 70 to 72) | To review (Penpot 81) | To design | To design |
+| 82 | Report a vacant property | Scouts (decisions 70 to 72) | To review (Penpot 82) | To design | To design |
+| 83 | Invite the landlord (link, or sign-up on the landlord's own phone) | Scouts (decisions 70 to 72) | To review (Penpot 83) | To design | To design |
+| 84 | My reported properties and invitations | Scouts (decisions 70 to 72) | To review (Penpot 84) | To design | To design |
+| 85 | My rewards | Scouts (decisions 70 to 72) | To review (Penpot 85) | To design | To design |
+| 86 | Withdraw a reward | Scouts (decisions 70 to 72) | To review (Penpot 86) | To design | To design |
+| 87 | Add bank account | Scouts (decisions 70 to 72) | To review (Penpot 87) | To design | To design |
 | 88 | Staff sign-in | Staff | Not on this platform | To design | To design |
 | 89 | Second step (SMS, email, authenticator) | Staff | Not on this platform | To design | To design |
 | 90 | Set up authenticator | Staff | Not on this platform | To design | To design |
@@ -173,6 +173,8 @@ page and names the part (board) it is for, so Penpot can go straight to it.
 | Navigation (bottom bar for landlords and agents) | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=a1d0afb0-4097-80c4-8008-d67477c131f7&board-id=a1d0afb0-4097-80c4-8008-d6744914e63e) | Approved | Approved by Emmanuel on 24 October 2026 with the listing creation screens. Added with the listing creation screens: five tabs (Search, Properties, Messages, Inspections, Me), in the same style as the approved tenant bar |
 
 ## Screens
+
+Page "11 Scouts (phone)": [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d878abf8c9d9).
 
 Page "10 Me and settings (phone)": [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87589776a94).
 
@@ -279,3 +281,10 @@ Page "01 Sign-up and sign-in (phone)": [open the page](https://design.penpot.app
 | 78 Download my data | Me and settings | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87589776a94&board-id=7edfee8f-ebaa-8084-8008-d87725c583a9) | To review | What the copy includes; the user is told when the file is ready |
 | 79 Delete account | Me and settings | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87589776a94&board-id=7edfee8f-ebaa-8084-8008-d8774ede6a76) | To review | Cannot be undone; personal data deleted except records the law requires, kept only for the legal period; confirm box |
 | 80 Sign out | Me and settings | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87589776a94&board-id=7edfee8f-ebaa-8084-8008-d87777158876) | To review | Confirmation sheet over the Me screen; signs out this phone only |
+| 81 Become a scout | Scouts | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d878abf8c9d9&board-id=7edfee8f-ebaa-8084-8008-d878b68023b7) | To review | How it works in three steps and the rules (Specification 3.6, decisions 70 to 72); the reward shown is a placeholder (open point 16) |
+| 82 Report a vacant property | Scouts | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d878abf8c9d9&board-id=7edfee8f-ebaa-8084-8008-d878f37992da) | To review | Pin on the map, area, street, landmark, vacant units, landlord's name and phone |
+| 83 Invite the landlord | Scouts | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d878abf8c9d9&board-id=7edfee8f-ebaa-8084-8008-d879361ed82f) | To review | Invitation link by WhatsApp or SMS, or help him sign up on his own phone; he enters his own details; invitations do not expire (decision 71) |
+| 84 My reported properties | Scouts | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d878abf8c9d9&board-id=7edfee8f-ebaa-8084-8008-d87972b99639) | To review | Totals, then each property: invited, landlord joined, listed, not eligible |
+| 85 My rewards | Scouts | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d878abf8c9d9&board-id=7edfee8f-ebaa-8084-8008-d879a6c4d504) | To review | Amount ready to withdraw; one line per unit, waiting until its first rental (decision 71); escrow rentals earn no reward |
+| 86 Withdraw a reward | Scouts | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d878abf8c9d9&board-id=7edfee8f-ebaa-8084-8008-d879d0bd605c) | To review | Identity checked and a bank account in the scout's own name are needed; staff approve every payout |
+| 87 Add bank account | Scouts | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d878abf8c9d9&board-id=7edfee8f-ebaa-8084-8008-d879fea41e4d) | To review | Bank and account number; the account name must match the verified name; safety wait before a new account receives money (country setting, 48 hours by default) |
