@@ -64,7 +64,8 @@ Updated: 24 October 2026. Read this after CLAUDE.md at the start of every build 
   Group 5, listing creation (screens 50 to 65, phone), with a bottom bar for landlords and agents, was approved on
   24 October 2026 (pull request #28). Group 6, agents and authority (screens 66 to 70, phone), is in pull request
   #29, awaiting approval. Group 7, messages and calls (screens 40 to 45, phone), is in pull request #30, awaiting
-  approval. Next design group: inspections for tenants (screens 46 to 49).
+  approval. Group 8, inspections for tenants (screens 46 to 49, phone), is in pull request #31, awaiting approval.
+  Next design group: saved items (screens 37 to 39).
 
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
   #13. The server refuses actions above the user's level (`VERIFICATION_REQUIRED`, decision 64); identity
@@ -135,8 +136,9 @@ Updated: 24 October 2026. Read this after CLAUDE.md at the start of every build 
     approved on 24 October 2026 (pull request #27). Group 5, listing creation (screens 50 to 65, phone, and the
     bottom bar for landlords and agents), approved on 24 October 2026 (pull request #28). Group 6, agents and
     authority (screens 66 to 70, phone): in pull request #29, awaiting approval. Group 7, messages and calls (screens
-    40 to 45, phone): in pull request #30, awaiting approval. Still to do after them: inspections, saved items, me
-    and settings, scouts, staff screens; then the website and desktop layouts.
+    40 to 45, phone): in pull request #30, awaiting approval. Group 8, inspections for tenants (screens 46 to 49,
+    phone): in pull request #31, awaiting approval. Still to do after them: saved items, me and settings, scouts,
+    staff screens; then the website and desktop layouts.
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
 4. **Reference data endpoints**, then buildings, units and the parts checklist, with the distance to the main

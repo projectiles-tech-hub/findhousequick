@@ -85,10 +85,10 @@ Penpot screen number, and its row is added to the tables further down with its l
 | 43 | Incoming call | Messages and calls | To review (Penpot 43) | To design | To design |
 | 44 | In call and call ended | Messages and calls | To review (Penpot 44) | To design | To design |
 | 45 | Agree to share phone numbers | Messages and calls | To review (Penpot 45) | To design | To design |
-| 46 | Book an inspection (time slots) | Inspections (tenant) | To design | To design | To design |
-| 47 | My inspections | Inspections (tenant) | To design | To design | To design |
-| 48 | Inspection details (reschedule, cancel) | Inspections (tenant) | To design | To design | To design |
-| 49 | Share inspection details with family or a friend | Inspections (tenant) | To design | To design | To design |
+| 46 | Book an inspection (time slots) | Inspections (tenant) | To review (Penpot 46) | To design | To design |
+| 47 | My inspections | Inspections (tenant) | To review (Penpot 47) | To design | To design |
+| 48 | Inspection details (reschedule, cancel) | Inspections (tenant) | To review (Penpot 48) | To design | To design |
+| 49 | Share inspection details with family or a friend | Inspections (tenant) | To review (Penpot 49) | To design | To design |
 | 50 | My properties | Listing creation (landlord, authorised agent) | Approved (Penpot 50) | To design | To design |
 | 51 | Add building (GPS on site, address, distance to main road) | Listing creation (landlord, authorised agent) | Approved (Penpot 51) | To design: sends the user to the phone | To design: sends the user to the phone |
 | 52 | Add unit (for example Block A, Flat 3) | Listing creation (landlord, authorised agent) | Approved (Penpot 52) | To design | To design |
@@ -174,6 +174,8 @@ page and names the part (board) it is for, so Penpot can go straight to it.
 
 ## Screens
 
+Page "08 Inspections, tenant (phone)": [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d86c4f93550c).
+
 Page "07 Messages and calls (phone)": [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d869e77d62ea).
 
 Page "06 Agents and authority (phone)": [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=f8ae3700-ca4d-80f4-8008-d730181a64ba).
@@ -256,3 +258,7 @@ Page "01 Sign-up and sign-in (phone)": [open the page](https://design.penpot.app
 | 44 In call | Messages and calls | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d869e77d62ea&board-id=7edfee8f-ebaa-8084-8008-d86b296a6691) | To review | Call time; Mute and Speaker as labelled round buttons (no microphone or speaker icon in the approved set); End |
 | 44 In call: call ended | Messages and calls | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d869e77d62ea&board-id=7edfee8f-ebaa-8084-8008-d86b5c0ef80b) | To review | Length of the call; Book an inspection, Back to chat, Call again |
 | 45 Share phone numbers | Messages and calls | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d869e77d62ea&board-id=7edfee8f-ebaa-8084-8008-d86baa6c2d89) | To review | Only once an inspection is booked; shows who has agreed; numbers appear only when both agree (Specification 7.1) |
+| 46 Book an inspection | Inspections (tenant) | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d86c4f93550c&board-id=7edfee8f-ebaa-8084-8008-d86c5e344eca) | To review | Inspections are always free; choose a day, then one of the landlord's free times (decision 45); booked times greyed; the slot length comes from the landlord's settings |
+| 47 My inspections | Inspections (tenant) | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d86c4f93550c&board-id=7edfee8f-ebaa-8084-8008-d86c8fff7ae6) | To review | Upcoming and past; confirmed (with the exact address), requested, and a new time offered by the landlord (accept or pick another); tenant bottom bar with Inspections selected |
+| 48 Inspection details | Inspections (tenant) | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d86c4f93550c&board-id=7edfee8f-ebaa-8084-8008-d86e6e2a89b1) | To review | Time, exact address and directions once confirmed (Specification 4.3); the verified host with chat; share with family or a friend; reschedule, cancel, report a fee demand |
+| 49 Share inspection details | Inspections (tenant) | Phone | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d86c4f93550c&board-id=7edfee8f-ebaa-8084-8008-d86ed5d453d5) | To review | One text message to a trusted contact with the address, time and agent's name (Specification 7.2) |
