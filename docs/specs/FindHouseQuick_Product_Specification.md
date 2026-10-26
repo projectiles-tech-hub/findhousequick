@@ -6,7 +6,7 @@ Projectiles Tech Hub Limited
 
 Emmanuel Chukwuka Oraegbu, Managing Director
 
-Version 1.7 \| 24 October 2026
+Version 1.8 \| 25 October 2026
 
 # Contents
 
@@ -86,7 +86,7 @@ The central promise of the platform is trust: verified users, verified propertie
 
 ## 1.4 Platforms
 
-The platform is delivered on three platforms sharing one central system, so that any change made on one platform appears on the others immediately. The website and the desktop software have every screen the mobile app has, laid out for a wide screen; adding a building, taking photos of each part and recording the walkthrough video are done on site with the phone, so on the website and desktop those steps send the user to the phone. The website also has the staff screens and the public pages for visitors, and the desktop software has the staff screens (decision 73). The full list of screens is kept in docs/designs.md in the code repository.
+The platform is delivered on three platforms sharing one central system, so that any change made on one platform appears on the others immediately. The website and the desktop software have every screen the mobile app has, laid out for a wide screen; adding a building, taking photos of each part and recording the walkthrough video are done on site with the phone, so on the website and desktop those steps send the user to the phone. The website also has the staff screens and the public pages for visitors, and the desktop software has the staff screens (decision 73). The full list of screens is kept in docs/designs.md in the code repository. The website is responsive and works on every screen size without breaking: it is designed at the desktop width of 1366 pixels and the tablet width of 768, and at phone width it follows the phone screens. The desktop software is designed for computers and laptops at 1366 by 768, in a window the user can resize (decision 74).
 
 | **Platform**     | **Main users**                                                   | **Main purpose**                                                            |
 |------------------|------------------------------------------------------------------|-----------------------------------------------------------------------------|
@@ -1053,6 +1053,7 @@ This specification is kept as one document and updated in place; earlier version
 | 1.5, 23 October 2026 | Includes decision 64: any action beyond browsing needs level 1 (Section 3.1).                                                                                                                             |
 | 1.6, 24 October 2026 | Includes decisions 65 to 71: scouts and the referral reward (decisions 70 and 71; Sections 2, 3.6, 8.3, 16.1, 17.1, 20 and 21), and decisions 65 to 69, listed below.                                     |
 | 1.7, 24 October 2026 | Includes decisions 72 and 73: scouts built in Release 1, with rewards paid once the completed rental fee exists (Section 3.6); every screen of the app on the website and desktop software (Section 1.4). |
+| 1.8, 25 October 2026 | Includes decision 74: the website is responsive, designed at desktop and tablet widths, and the desktop software runs in a resizable window (Section 1.4).                                                |
 
 Decisions 24 to 73 in versions 1.4 to 1.7. Some confirm what this specification already said, or only set when something is built; they are listed so that every decision can be traced. Decisions about how the platform is built, rather than what it does, are in the Technical Architecture and the architecture decision records.
 
