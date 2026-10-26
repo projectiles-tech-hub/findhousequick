@@ -1,6 +1,6 @@
 # Project status
 
-Updated: 25 October 2026. Read this after CLAUDE.md at the start of every build session, and update it at the end.
+Updated: 26 October 2026. Read this after CLAUDE.md at the start of every build session, and update it at the end.
 
 ## Where things stand
 
@@ -71,7 +71,7 @@ Updated: 25 October 2026. Read this after CLAUDE.md at the start of every build 
   support phone numbers (screen 77), the scout reward amount (screens 81 and 85, open point 16) and the web address
   in invitation links (screen 83) are placeholders. Screen widths for the website and desktop designs (decision 74):
   the website is responsive, drawn at 1366 (desktop) and 768 (tablet), following the phone screens at phone width;
-  the desktop software at 1366 by 768 in a resizable window. Decision 74 is in pull request #35, awaiting approval.
+  the desktop software at 1366 by 768 in a resizable window. Decision 74 was approved and merged on 26 October 2026 (pull request #35).
   Next: the website and desktop layouts, starting with the staff screens (88 to 105), which exist only there.
 
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
