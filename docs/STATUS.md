@@ -71,7 +71,7 @@ Updated: 26 October 2026. Read this after CLAUDE.md at the start of every build 
   support phone numbers (screen 77), the scout reward amount (screens 81 and 85, open point 16) and the web address
   in invitation links (screen 83) are placeholders. Screen widths for the website and desktop designs (decision 74):
   the website is responsive, drawn at 1366 (desktop) and 768 (tablet), following the phone screens at phone width;
-  the desktop software at 1366 by 768 in a resizable window. Decision 74 is in pull request #35, awaiting approval.
+  the desktop software at 1366 by 768 in a resizable window. Decision 74 was approved and merged on 26 October 2026 (pull request #35).
   The staff screens (88 to 105), which exist only on the website and desktop, are in pull request #36, awaiting
   approval: 54 designs, each screen at 1366 and 768 for the website and in the desktop software window, with two
   new design system parts (the staff side navigation and the desktop window bar). Next: the website and desktop
