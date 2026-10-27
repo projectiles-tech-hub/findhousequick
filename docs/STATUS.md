@@ -74,7 +74,7 @@ Updated: 27 October 2026. Read this after CLAUDE.md at the start of every build 
   the desktop software at 1366 by 768 in a resizable window. Decision 74 was approved and merged on 26 October 2026 (pull request #35).
   The staff screens (88 to 105), which exist only on the website and desktop, were approved by Emmanuel on
   27 October 2026 (pull request #36): 54 designs, each screen at 1366 and 768 for the website and in the desktop software window, with two
-  new design system parts (the staff side navigation and the desktop window bar), which are still to review. Next: the website and desktop
+  new design system parts (the staff side navigation and the desktop window bar). Next: the website and desktop
   layouts of screens 1 to 87.
 
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
