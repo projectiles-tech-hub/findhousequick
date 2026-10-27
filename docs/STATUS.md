@@ -1,6 +1,6 @@
 # Project status
 
-Updated: 26 October 2026. Read this after CLAUDE.md at the start of every build session, and update it at the end.
+Updated: 27 October 2026. Read this after CLAUDE.md at the start of every build session, and update it at the end.
 
 ## Where things stand
 
@@ -72,9 +72,9 @@ Updated: 26 October 2026. Read this after CLAUDE.md at the start of every build 
   in invitation links (screen 83) are placeholders. Screen widths for the website and desktop designs (decision 74):
   the website is responsive, drawn at 1366 (desktop) and 768 (tablet), following the phone screens at phone width;
   the desktop software at 1366 by 768 in a resizable window. Decision 74 was approved and merged on 26 October 2026 (pull request #35).
-  The staff screens (88 to 105), which exist only on the website and desktop, are in pull request #36, awaiting
-  approval: 54 designs, each screen at 1366 and 768 for the website and in the desktop software window, with two
-  new design system parts (the staff side navigation and the desktop window bar). Next: the website and desktop
+  The staff screens (88 to 105), which exist only on the website and desktop, were approved by Emmanuel on
+  27 October 2026 (pull request #36): 54 designs, each screen at 1366 and 768 for the website and in the desktop software window, with two
+  new design system parts (the staff side navigation and the desktop window bar), which are still to review. Next: the website and desktop
   layouts of screens 1 to 87.
 
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
@@ -128,7 +128,7 @@ Updated: 26 October 2026. Read this after CLAUDE.md at the start of every build 
 2c. **Screen designs in Penpot** (Release 0 work; decisions 42, 67 and 73): the 112 screens listed in
     `docs/designs.md`, for tenants, landlords, agents, scouts and staff and the public website, on the phone app
     (87), the website (112) and the desktop software (105): 304 designs. The step is complete only when all 304
-    are approved. Approved so far: 87 of 304, every phone layout (screens 1 to 87). Produced in the build sessions with the Penpot connector in Emmanuel's file "Release 1 Screens", for his
+    are approved. Approved so far: 141 of 304, every phone layout (screens 1 to 87) and the staff screens (88 to 105). Produced in the build sessions with the Penpot connector in Emmanuel's file "Release 1 Screens", for his
     review and approval; if the connector is not reliable, Claude's Design artifact type is used instead and
     Emmanuel is told. No longer blocked: the connector was tested on 23 October 2026. Order: the design system
     first (for approval before any screen), then the screens in groups, phone layouts first, then desktop and the
@@ -146,9 +146,9 @@ Updated: 26 October 2026. Read this after CLAUDE.md at the start of every build 
     approved on 24 October 2026 (pull request #27). Group 5, listing creation (screens 50 to 65, phone, and the
     bottom bar for landlords and agents), approved on 24 October 2026 (pull request #28). Groups 6 to 11 (screens
     37 to 49 and 66 to 87, phone), approved on 25 October 2026 (pull requests #29 to #34): every phone layout is
-    approved. Still to do: the staff screens (88 to 105, website and desktop only); the website and desktop
-    layouts of screens 1 to 87; the public website pages (106 to 112). Widths as in decision 74. The staff screens
-    (88 to 105, 54 designs) are in pull request #36, awaiting approval.
+    approved. The staff screens (88 to 105, 54 designs, website and desktop only) approved on 27 October 2026
+    (pull request #36). Still to do: the website and desktop layouts of screens 1 to 87; the public website pages
+    (106 to 112). Widths as in decision 74.
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
 4. **Reference data endpoints**, then buildings, units and the parts checklist, with the distance to the main
