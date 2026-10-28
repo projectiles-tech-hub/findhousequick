@@ -82,20 +82,20 @@ Penpot screen number, and its row is added to the tables further down with its l
 | 34 | Compare (up to three) | Property page | Approved (Penpot 34) | To review | Not on this platform |
 | 35 | Share property | Property page | Approved (Penpot 35) | To review | Not on this platform |
 | 36 | Report (fake listing, already taken, inspection fee demand) | Property page | Approved (Penpot 36) | To review | Not on this platform |
-| 37 | Saved properties | Saved | Approved (Penpot 37) | To design | Not on this platform |
-| 38 | Saved areas and alerts | Saved | Approved (Penpot 38) | To design | Not on this platform |
-| 39 | Saved places (office, school) | Saved | Approved (Penpot 39) | To design | Not on this platform |
-| 40 | Messages list | Messages and calls | Approved (Penpot 40) | To design | Not on this platform |
-| 41 | Conversation | Messages and calls | Approved (Penpot 41) | To design | Not on this platform |
-| 42 | Calling | Messages and calls | Approved (Penpot 42) | To design | Not on this platform |
-| 43 | Incoming call | Messages and calls | Approved (Penpot 43) | To design | Not on this platform |
-| 44 | In call and call ended | Messages and calls | Approved (Penpot 44) | To design | Not on this platform |
-| 45 | Agree to share phone numbers | Messages and calls | Approved (Penpot 45) | To design | Not on this platform |
-| 46 | Book an inspection (time slots) | Inspections (tenant) | Approved (Penpot 46) | To design | Not on this platform |
-| 47 | My inspections | Inspections (tenant) | Approved (Penpot 47) | To design | Not on this platform |
-| 48 | Inspection details (reschedule, cancel) | Inspections (tenant) | Approved (Penpot 48) | To design | Not on this platform |
-| 49 | Share inspection details with family or a friend | Inspections (tenant) | Approved (Penpot 49) | To design | Not on this platform |
-| 50 | My properties | Listing creation (landlord, authorised agent) | Approved (Penpot 50) | To design | Not on this platform |
+| 37 | Saved properties | Saved | Approved (Penpot 37) | To review | Not on this platform |
+| 38 | Saved areas and alerts | Saved | Approved (Penpot 38) | To review | Not on this platform |
+| 39 | Saved places (office, school) | Saved | Approved (Penpot 39) | To review | Not on this platform |
+| 40 | Messages list | Messages and calls | Approved (Penpot 40) | To review | Not on this platform |
+| 41 | Conversation | Messages and calls | Approved (Penpot 41) | To review | Not on this platform |
+| 42 | Calling | Messages and calls | Approved (Penpot 42) | To review | Not on this platform |
+| 43 | Incoming call | Messages and calls | Approved (Penpot 43) | To review | Not on this platform |
+| 44 | In call and call ended | Messages and calls | Approved (Penpot 44) | To review | Not on this platform |
+| 45 | Agree to share phone numbers | Messages and calls | Approved (Penpot 45) | To review | Not on this platform |
+| 46 | Book an inspection (time slots) | Inspections (tenant) | Approved (Penpot 46) | To review | Not on this platform |
+| 47 | My inspections | Inspections (tenant) | Approved (Penpot 47) | To review | Not on this platform |
+| 48 | Inspection details (reschedule, cancel) | Inspections (tenant) | Approved (Penpot 48) | To review | Not on this platform |
+| 49 | Share inspection details with family or a friend | Inspections (tenant) | Approved (Penpot 49) | To review | Not on this platform |
+| 50 | My properties | Listing creation (landlord, authorised agent) | Approved (Penpot 50) | To review | Not on this platform |
 | 51 | Add building (GPS on site, address, distance to main road) | Listing creation (landlord, authorised agent) | Approved (Penpot 51) | To design: sends the user to the phone | Not on this platform |
 | 52 | Add unit (for example Block A, Flat 3) | Listing creation (landlord, authorised agent) | Approved (Penpot 52) | To design | Not on this platform |
 | 53 | Category and type | Listing creation (landlord, authorised agent) | Approved (Penpot 53) | To design | Not on this platform |
@@ -182,7 +182,7 @@ page and names the part (board) it is for, so Penpot can go straight to it.
 
 ## Screens
 
-Website pages for screens 1 to 36 (group 13, in progress): "13 Website: 1 Welcome", "14 Website: 2 to 5 Sign-up", "15 Website: 6 to 9 Sign-in and password", "16 Website: 10 and 11 Location and visitors", "17 Website: 12 to 21 Verification", "18 Website: 22 to 29 Search and map" and "19 Website: 30 to 36 Property page", in the file "Release 1 Screens".
+Website pages for screens 1 to 50 (group 13, in progress): "13 Website: 1 Welcome", "14 Website: 2 to 5 Sign-up", "15 Website: 6 to 9 Sign-in and password", "16 Website: 10 and 11 Location and visitors", "17 Website: 12 to 21 Verification", "18 Website: 22 to 29 Search and map", "19 Website: 30 to 36 Property page", "20 Website: 37 to 39 Saved", "21 Website: 40 to 45 Messages and calls", "22 Website: 46 to 49 Inspections" and "23 Website: 50 to 56 My properties and listing", in the file "Release 1 Screens".
 
 Page "12 Staff (website and desktop)" (screens 88 to 95): [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87ff1edbdef).
 
