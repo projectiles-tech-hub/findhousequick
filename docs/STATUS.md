@@ -49,7 +49,7 @@ Updated: 28 October 2026. Read this after CLAUDE.md at the start of every build 
   `docs/adr/0006-email-and-contacts.md`. Still to do from this step: a real email provider adapter once the
   account is opened.
 
-- **Release 1 step 2c (screen designs)**: phone layouts and the website layouts of screens 1 to 87 complete and approved; the public website pages (106 to 112) are next. Decision 67 (Penpot instead of Figma) and the design system
+- **Release 1 step 2c (screen designs)**: phone layouts and the website layouts of screens 1 to 87 complete and approved; the public website pages (group 14) drawn, in pull request #41. Decision 67 (Penpot instead of Figma) and the design system
   merged in pull request #16. The design system is in Emmanuel's Penpot file "Release 1 Screens", page "00 Design
   system": colours, text styles, spacing and touch size, icons, buttons and chips, form fields, cards and notices,
   map pins, and a Pidgin length check. Merging #16 recorded the decision and the files; it is not the approval of
@@ -79,8 +79,10 @@ Updated: 28 October 2026. Read this after CLAUDE.md at the start of every build 
   screens 1 to 87 are drawn at 1366 and 768 on the Penpot pages "13 Website: 1 Welcome" to
   "31 Website: 85 to 87 Rewards" (178 designs), in a public-website style of their own with the approved
   colours, font and components. The landing page shows the available properties straight away; sign-in (screens 6
-  and 7) opens over the page the user is on; sign-up and the password screens have pages of their own. Next: the public
-  website pages (106 to 112), group 14.
+  and 7) opens over the page the user is on; sign-up and the password screens have pages of their own. Group 14, the public
+  website pages, is in pull request #41: page 106 (Home) is the approved website layout of screen 1, and pages
+  107 to 112 are drawn at 1366, 768 and 360 (18 designs) on the Penpot pages "32 Website: 107 to 109 Public
+  search and listings" and "33 Website: 110 to 112 Public help and legal". Still to do: Emmanuel's review.
 
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
   #13. The server refuses actions above the user's level (`VERIFICATION_REQUIRED`, decision 64); identity
@@ -133,7 +135,7 @@ Updated: 28 October 2026. Read this after CLAUDE.md at the start of every build 
 2c. **Screen designs in Penpot** (Release 0 work; decisions 42, 67 and 73): the 112 screens listed in
     `docs/designs.md`, for tenants, landlords, agents, scouts and staff and the public website, on the phone app
     (87), the website (112) and the desktop software (18, staff screens only): 217 designs. The step is complete
-    only when all 217 are approved. Approved so far: 210 of 217, every phone layout (screens 1 to 87), the website layouts of screens 1 to 87 and the staff screens (88 to 105); still to do: the public website pages (106 to 112). Produced in the build sessions with the Penpot connector in Emmanuel's file "Release 1 Screens", for his
+    only when all 217 are approved. Approved so far: 211 of 217, every phone layout (screens 1 to 87), the website layouts of screens 1 to 87, the staff screens (88 to 105) and the public home page 106, which is the website layout of screen 1; still to do: the public website pages 107 to 112. Produced in the build sessions with the Penpot connector in Emmanuel's file "Release 1 Screens", for his
     review and approval; if the connector is not reliable, Claude's Design artifact type is used instead and
     Emmanuel is told. No longer blocked: the connector was tested on 23 October 2026. Order: the design system
     first (for approval before any screen), then the screens in groups, phone layouts first, then the staff screens
@@ -153,7 +155,9 @@ Updated: 28 October 2026. Read this after CLAUDE.md at the start of every build 
     37 to 49 and 66 to 87, phone), approved on 25 October 2026 (pull requests #29 to #34): every phone layout is
     approved. The staff screens (88 to 105, 54 designs, website and desktop only) approved on 27 October 2026
     (pull request #36). Website layouts of screens 1 to 87 (group 13): 178 designs on Penpot pages 13 to 31,
-    approved on 28 October 2026 (pull request #40). Still to do: the public website pages (106 to 112). Widths as in
+    approved on 28 October 2026 (pull request #40). Public website pages (group 14): page 106 (Home) is the
+    approved website layout of screen 1; pages 107 to 112 are drawn at 1366, 768 and 360 (18 designs, Penpot pages
+    32 and 33), in pull request #41; still to do: Emmanuel's review of them. Widths as in
     decision 74.
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
