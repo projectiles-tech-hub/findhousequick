@@ -96,14 +96,14 @@ Penpot screen number, and its row is added to the tables further down with its l
 | 48 | Inspection details (reschedule, cancel) | Inspections (tenant) | Approved (Penpot 48) | To review | Not on this platform |
 | 49 | Share inspection details with family or a friend | Inspections (tenant) | Approved (Penpot 49) | To review | Not on this platform |
 | 50 | My properties | Listing creation (landlord, authorised agent) | Approved (Penpot 50) | To review | Not on this platform |
-| 51 | Add building (GPS on site, address, distance to main road) | Listing creation (landlord, authorised agent) | Approved (Penpot 51) | To design: sends the user to the phone | Not on this platform |
+| 51 | Add building (GPS on site, address, distance to main road) | Listing creation (landlord, authorised agent) | Approved (Penpot 51) | To review: sends the user to the phone | Not on this platform |
 | 52 | Add unit (for example Block A, Flat 3) | Listing creation (landlord, authorised agent) | Approved (Penpot 52) | To review | Not on this platform |
 | 53 | Category and type | Listing creation (landlord, authorised agent) | Approved (Penpot 53) | To review | Not on this platform |
 | 54 | Property details | Listing creation (landlord, authorised agent) | Approved (Penpot 54) | To review | Not on this platform |
 | 55 | Costs and fees | Listing creation (landlord, authorised agent) | Approved (Penpot 55) | To review | Not on this platform |
 | 56 | Parts checklist | Listing creation (landlord, authorised agent) | Approved (Penpot 56) | To review | Not on this platform |
-| 57 | Camera capture per part (quality check, retake) | Listing creation (landlord, authorised agent) | Approved (Penpot 57) | To design: sends the user to the phone | Not on this platform |
-| 58 | Walkthrough video capture | Listing creation (landlord, authorised agent) | Approved (Penpot 58) | To design: sends the user to the phone | Not on this platform |
+| 57 | Camera capture per part (quality check, retake) | Listing creation (landlord, authorised agent) | Approved (Penpot 57) | To review: sends the user to the phone | Not on this platform |
+| 58 | Walkthrough video capture | Listing creation (landlord, authorised agent) | Approved (Penpot 58) | To review: sends the user to the phone | Not on this platform |
 | 59 | Occupant consent | Listing creation (landlord, authorised agent) | Approved (Penpot 59) | To review | Not on this platform |
 | 60 | Ownership documents upload | Listing creation (landlord, authorised agent) | Approved (Penpot 60) | To review | Not on this platform |
 | 61 | Review and submit | Listing creation (landlord, authorised agent) | Approved (Penpot 61) | To review | Not on this platform |
@@ -120,19 +120,19 @@ Penpot screen number, and its row is added to the tables further down with its l
 | 72 | Edit profile | Me and settings | Approved (Penpot 72) | To review | Not on this platform |
 | 73 | Change phone or email | Me and settings | Approved (Penpot 73) | To review | Not on this platform |
 | 74 | Language | Me and settings | Approved (Penpot 74) | To review | Not on this platform |
-| 75 | Notification settings | Me and settings | Approved (Penpot 75) | To design | Not on this platform |
-| 76 | Notifications list | Me and settings | Approved (Penpot 76) | To design | Not on this platform |
-| 77 | Help (WhatsApp and phone lines) | Me and settings | Approved (Penpot 77) | To design | Not on this platform |
-| 78 | Download my data | Me and settings | Approved (Penpot 78) | To design | Not on this platform |
-| 79 | Delete account | Me and settings | Approved (Penpot 79) | To design | Not on this platform |
-| 80 | Sign out | Me and settings | Approved (Penpot 80) | To design | Not on this platform |
-| 81 | Become a scout | Scouts (decisions 70 to 72) | Approved (Penpot 81) | To design | Not on this platform |
-| 82 | Report a vacant property | Scouts (decisions 70 to 72) | Approved (Penpot 82) | To design | Not on this platform |
-| 83 | Invite the landlord (link, or sign-up on the landlord's own phone) | Scouts (decisions 70 to 72) | Approved (Penpot 83) | To design | Not on this platform |
-| 84 | My reported properties and invitations | Scouts (decisions 70 to 72) | Approved (Penpot 84) | To design | Not on this platform |
-| 85 | My rewards | Scouts (decisions 70 to 72) | Approved (Penpot 85) | To design | Not on this platform |
-| 86 | Withdraw a reward | Scouts (decisions 70 to 72) | Approved (Penpot 86) | To design | Not on this platform |
-| 87 | Add bank account | Scouts (decisions 70 to 72) | Approved (Penpot 87) | To design | Not on this platform |
+| 75 | Notification settings | Me and settings | Approved (Penpot 75) | To review | Not on this platform |
+| 76 | Notifications list | Me and settings | Approved (Penpot 76) | To review | Not on this platform |
+| 77 | Help (WhatsApp and phone lines) | Me and settings | Approved (Penpot 77) | To review | Not on this platform |
+| 78 | Download my data | Me and settings | Approved (Penpot 78) | To review | Not on this platform |
+| 79 | Delete account | Me and settings | Approved (Penpot 79) | To review | Not on this platform |
+| 80 | Sign out | Me and settings | Approved (Penpot 80) | To review | Not on this platform |
+| 81 | Become a scout | Scouts (decisions 70 to 72) | Approved (Penpot 81) | To review | Not on this platform |
+| 82 | Report a vacant property | Scouts (decisions 70 to 72) | Approved (Penpot 82) | To review | Not on this platform |
+| 83 | Invite the landlord (link, or sign-up on the landlord's own phone) | Scouts (decisions 70 to 72) | Approved (Penpot 83) | To review | Not on this platform |
+| 84 | My reported properties and invitations | Scouts (decisions 70 to 72) | Approved (Penpot 84) | To review | Not on this platform |
+| 85 | My rewards | Scouts (decisions 70 to 72) | Approved (Penpot 85) | To review | Not on this platform |
+| 86 | Withdraw a reward | Scouts (decisions 70 to 72) | Approved (Penpot 86) | To review | Not on this platform |
+| 87 | Add bank account | Scouts (decisions 70 to 72) | Approved (Penpot 87) | To review | Not on this platform |
 | 88 | Staff sign-in | Staff | Not on this platform | Approved (Penpot 88) | Approved (Penpot 88) |
 | 89 | Second step (SMS, email, authenticator) | Staff | Not on this platform | Approved (Penpot 89) | Approved (Penpot 89) |
 | 90 | Set up authenticator | Staff | Not on this platform | Approved (Penpot 90) | Approved (Penpot 90) |
@@ -182,7 +182,7 @@ page and names the part (board) it is for, so Penpot can go straight to it.
 
 ## Screens
 
-Website pages for screens 1 to 74 (group 13, in progress): "13 Website: 1 Welcome", "14 Website: 2 to 5 Sign-up", "15 Website: 6 to 9 Sign-in and password", "16 Website: 10 and 11 Location and visitors", "17 Website: 12 to 21 Verification", "18 Website: 22 to 29 Search and map", "19 Website: 30 to 36 Property page", "20 Website: 37 to 39 Saved", "21 Website: 40 to 45 Messages and calls", "22 Website: 46 to 49 Inspections", "23 Website: 50 to 55 My properties and listing", "24 Website: 56 to 61 Photos and documents", "25 Website: 62 and 63 Listing status", "26 Website: 64 to 67 Inspection times and agents", "27 Website: 68 to 70 Agent authority" and "28 Website: 71 to 75 Me and settings", in the file "Release 1 Screens".
+Website pages for screens 1 to 87 (group 13): "13 Website: 1 Welcome", "14 Website: 2 to 5 Sign-up", "15 Website: 6 to 9 Sign-in and password", "16 Website: 10 and 11 Location and visitors", "17 Website: 12 to 21 Verification", "18 Website: 22 to 29 Search and map", "19 Website: 30 to 36 Property page", "20 Website: 37 to 39 Saved", "21 Website: 40 to 45 Messages and calls", "22 Website: 46 to 49 Inspections", "23 Website: 50 to 55 My properties and listing", "24 Website: 56 to 61 Photos and documents", "25 Website: 62 and 63 Listing status", "26 Website: 64 to 67 Inspection times and agents", "27 Website: 68 to 70 Agent authority", "28 Website: 71 to 75 Me and settings", "29 Website: 76 to 80 Notifications, help and account", "30 Website: 81 to 84 Scouts" and "31 Website: 85 to 87 Rewards", in the file "Release 1 Screens".
 
 Page "12 Staff (website and desktop)" (screens 88 to 95): [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87ff1edbdef).
 
