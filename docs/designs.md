@@ -97,11 +97,11 @@ Penpot screen number, and its row is added to the tables further down with its l
 | 49 | Share inspection details with family or a friend | Inspections (tenant) | Approved (Penpot 49) | To review | Not on this platform |
 | 50 | My properties | Listing creation (landlord, authorised agent) | Approved (Penpot 50) | To review | Not on this platform |
 | 51 | Add building (GPS on site, address, distance to main road) | Listing creation (landlord, authorised agent) | Approved (Penpot 51) | To design: sends the user to the phone | Not on this platform |
-| 52 | Add unit (for example Block A, Flat 3) | Listing creation (landlord, authorised agent) | Approved (Penpot 52) | To design | Not on this platform |
-| 53 | Category and type | Listing creation (landlord, authorised agent) | Approved (Penpot 53) | To design | Not on this platform |
-| 54 | Property details | Listing creation (landlord, authorised agent) | Approved (Penpot 54) | To design | Not on this platform |
-| 55 | Costs and fees | Listing creation (landlord, authorised agent) | Approved (Penpot 55) | To design | Not on this platform |
-| 56 | Parts checklist | Listing creation (landlord, authorised agent) | Approved (Penpot 56) | To design | Not on this platform |
+| 52 | Add unit (for example Block A, Flat 3) | Listing creation (landlord, authorised agent) | Approved (Penpot 52) | To review | Not on this platform |
+| 53 | Category and type | Listing creation (landlord, authorised agent) | Approved (Penpot 53) | To review | Not on this platform |
+| 54 | Property details | Listing creation (landlord, authorised agent) | Approved (Penpot 54) | To review | Not on this platform |
+| 55 | Costs and fees | Listing creation (landlord, authorised agent) | Approved (Penpot 55) | To review | Not on this platform |
+| 56 | Parts checklist | Listing creation (landlord, authorised agent) | Approved (Penpot 56) | To review | Not on this platform |
 | 57 | Camera capture per part (quality check, retake) | Listing creation (landlord, authorised agent) | Approved (Penpot 57) | To design: sends the user to the phone | Not on this platform |
 | 58 | Walkthrough video capture | Listing creation (landlord, authorised agent) | Approved (Penpot 58) | To design: sends the user to the phone | Not on this platform |
 | 59 | Occupant consent | Listing creation (landlord, authorised agent) | Approved (Penpot 59) | To design | Not on this platform |
@@ -182,7 +182,7 @@ page and names the part (board) it is for, so Penpot can go straight to it.
 
 ## Screens
 
-Website pages for screens 1 to 50 (group 13, in progress): "13 Website: 1 Welcome", "14 Website: 2 to 5 Sign-up", "15 Website: 6 to 9 Sign-in and password", "16 Website: 10 and 11 Location and visitors", "17 Website: 12 to 21 Verification", "18 Website: 22 to 29 Search and map", "19 Website: 30 to 36 Property page", "20 Website: 37 to 39 Saved", "21 Website: 40 to 45 Messages and calls", "22 Website: 46 to 49 Inspections" and "23 Website: 50 to 56 My properties and listing", in the file "Release 1 Screens".
+Website pages for screens 1 to 57 (group 13, in progress): "13 Website: 1 Welcome", "14 Website: 2 to 5 Sign-up", "15 Website: 6 to 9 Sign-in and password", "16 Website: 10 and 11 Location and visitors", "17 Website: 12 to 21 Verification", "18 Website: 22 to 29 Search and map", "19 Website: 30 to 36 Property page", "20 Website: 37 to 39 Saved", "21 Website: 40 to 45 Messages and calls", "22 Website: 46 to 49 Inspections", "23 Website: 50 to 55 My properties and listing" and "24 Website: 56 to 63 Photos, documents and status", in the file "Release 1 Screens".
 
 Page "12 Staff (website and desktop)" (screens 88 to 95): [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87ff1edbdef).
 
