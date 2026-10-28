@@ -49,7 +49,7 @@ Updated: 28 October 2026. Read this after CLAUDE.md at the start of every build 
   `docs/adr/0006-email-and-contacts.md`. Still to do from this step: a real email provider adapter once the
   account is opened.
 
-- **Release 1 step 2c (screen designs)**: phone layouts complete and approved; website layouts in progress (screens 1 to 21 drawn). Decision 67 (Penpot instead of Figma) and the design system
+- **Release 1 step 2c (screen designs)**: phone layouts complete and approved; website layouts in progress (screens 1 to 36 drawn). Decision 67 (Penpot instead of Figma) and the design system
   merged in pull request #16. The design system is in Emmanuel's Penpot file "Release 1 Screens", page "00 Design
   system": colours, text styles, spacing and touch size, icons, buttons and chips, form fields, cards and notices,
   map pins, and a Pidgin length check. Merging #16 recorded the decision and the files; it is not the approval of
@@ -76,11 +76,11 @@ Updated: 28 October 2026. Read this after CLAUDE.md at the start of every build 
   27 October 2026 (pull request #36): 54 designs, each screen at 1366 and 768 for the website and in the desktop software window, with two
   new design system parts (the staff side navigation and the desktop window bar). On 27 October 2026 Emmanuel changed decisions 73 and 74: the desktop software is for staff only;
   tenants, landlords, agents and scouts use the phone app and the website (217 designs in all). Group 13, the website layouts of screens 1 to 87, is in pull request #40 and in
-  progress: screens 1 to 21 are drawn at 1366 and 768 on the Penpot pages "13 Website: 1 Welcome" to
-  "17 Website: 12 to 21 Verification" (42 designs), in a public-website style of their own with the approved
+  progress: screens 1 to 36 are drawn at 1366 and 768 on the Penpot pages "13 Website: 1 Welcome" to
+  "19 Website: 30 to 36 Property page" (72 designs), in a public-website style of their own with the approved
   colours, font and components. The landing page shows the available properties straight away; sign-in (screens 6
   and 7) opens over the page the user is on; sign-up and the password screens have pages of their own. Still to
-  do in this group: screens 22 to 87.
+  do in this group: screens 37 to 87.
 
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
   #13. The server refuses actions above the user's level (`VERIFICATION_REQUIRED`, decision 64); identity

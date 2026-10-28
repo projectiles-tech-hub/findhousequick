@@ -67,21 +67,21 @@ Penpot screen number, and its row is added to the tables further down with its l
 | 19 | Add an ID document | Verification | Approved (Penpot 17) | To review | Not on this platform |
 | 20 | With our verification team | Verification | Approved (Penpot 18) | To review | Not on this platform |
 | 21 | Company details (agents) | Verification | Approved (Penpot 19) | To review | Not on this platform |
-| 22 | Home | Search and map | Approved (Penpot 20) | To design | Not on this platform |
-| 23 | Map | Search and map | Approved (Penpot 21) | To design | Not on this platform |
-| 24 | Around me | Search and map | Approved (Penpot 22) | To design | Not on this platform |
-| 25 | List of results | Search and map | Approved (Penpot 23) | To design | Not on this platform |
-| 26 | Filters | Search and map | Approved (Penpot 24) | To design | Not on this platform |
-| 27 | Search by area or landmark | Search and map | Approved (Penpot 25) | To design | Not on this platform |
-| 28 | No results | Search and map | Approved (Penpot 26) | To design | Not on this platform |
-| 29 | Save this area | Search and map | Approved (Penpot 27) | To design | Not on this platform |
-| 30 | Property page (summary, details, costs, location, lister, actions) | Property page | Approved (Penpot 30) | To design | Not on this platform |
-| 31 | Gallery by part | Property page | Approved (Penpot 31) | To design | Not on this platform |
-| 32 | Full-screen photo viewer | Property page | Approved (Penpot 32) | To design | Not on this platform |
-| 33 | Walkthrough video and 360-degree views | Property page | Approved (Penpot 33) | To design | Not on this platform |
-| 34 | Compare (up to three) | Property page | Approved (Penpot 34) | To design | Not on this platform |
-| 35 | Share property | Property page | Approved (Penpot 35) | To design | Not on this platform |
-| 36 | Report (fake listing, already taken, inspection fee demand) | Property page | Approved (Penpot 36) | To design | Not on this platform |
+| 22 | Home | Search and map | Approved (Penpot 20) | To review | Not on this platform |
+| 23 | Map | Search and map | Approved (Penpot 21) | To review | Not on this platform |
+| 24 | Around me | Search and map | Approved (Penpot 22) | To review | Not on this platform |
+| 25 | List of results | Search and map | Approved (Penpot 23) | To review | Not on this platform |
+| 26 | Filters | Search and map | Approved (Penpot 24) | To review | Not on this platform |
+| 27 | Search by area or landmark | Search and map | Approved (Penpot 25) | To review | Not on this platform |
+| 28 | No results | Search and map | Approved (Penpot 26) | To review | Not on this platform |
+| 29 | Save this area | Search and map | Approved (Penpot 27) | To review | Not on this platform |
+| 30 | Property page (summary, details, costs, location, lister, actions) | Property page | Approved (Penpot 30) | To review | Not on this platform |
+| 31 | Gallery by part | Property page | Approved (Penpot 31) | To review | Not on this platform |
+| 32 | Full-screen photo viewer | Property page | Approved (Penpot 32) | To review | Not on this platform |
+| 33 | Walkthrough video and 360-degree views | Property page | Approved (Penpot 33) | To review | Not on this platform |
+| 34 | Compare (up to three) | Property page | Approved (Penpot 34) | To review | Not on this platform |
+| 35 | Share property | Property page | Approved (Penpot 35) | To review | Not on this platform |
+| 36 | Report (fake listing, already taken, inspection fee demand) | Property page | Approved (Penpot 36) | To review | Not on this platform |
 | 37 | Saved properties | Saved | Approved (Penpot 37) | To design | Not on this platform |
 | 38 | Saved areas and alerts | Saved | Approved (Penpot 38) | To design | Not on this platform |
 | 39 | Saved places (office, school) | Saved | Approved (Penpot 39) | To design | Not on this platform |
@@ -182,7 +182,7 @@ page and names the part (board) it is for, so Penpot can go straight to it.
 
 ## Screens
 
-Website pages for screens 1 to 21 (group 13, in progress): "13 Website: 1 Welcome", "14 Website: 2 to 5 Sign-up", "15 Website: 6 to 9 Sign-in and password", "16 Website: 10 and 11 Location and visitors" and "17 Website: 12 to 21 Verification", in the file "Release 1 Screens".
+Website pages for screens 1 to 36 (group 13, in progress): "13 Website: 1 Welcome", "14 Website: 2 to 5 Sign-up", "15 Website: 6 to 9 Sign-in and password", "16 Website: 10 and 11 Location and visitors", "17 Website: 12 to 21 Verification", "18 Website: 22 to 29 Search and map" and "19 Website: 30 to 36 Property page", in the file "Release 1 Screens".
 
 Page "12 Staff (website and desktop)" (screens 88 to 95): [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87ff1edbdef).
 
