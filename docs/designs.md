@@ -182,7 +182,7 @@ page and names the part (board) it is for, so Penpot can go straight to it.
 
 ## Screens
 
-Website pages for screens 1 to 57 (group 13, in progress): "13 Website: 1 Welcome", "14 Website: 2 to 5 Sign-up", "15 Website: 6 to 9 Sign-in and password", "16 Website: 10 and 11 Location and visitors", "17 Website: 12 to 21 Verification", "18 Website: 22 to 29 Search and map", "19 Website: 30 to 36 Property page", "20 Website: 37 to 39 Saved", "21 Website: 40 to 45 Messages and calls", "22 Website: 46 to 49 Inspections", "23 Website: 50 to 55 My properties and listing" and "24 Website: 56 to 63 Photos, documents and status", in the file "Release 1 Screens".
+Website pages for screens 1 to 58 (group 13, in progress): "13 Website: 1 Welcome", "14 Website: 2 to 5 Sign-up", "15 Website: 6 to 9 Sign-in and password", "16 Website: 10 and 11 Location and visitors", "17 Website: 12 to 21 Verification", "18 Website: 22 to 29 Search and map", "19 Website: 30 to 36 Property page", "20 Website: 37 to 39 Saved", "21 Website: 40 to 45 Messages and calls", "22 Website: 46 to 49 Inspections", "23 Website: 50 to 55 My properties and listing" and "24 Website: 56 to 63 Photos, documents and status", in the file "Release 1 Screens".
 
 Page "12 Staff (website and desktop)" (screens 88 to 95): [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87ff1edbdef).
 
