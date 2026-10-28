@@ -46,27 +46,27 @@ Penpot screen number, and its row is added to the tables further down with its l
 
 | # | Screen | Group | Phone app | Website | Desktop software |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Welcome | Accounts | Approved (Penpot 01) | To design | Not on this platform |
-| 2 | Who are you (tenant, landlord, agent) | Accounts | Approved (Penpot 02) | To design | Not on this platform |
-| 3 | Your details (sign up) | Accounts | Approved (Penpot 03) | To design | Not on this platform |
-| 4 | Enter the code | Accounts | Approved (Penpot 04) | To design | Not on this platform |
-| 5 | Confirm your email | Accounts | Approved (Penpot 05) | To design | Not on this platform |
-| 6 | Sign in | Accounts | Approved (Penpot 06) | To design | Not on this platform |
-| 7 | Sign in paused | Accounts | Approved (Penpot 07) | To design | Not on this platform |
-| 8 | Forgot password | Accounts | Approved (Penpot 08) | To design | Not on this platform |
-| 9 | Set a new password | Accounts | Approved (Penpot 09) | To design | Not on this platform |
-| 10 | Location permission | Accounts | Approved (Penpot 29) | To design | Not on this platform |
-| 11 | Not signed in (summary cards) | Accounts | Approved (Penpot 28) | To design | Not on this platform |
-| 12 | Your verification | Verification | Approved (Penpot 10) | To design | Not on this platform |
-| 13 | Verify to continue | Verification | Approved (Penpot 11) | To design | Not on this platform |
-| 14 | Verify your identity (NIN) | Verification | Approved (Penpot 12) | To design | Not on this platform |
-| 15 | Face check | Verification | Approved (Penpot 13) | To design | Not on this platform |
-| 16 | Checking | Verification | Approved (Penpot 14) | To design | Not on this platform |
-| 17 | You're verified | Verification | Approved (Penpot 15) | To design | Not on this platform |
-| 18 | Face check didn't work | Verification | Approved (Penpot 16) | To design | Not on this platform |
-| 19 | Add an ID document | Verification | Approved (Penpot 17) | To design | Not on this platform |
-| 20 | With our verification team | Verification | Approved (Penpot 18) | To design | Not on this platform |
-| 21 | Company details (agents) | Verification | Approved (Penpot 19) | To design | Not on this platform |
+| 1 | Welcome | Accounts | Approved (Penpot 01) | To review | Not on this platform |
+| 2 | Who are you (tenant, landlord, agent) | Accounts | Approved (Penpot 02) | To review | Not on this platform |
+| 3 | Your details (sign up) | Accounts | Approved (Penpot 03) | To review | Not on this platform |
+| 4 | Enter the code | Accounts | Approved (Penpot 04) | To review | Not on this platform |
+| 5 | Confirm your email | Accounts | Approved (Penpot 05) | To review | Not on this platform |
+| 6 | Sign in | Accounts | Approved (Penpot 06) | To review | Not on this platform |
+| 7 | Sign in paused | Accounts | Approved (Penpot 07) | To review | Not on this platform |
+| 8 | Forgot password | Accounts | Approved (Penpot 08) | To review | Not on this platform |
+| 9 | Set a new password | Accounts | Approved (Penpot 09) | To review | Not on this platform |
+| 10 | Location permission | Accounts | Approved (Penpot 29) | To review | Not on this platform |
+| 11 | Not signed in (summary cards) | Accounts | Approved (Penpot 28) | To review | Not on this platform |
+| 12 | Your verification | Verification | Approved (Penpot 10) | To review | Not on this platform |
+| 13 | Verify to continue | Verification | Approved (Penpot 11) | To review | Not on this platform |
+| 14 | Verify your identity (NIN) | Verification | Approved (Penpot 12) | To review | Not on this platform |
+| 15 | Face check | Verification | Approved (Penpot 13) | To review | Not on this platform |
+| 16 | Checking | Verification | Approved (Penpot 14) | To review | Not on this platform |
+| 17 | You're verified | Verification | Approved (Penpot 15) | To review | Not on this platform |
+| 18 | Face check didn't work | Verification | Approved (Penpot 16) | To review | Not on this platform |
+| 19 | Add an ID document | Verification | Approved (Penpot 17) | To review | Not on this platform |
+| 20 | With our verification team | Verification | Approved (Penpot 18) | To review | Not on this platform |
+| 21 | Company details (agents) | Verification | Approved (Penpot 19) | To review | Not on this platform |
 | 22 | Home | Search and map | Approved (Penpot 20) | To design | Not on this platform |
 | 23 | Map | Search and map | Approved (Penpot 21) | To design | Not on this platform |
 | 24 | Around me | Search and map | Approved (Penpot 22) | To design | Not on this platform |
@@ -181,6 +181,8 @@ page and names the part (board) it is for, so Penpot can go straight to it.
 | Window title bar (desktop software) | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87ff1edbdef&board-id=7edfee8f-ebaa-8084-8008-d880c7216cab) | Approved | Added with the staff screens: the desktop software's window bar with minimise, maximise and close; the window can be resized (decision 74). |
 
 ## Screens
+
+Website pages for screens 1 to 21 (group 13, in progress): "13 Website: 1 Welcome", "14 Website: 2 to 5 Sign-up", "15 Website: 6 to 9 Sign-in and password", "16 Website: 10 and 11 Location and visitors" and "17 Website: 12 to 21 Verification", in the file "Release 1 Screens".
 
 Page "12 Staff (website and desktop)" (screens 88 to 95): [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87ff1edbdef).
 

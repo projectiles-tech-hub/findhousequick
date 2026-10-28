@@ -1,6 +1,6 @@
 # Project status
 
-Updated: 27 October 2026. Read this after CLAUDE.md at the start of every build session, and update it at the end.
+Updated: 28 October 2026. Read this after CLAUDE.md at the start of every build session, and update it at the end.
 
 ## Where things stand
 
@@ -49,7 +49,7 @@ Updated: 27 October 2026. Read this after CLAUDE.md at the start of every build 
   `docs/adr/0006-email-and-contacts.md`. Still to do from this step: a real email provider adapter once the
   account is opened.
 
-- **Release 1 step 2c (screen designs)**: phone layouts complete and approved; website layouts next. Decision 67 (Penpot instead of Figma) and the design system
+- **Release 1 step 2c (screen designs)**: phone layouts complete and approved; website layouts in progress (screens 1 to 21 drawn). Decision 67 (Penpot instead of Figma) and the design system
   merged in pull request #16. The design system is in Emmanuel's Penpot file "Release 1 Screens", page "00 Design
   system": colours, text styles, spacing and touch size, icons, buttons and chips, form fields, cards and notices,
   map pins, and a Pidgin length check. Merging #16 recorded the decision and the files; it is not the approval of
@@ -75,8 +75,12 @@ Updated: 27 October 2026. Read this after CLAUDE.md at the start of every build 
   The staff screens (88 to 105), which exist only on the website and desktop, were approved by Emmanuel on
   27 October 2026 (pull request #36): 54 designs, each screen at 1366 and 768 for the website and in the desktop software window, with two
   new design system parts (the staff side navigation and the desktop window bar). On 27 October 2026 Emmanuel changed decisions 73 and 74: the desktop software is for staff only;
-  tenants, landlords, agents and scouts use the phone app and the website (217 designs in all). Next: the website
-  layouts of screens 1 to 87.
+  tenants, landlords, agents and scouts use the phone app and the website (217 designs in all). Group 13, the website layouts of screens 1 to 87, is in pull request #40 and in
+  progress: screens 1 to 21 are drawn at 1366 and 768 on the Penpot pages "13 Website: 1 Welcome" to
+  "17 Website: 12 to 21 Verification" (42 designs), in a public-website style of their own with the approved
+  colours, font and components. The landing page shows the available properties straight away; sign-in (screens 6
+  and 7) opens over the page the user is on; sign-up and the password screens have pages of their own. Still to
+  do in this group: screens 22 to 87.
 
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
   #13. The server refuses actions above the user's level (`VERIFICATION_REQUIRED`, decision 64); identity
@@ -148,8 +152,9 @@ Updated: 27 October 2026. Read this after CLAUDE.md at the start of every build 
     bottom bar for landlords and agents), approved on 24 October 2026 (pull request #28). Groups 6 to 11 (screens
     37 to 49 and 66 to 87, phone), approved on 25 October 2026 (pull requests #29 to #34): every phone layout is
     approved. The staff screens (88 to 105, 54 designs, website and desktop only) approved on 27 October 2026
-    (pull request #36). Still to do: the website layouts of screens 1 to 87; the public website pages
-    (106 to 112). Widths as in decision 74.
+    (pull request #36). Website layouts of screens 1 to 87 (group 13): screens 1 to 21 drawn,
+    in pull request #40; still to do: screens 22 to 87, then the public website pages (106 to 112). Widths as in
+    decision 74.
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
 4. **Reference data endpoints**, then buildings, units and the parts checklist, with the distance to the main
