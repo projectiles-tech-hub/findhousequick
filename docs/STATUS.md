@@ -152,8 +152,9 @@ Updated: 28 October 2026. Read this after CLAUDE.md at the start of every build 
     bottom bar for landlords and agents), approved on 24 October 2026 (pull request #28). Groups 6 to 11 (screens
     37 to 49 and 66 to 87, phone), approved on 25 October 2026 (pull requests #29 to #34): every phone layout is
     approved. The staff screens (88 to 105, 54 designs, website and desktop only) approved on 27 October 2026
-    (pull request #36). Website layouts of screens 1 to 87 (group 13): screens 1 to 21 drawn,
-    in pull request #40; still to do: screens 22 to 87, then the public website pages (106 to 112). Widths as in
+    (pull request #36). Website layouts of screens 1 to 87 (group 13): all drawn (178 designs,
+    Penpot pages 13 to 31), in pull request #40, for Emmanuel's review; still to do: his review, then the public
+    website pages (106 to 112). Widths as in
     decision 74.
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
