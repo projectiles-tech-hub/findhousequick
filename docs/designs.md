@@ -109,13 +109,13 @@ Penpot screen number, and its row is added to the tables further down with its l
 | 61 | Review and submit | Listing creation (landlord, authorised agent) | Approved (Penpot 61) | To review | Not on this platform |
 | 62 | Listing status (draft, under review, held, live, expired) | Listing creation (landlord, authorised agent) | Approved (Penpot 62) | To review | Not on this platform |
 | 63 | Confirm still available or mark as rented | Listing creation (landlord, authorised agent) | Approved (Penpot 63) | To review | Not on this platform |
-| 64 | Set inspection times | Listing creation (landlord, authorised agent) | Approved (Penpot 64) | To design | Not on this platform |
-| 65 | Inspection requests (confirm, reschedule) | Listing creation (landlord, authorised agent) | Approved (Penpot 65) | To design | Not on this platform |
-| 66 | Agent requests (landlord approves or rejects) | Agents and authority | Approved (Penpot 66) | To design | Not on this platform |
-| 67 | My agents (end date, withdraw) | Agents and authority | Approved (Penpot 67) | To design | Not on this platform |
-| 68 | Request authority over a property (agent) | Agents and authority | Approved (Penpot 68) | To design | Not on this platform |
-| 69 | Letter of authority upload (landlord not registered) | Agents and authority | Approved (Penpot 69) | To design | Not on this platform |
-| 70 | Authorised properties (agent) | Agents and authority | Approved (Penpot 70) | To design | Not on this platform |
+| 64 | Set inspection times | Listing creation (landlord, authorised agent) | Approved (Penpot 64) | To review | Not on this platform |
+| 65 | Inspection requests (confirm, reschedule) | Listing creation (landlord, authorised agent) | Approved (Penpot 65) | To review | Not on this platform |
+| 66 | Agent requests (landlord approves or rejects) | Agents and authority | Approved (Penpot 66) | To review | Not on this platform |
+| 67 | My agents (end date, withdraw) | Agents and authority | Approved (Penpot 67) | To review | Not on this platform |
+| 68 | Request authority over a property (agent) | Agents and authority | Approved (Penpot 68) | To review | Not on this platform |
+| 69 | Letter of authority upload (landlord not registered) | Agents and authority | Approved (Penpot 69) | To review | Not on this platform |
+| 70 | Authorised properties (agent) | Agents and authority | Approved (Penpot 70) | To review | Not on this platform |
 | 71 | Me (profile) | Me and settings | Approved (Penpot 71) | To design | Not on this platform |
 | 72 | Edit profile | Me and settings | Approved (Penpot 72) | To design | Not on this platform |
 | 73 | Change phone or email | Me and settings | Approved (Penpot 73) | To design | Not on this platform |
@@ -182,7 +182,7 @@ page and names the part (board) it is for, so Penpot can go straight to it.
 
 ## Screens
 
-Website pages for screens 1 to 63 (group 13, in progress): "13 Website: 1 Welcome", "14 Website: 2 to 5 Sign-up", "15 Website: 6 to 9 Sign-in and password", "16 Website: 10 and 11 Location and visitors", "17 Website: 12 to 21 Verification", "18 Website: 22 to 29 Search and map", "19 Website: 30 to 36 Property page", "20 Website: 37 to 39 Saved", "21 Website: 40 to 45 Messages and calls", "22 Website: 46 to 49 Inspections", "23 Website: 50 to 55 My properties and listing", "24 Website: 56 to 61 Photos and documents" and "25 Website: 62 and 63 Listing status", in the file "Release 1 Screens".
+Website pages for screens 1 to 70 (group 13, in progress): "13 Website: 1 Welcome", "14 Website: 2 to 5 Sign-up", "15 Website: 6 to 9 Sign-in and password", "16 Website: 10 and 11 Location and visitors", "17 Website: 12 to 21 Verification", "18 Website: 22 to 29 Search and map", "19 Website: 30 to 36 Property page", "20 Website: 37 to 39 Saved", "21 Website: 40 to 45 Messages and calls", "22 Website: 46 to 49 Inspections", "23 Website: 50 to 55 My properties and listing", "24 Website: 56 to 61 Photos and documents", "25 Website: 62 and 63 Listing status", "26 Website: 64 to 67 Inspection times and agents" and "27 Website: 68 to 70 Agent authority", in the file "Release 1 Screens".
 
 Page "12 Staff (website and desktop)" (screens 88 to 95): [open the page](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87ff1edbdef).
 
