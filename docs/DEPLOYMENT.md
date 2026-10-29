@@ -95,6 +95,8 @@ login. Most need the CAC certificate (RC 7987623).
 | Step | When | How | Notes |
 | --- | --- | --- | --- |
 | Create the first super admin | Once per server, after the database is set up (from the staff accounts pull request) | 1. The person (normally the Managing Director) registers in the app as a normal user. 2. On the server, in the `server` folder: `pnpm staff:make-super-admin +234...` with their phone number. 3. They confirm both phone and email, sign in **with their password**, and complete two-step login with an email or SMS code (the second step never uses the channel they signed in with, decision 36). They can then add an authenticator app. | The command refuses if any super admin already exists, so it can only be used once per server. All further staff are added by a super admin through the admin endpoints (ADR 0005). It is recorded in the audit log |
+| Load the starter data again after each update | After every deployment that changes `server/prisma/seed.ts` or `server/prisma/seed-data/` (from the step 4 pull request: the photo checklists now ask for toilets separately, decision 56) | On the server, in the `server` folder, after `npx prisma migrate deploy`: `pnpm db:seed` | Safe to run again: it updates property types and checklists without touching anything staff have set |
+| Switch on the launch city | Once the launch city is decided (Decisions Log open point) | No admin screen yet. In the database, set `enabled = true` on the city's row in `City` and on its state's row in `Region` | Until a city is switched on, buildings cannot be added there (`CITY_NOT_AVAILABLE`). An admin endpoint for this can be added when wanted |
 
 ### Legal and regulatory steps (before any real user signs up)
 
@@ -117,6 +119,7 @@ company and its lawyer, not the developers, but no real user may sign up until t
    Each enabled country's `verification.identityProvider` names a real provider, and `retention.identityImagesDays`
    is set (section 1).
 3. Database migrations applied (`npx prisma migrate deploy`) and starter data loaded (`pnpm db:seed`).
+   The launch city and its state are switched on (section 4).
 4. `GET /v1/health` returns `status: ok`.
 5. The first super admin has been created (section 4) and has completed two-step login.
 6. Daily database backups are running and one restore has been tested.

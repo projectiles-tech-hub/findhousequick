@@ -162,7 +162,13 @@ Updated: 28 October 2026. Read this after CLAUDE.md at the start of every build 
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
 4. **Reference data endpoints**, then buildings, units and the parts checklist, with the distance to the main
-   road, separate toilets in the checklist and a note per part (decision 56).
+   road, separate toilets in the checklist and a note per part (decision 56): in pull request #44. Built: the three
+   reference lists (property types with their checklists, document types, regions with cities); registering a
+   building at its location, with duplicates sent to the verification team; units with their checklists (one
+   part per bedroom, bathroom and toilet), rebuilt when room counts change without losing photos; notes on parts;
+   unit details checked against choices held in the country settings. Still to do from this step: the comparison
+   of the building's location with the first photos (with media upload, step 5); admin endpoints to switch cities
+   on (switched on in the database for now, see `docs/DEPLOYMENT.md`).
 5. Documents and media upload (private storage adapter), listings and submission, search and the property page
    (summary only for signed-out visitors, decision 39; viewing limits per account in Redis, decision 52; saved
    places and travel distance, decision 48), saved items, messaging with the live connection (decision 47) and
