@@ -49,7 +49,7 @@ Updated: 27 October 2026. Read this after CLAUDE.md at the start of every build 
   `docs/adr/0006-email-and-contacts.md`. Still to do from this step: a real email provider adapter once the
   account is opened.
 
-- **Release 1 step 2c (screen designs)**: phone layouts complete and approved; website and desktop layouts next. Decision 67 (Penpot instead of Figma) and the design system
+- **Release 1 step 2c (screen designs)**: phone layouts complete and approved; website layouts next. Decision 67 (Penpot instead of Figma) and the design system
   merged in pull request #16. The design system is in Emmanuel's Penpot file "Release 1 Screens", page "00 Design
   system": colours, text styles, spacing and touch size, icons, buttons and chips, form fields, cards and notices,
   map pins, and a Pidgin length check. Merging #16 recorded the decision and the files; it is not the approval of
@@ -74,7 +74,8 @@ Updated: 27 October 2026. Read this after CLAUDE.md at the start of every build 
   the desktop software at 1366 by 768 in a resizable window. Decision 74 was approved and merged on 26 October 2026 (pull request #35).
   The staff screens (88 to 105), which exist only on the website and desktop, were approved by Emmanuel on
   27 October 2026 (pull request #36): 54 designs, each screen at 1366 and 768 for the website and in the desktop software window, with two
-  new design system parts (the staff side navigation and the desktop window bar). Next: the website and desktop
+  new design system parts (the staff side navigation and the desktop window bar). On 27 October 2026 Emmanuel changed decisions 73 and 74: the desktop software is for staff only;
+  tenants, landlords, agents and scouts use the phone app and the website (217 designs in all). Next: the website
   layouts of screens 1 to 87.
 
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
@@ -127,12 +128,12 @@ Updated: 27 October 2026. Read this after CLAUDE.md at the start of every build 
     once the email sending account is opened (see `docs/DEPLOYMENT.md`).
 2c. **Screen designs in Penpot** (Release 0 work; decisions 42, 67 and 73): the 112 screens listed in
     `docs/designs.md`, for tenants, landlords, agents, scouts and staff and the public website, on the phone app
-    (87), the website (112) and the desktop software (105): 304 designs. The step is complete only when all 304
-    are approved. Approved so far: 141 of 304, every phone layout (screens 1 to 87) and the staff screens (88 to 105). Produced in the build sessions with the Penpot connector in Emmanuel's file "Release 1 Screens", for his
+    (87), the website (112) and the desktop software (18, staff screens only): 217 designs. The step is complete
+    only when all 217 are approved. Approved so far: 141 of 217, every phone layout (screens 1 to 87) and the staff screens (88 to 105). Produced in the build sessions with the Penpot connector in Emmanuel's file "Release 1 Screens", for his
     review and approval; if the connector is not reliable, Claude's Design artifact type is used instead and
     Emmanuel is told. No longer blocked: the connector was tested on 23 October 2026. Order: the design system
-    first (for approval before any screen), then the screens in groups, phone layouts first, then desktop and the
-    signed-in website, then the public website pages. Every screen, its Penpot link, its group and its review state are listed in
+    first (for approval before any screen), then the screens in groups, phone layouts first, then the staff screens
+    and the signed-in website, then the public website pages. Every screen, its Penpot link, its group and its review state are listed in
     `docs/designs.md`. Emmanuel is told before each design session so he can keep the file open. **No app screen
     is built until its design is approved.**
     Done after the email step, so the sign-up and sign-in designs match what is built; the server steps below
@@ -147,7 +148,7 @@ Updated: 27 October 2026. Read this after CLAUDE.md at the start of every build 
     bottom bar for landlords and agents), approved on 24 October 2026 (pull request #28). Groups 6 to 11 (screens
     37 to 49 and 66 to 87, phone), approved on 25 October 2026 (pull requests #29 to #34): every phone layout is
     approved. The staff screens (88 to 105, 54 designs, website and desktop only) approved on 27 October 2026
-    (pull request #36). Still to do: the website and desktop layouts of screens 1 to 87; the public website pages
+    (pull request #36). Still to do: the website layouts of screens 1 to 87; the public website pages
     (106 to 112). Widths as in decision 74.
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
@@ -166,7 +167,7 @@ Updated: 27 October 2026. Read this after CLAUDE.md at the start of every build 
     to `docs/api/openapi.yaml` at the start of this step. Rewards are recorded as waiting for a rental; payouts
     come with the completed rental fee in Release 2.
 6. **App screens** (Flutter), built only from approved designs (step 2c), for the phone app, the website and the
-   desktop software: every screen listed in `docs/designs.md` (decision 73), including the scout screens and the
+   desktop software (staff screens only): every screen listed in `docs/designs.md` (decision 73), including the scout screens and the
    staff screens with switch messages, return times and dependency warnings (decision 53).
 
 ## Later releases (decided)

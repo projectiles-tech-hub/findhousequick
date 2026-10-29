@@ -6,7 +6,7 @@ Projectiles Tech Hub Limited
 
 Emmanuel Chukwuka Oraegbu, Managing Director
 
-Version 1.8 \| 25 October 2026
+Version 1.9 \| 27 October 2026
 
 # Contents
 
@@ -86,13 +86,13 @@ The central promise of the platform is trust: verified users, verified propertie
 
 ## 1.4 Platforms
 
-The platform is delivered on three platforms sharing one central system, so that any change made on one platform appears on the others immediately. The website and the desktop software have every screen the mobile app has, laid out for a wide screen; adding a building, taking photos of each part and recording the walkthrough video are done on site with the phone, so on the website and desktop those steps send the user to the phone. The website also has the staff screens and the public pages for visitors, and the desktop software has the staff screens (decision 73). The full list of screens is kept in docs/designs.md in the code repository. The website is responsive and works on every screen size without breaking: it is designed at the desktop width of 1366 pixels and the tablet width of 768, and at phone width it follows the phone screens. The desktop software is designed for computers and laptops at 1366 by 768, in a window the user can resize (decision 74).
+The platform is delivered on three platforms sharing one central system, so that any change made on one platform appears on the others immediately. The website has every screen the mobile app has, laid out for a wide screen; adding a building, taking photos of each part and recording the walkthrough video are done on site with the phone, so on the website those steps send the user to the phone. The website also has the staff screens and the public pages for visitors, and the desktop software has only the staff screens: tenants, landlords, agents and scouts use the phone app and the website (decision 73). The full list of screens is kept in docs/designs.md in the code repository. The website is responsive and works on every screen size without breaking: it is designed at the desktop width of 1366 pixels and the tablet width of 768, and at phone width it follows the phone screens. The desktop software, for staff only, is designed for computers and laptops at 1366 by 768, in a window the user can resize (decision 74).
 
-| **Platform**     | **Main users**                                                   | **Main purpose**                                                            |
-|------------------|------------------------------------------------------------------|-----------------------------------------------------------------------------|
-| Mobile app       | Tenants, agents and landlords in the field                       | "Around me" search, inspections, adding properties on site with GPS, chat   |
-| Web app          | All users                                                        | Searching, managing listings, payments, property management                 |
-| Desktop software | Landlords and agents with many properties; the verification team | Heavy property management work, reports, document review and administration |
+| **Platform**     | **Main users**                                | **Main purpose**                                                          |
+|------------------|-----------------------------------------------|---------------------------------------------------------------------------|
+| Mobile app       | Tenants, agents and landlords in the field    | "Around me" search, inspections, adding properties on site with GPS, chat |
+| Web app          | All users                                     | Searching, managing listings, payments, property management               |
+| Desktop software | Platform staff, such as the verification team | Document review and administration                                        |
 
 # 2. User Types
 
@@ -1054,6 +1054,7 @@ This specification is kept as one document and updated in place; earlier version
 | 1.6, 24 October 2026 | Includes decisions 65 to 71: scouts and the referral reward (decisions 70 and 71; Sections 2, 3.6, 8.3, 16.1, 17.1, 20 and 21), and decisions 65 to 69, listed below.                                     |
 | 1.7, 24 October 2026 | Includes decisions 72 and 73: scouts built in Release 1, with rewards paid once the completed rental fee exists (Section 3.6); every screen of the app on the website and desktop software (Section 1.4). |
 | 1.8, 25 October 2026 | Includes decision 74: the website is responsive, designed at desktop and tablet widths, and the desktop software runs in a resizable window (Section 1.4).                                                |
+| 1.9, 27 October 2026 | Decisions 73 and 74 changed: the desktop software is for staff only; tenants, landlords, agents and scouts use the phone app and the website (Section 1.4).                                               |
 
 Decisions 24 to 73 in versions 1.4 to 1.7. Some confirm what this specification already said, or only set when something is built; they are listed so that every decision can be traced. Decisions about how the platform is built, rather than what it does, are in the Technical Architecture and the architecture decision records.
 
