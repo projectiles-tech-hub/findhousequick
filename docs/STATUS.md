@@ -1,6 +1,6 @@
 # Project status
 
-Updated: 28 October 2026. Read this after CLAUDE.md at the start of every build session, and update it at the end.
+Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build session, and update it at the end.
 
 ## Where things stand
 
@@ -114,8 +114,6 @@ Updated: 28 October 2026. Read this after CLAUDE.md at the start of every build 
 - Before identity checks go live: how long identity images are kept after verification, after legal advice
   (Decisions Log open point 15). Step 3 is built with this as a country setting (decision 55) that is not yet set.
 - A company dollar card, so the hosting account (and the test system) can be opened (decision 42).
-- Whether to build country settings changes (`PATCH /admin/countries`, still to do from step 2) as a small step
-  before step 4 (suggested 22 October 2026, when it was proposed for before step 3; step 3 is now done).
 - Scouts and the referral reward (decisions 70 to 72): Decisions Log open points 16, 18 and 19: the reward amount
   and, before it goes live, state estate agency rules and withholding tax. The release is settled (decision 72).
 - Decisions Log open points: the five escrow settings, escrow legal structure, launch city, partner API,
@@ -127,8 +125,9 @@ Updated: 28 October 2026. Read this after CLAUDE.md at the start of every build 
    `POST /me/data-export`; both need background jobs. A real SMS adapter (Termii or Twilio) once an account
    is opened. App sign-in screens.
 2. ~~**Staff accounts and roles**~~, and the admin feature-rule endpoints: done (pull request #7).
-   Still to do from this area: admin screens in the app; two-step login for ordinary users (ADR 0005, point 3);
-   `PATCH /admin/countries/{countryCode}` (country settings), which is in the API design but not yet built.
+   Still to do from this area: admin screens in the app; two-step login for ordinary users (ADR 0005, point 3).
+   Country settings changes (`PATCH /admin/countries/{countryCode}`, super admins, recorded) in pull request #43,
+   built before step 4 as Emmanuel asked on 29 October 2026.
 2a. ~~**Specification check**~~: done (pull requests #9 and #10; decisions 39 to 63).
 2b. ~~**Email**~~ (decisions 35 to 38, 64): done (pull request #11). Still to do: a real email provider adapter
     once the email sending account is opened (see `docs/DEPLOYMENT.md`).

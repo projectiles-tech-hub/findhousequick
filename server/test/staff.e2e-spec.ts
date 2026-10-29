@@ -441,6 +441,60 @@ describe('Staff: accounts, two-step login and feature rules (API)', () => {
     });
   });
 
+  describe('country settings changes (PATCH /admin/countries)', () => {
+    it('lets a super admin change settings, languages and the on/off switch, applied at once and recorded', async () => {
+      const admin = await staff(['SUPER_ADMIN']);
+      const manager = await staff(['COUNTRY_MANAGER'], ['NG']);
+      const original = await prisma.country.findUniqueOrThrow({ where: { code: 'NG' } });
+      try {
+        await api().patch('/v1/admin/countries/NG').set(bearer(manager.token)).send({ settings: { listings: { confirmAvailabilityDays: 10 } }, reason: 'Test' }).expect(403);
+
+        const changed = await api()
+          .patch('/v1/admin/countries/ng')
+          .set(bearer(admin.token))
+          .send({ settings: { listings: { confirmAvailabilityDays: 10 } }, languages: ['en', 'pcm', 'yo'], reason: 'Shorter check for the pilot' })
+          .expect(200);
+        expect(changed.body.code).toBe('NG');
+        expect(changed.body.languages).toEqual(['en', 'pcm', 'yo']);
+        expect(changed.body.settings.listings.confirmAvailabilityDays).toBe(10);
+        // Other settings in the same group are kept.
+        expect(changed.body.settings.listings.duplicateRadiusMetres).toBe(15);
+
+        // The apps see it straight away.
+        const controls = await api().get('/v1/controls').set('X-Country', 'NG').expect(200);
+        expect(controls.body.country.settings.listings).toBeDefined();
+
+        const record = await prisma.controlChange.findFirstOrThrow({ where: { entityType: 'Country', entityId: 'NG' }, orderBy: { createdAt: 'desc' } });
+        expect(record).toMatchObject({ action: 'COUNTRY_CHANGED', actorId: admin.id, reason: 'Shorter check for the pilot' });
+        expect((record.before as any).settings.listings.confirmAvailabilityDays).toBe(14);
+        expect((record.after as any).settings.listings.confirmAvailabilityDays).toBe(10);
+      } finally {
+        await prisma.country.update({ where: { code: 'NG' }, data: { enabled: original.enabled, languages: original.languages, settings: original.settings as object } });
+      }
+    });
+
+    it('refuses unknown settings or languages, values out of range, a missing default language and changes without a reason', async () => {
+      const admin = await staff(['SUPER_ADMIN']);
+      const before = await prisma.country.findUniqueOrThrow({ where: { code: 'NG' } });
+      for (const body of [
+        { settings: { listings: { confirmAvailabilityDays: 30 } } },
+        { settings: { listing: { confirmAvailabilityDays: 10 } } },
+        { settings: { fees: { escrowTenantBps: '150' } } },
+        { languages: ['en', 'xx'] },
+        { languages: ['pcm'] },
+      ]) {
+        const res = await api().patch('/v1/admin/countries/NG').set(bearer(admin.token)).send({ ...body, reason: 'Test' }).expect(400);
+        expect(res.body.code).toBe('INVALID_SETTINGS');
+      }
+      await api().patch('/v1/admin/countries/NG').set(bearer(admin.token)).send({ settings: { listings: { confirmAvailabilityDays: 10 } } }).expect(400);
+      await api().patch('/v1/admin/countries/NG').set(bearer(admin.token)).send({ reason: 'Nothing' }).expect(400);
+      await api().patch('/v1/admin/countries/ZZ').set(bearer(admin.token)).send({ enabled: true, reason: 'Test' }).expect(404);
+      const after = await prisma.country.findUniqueOrThrow({ where: { code: 'NG' } });
+      expect(after.settings).toEqual(before.settings);
+      expect(after.languages).toEqual(before.languages);
+    });
+  });
+
   describe('managing staff', () => {
     it('adds staff by confirmed email address as well as by phone number (decision 38)', async () => {
       const admin = await staff(['SUPER_ADMIN']);
