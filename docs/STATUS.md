@@ -49,7 +49,7 @@ Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build 
   `docs/adr/0006-email-and-contacts.md`. Still to do from this step: a real email provider adapter once the
   account is opened.
 
-- **Release 1 step 2c (screen designs)**: complete: all 217 designs approved (the public website pages, group 14, in pull request #41, merged on 29 October 2026). Decision 67 (Penpot instead of Figma) and the design system
+- **Release 1 step 2c (screen designs)**: the first 217 designs approved (the last, the public website pages, in pull request #41, merged on 29 October 2026); decision 75 adds three staff screens and changes screens 56 and 100, in pull request #45. Decision 67 (Penpot instead of Figma) and the design system
   merged in pull request #16. The design system is in Emmanuel's Penpot file "Release 1 Screens", page "00 Design
   system": colours, text styles, spacing and touch size, icons, buttons and chips, form fields, cards and notices,
   map pins, and a Pidgin length check. Merging #16 recorded the decision and the files; it is not the approval of
@@ -131,10 +131,13 @@ Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build 
 2a. ~~**Specification check**~~: done (pull requests #9 and #10; decisions 39 to 63).
 2b. ~~**Email**~~ (decisions 35 to 38, 64): done (pull request #11). Still to do: a real email provider adapter
     once the email sending account is opened (see `docs/DEPLOYMENT.md`).
-2c. ~~**Screen designs in Penpot**~~: done (pull requests #16 to #41). (Release 0 work; decisions 42, 67 and 73): the 112 screens listed in
+2c. **Screen designs in Penpot** (Release 0 work; decisions 42, 67, 73 and 75): the 115 screens listed in
     `docs/designs.md`, for tenants, landlords, agents, scouts and staff and the public website, on the phone app
-    (87), the website (112) and the desktop software (18, staff screens only): 217 designs. The step is complete
-    only when all 217 are approved. All 217 approved by 29 October 2026. Produced in the build sessions with the Penpot connector in Emmanuel's file "Release 1 Screens", for his
+    (87), the website (115) and the desktop software (21, staff screens only): 223 designs. The step is complete
+    only when all 223 are approved. The first 217 were approved by 29 October 2026 (pull requests #16 to #41).
+    Decision 75 (29 October 2026) adds the staff screens 113 Regions and cities, 114 Property types and photo
+    checklists and 115 Document types, and changes screen 100 (Country controls) and screen 56 (Parts checklist,
+    a note on each part): in pull request #45. Produced in the build sessions with the Penpot connector in Emmanuel's file "Release 1 Screens", for his
     review and approval; if the connector is not reliable, Claude's Design artifact type is used instead and
     Emmanuel is told. No longer blocked: the connector was tested on 23 October 2026. Order: the design system
     first (for approval before any screen), then the screens in groups, phone layouts first, then the staff screens

@@ -19,29 +19,31 @@ help page), scouts, and the staff screens.
 
 ## Screens to be designed (complete list)
 
-Decision 73 fixes the screens to be designed. The website does everything the app does, so it has every user
+Decision 73 fixes the screens to be designed; decision 75 adds the staff screens 113 to 115. The website does everything the app does, so it has every user
 screen; it also has the staff screens and the public pages. The desktop software has only the staff screens:
 tenants, landlords, agents and scouts use the phone app and the website. Screens are added to or removed from this list only by a recorded decision.
 
 | Platform | Screens | Count |
 | --- | --- | --- |
 | Phone app | 1 to 87 (every user type) | 87 |
-| Website | 1 to 87, the staff screens 88 to 105 and the public pages 106 to 112 | 112 |
-| Desktop software | The staff screens 88 to 105 only | 18 |
-| **All designs** | | **217** |
+| Website | 1 to 87, the staff screens 88 to 105 and 113 to 115, and the public pages 106 to 112 | 115 |
+| Desktop software | The staff screens 88 to 105 and 113 to 115 only | 21 |
+| **All designs** | | **223** |
 
 Screen widths (decision 74): phone screens are 360 by 800. The website is responsive and must work on every screen
 size without breaking: each website design is drawn at the desktop width of 1366, with its tablet layout at 768; at
 phone width the user screens follow the approved phone screens, and the public pages are drawn at 360 too. The
 desktop software, for staff only, is designed at 1366 by 768, in a window the user can resize. A website design includes its tablet
-and phone layouts, so the count of 217 is unchanged.
+and phone layouts, so it counts as one design.
 
 Screens 51, 57 and 58 (adding a building, camera capture and the walkthrough video) are done on site with the
 phone's camera and GPS (Specification Sections 5.3 and 6.2). On the website, those screens send the user
 to the phone.
 
-The screen designs (Release 0, step 2c) are complete only when all 217 designs are approved. All 217 are approved
-(the public pages 107 to 112 in pull request #41, merged on 29 October 2026); page 106 is the website layout of screen 1. When a design is approved, its cell below changes to "Approved" with its
+The screen designs (Release 0, step 2c) are complete only when all 223 designs are approved. Approved so far: the
+first 217 (the public pages 107 to 112 in pull request #41, merged on 29 October 2026; page 106 is the website layout
+of screen 1). Still to do (decision 75): the new staff screens 113 to 115, and the changes to screen 100 (Country
+controls) and screen 56 (Parts checklist). When a design is approved, its cell below changes to "Approved" with its
 Penpot screen number, and its row is added to the tables further down with its link.
 
 | # | Screen | Group | Phone app | Website | Desktop software |
@@ -101,7 +103,7 @@ Penpot screen number, and its row is added to the tables further down with its l
 | 53 | Category and type | Listing creation (landlord, authorised agent) | Approved (Penpot 53) | Approved (Penpot 53) | Not on this platform |
 | 54 | Property details | Listing creation (landlord, authorised agent) | Approved (Penpot 54) | Approved (Penpot 54) | Not on this platform |
 | 55 | Costs and fees | Listing creation (landlord, authorised agent) | Approved (Penpot 55) | Approved (Penpot 55) | Not on this platform |
-| 56 | Parts checklist | Listing creation (landlord, authorised agent) | Approved (Penpot 56) | Approved (Penpot 56) | Not on this platform |
+| 56 | Parts checklist | Listing creation (landlord, authorised agent) | Changes asked (Penpot 56): a note on each part | Changes asked (Penpot 56): a note on each part | Not on this platform |
 | 57 | Camera capture per part (quality check, retake) | Listing creation (landlord, authorised agent) | Approved (Penpot 57) | Approved (Penpot 57): sends the user to the phone | Not on this platform |
 | 58 | Walkthrough video capture | Listing creation (landlord, authorised agent) | Approved (Penpot 58) | Approved (Penpot 58): sends the user to the phone | Not on this platform |
 | 59 | Occupant consent | Listing creation (landlord, authorised agent) | Approved (Penpot 59) | Approved (Penpot 59) | Not on this platform |
@@ -145,7 +147,7 @@ Penpot screen number, and its row is added to the tables further down with its l
 | 97 | Site visits and audits | Staff | Not on this platform | Approved (Penpot 97) | Approved (Penpot 97) |
 | 98 | Reports | Staff | Not on this platform | Approved (Penpot 98) | Approved (Penpot 98) |
 | 99 | Warnings, badge removal, suspensions and bans | Staff | Not on this platform | Approved (Penpot 99) | Approved (Penpot 99) |
-| 100 | Country controls | Staff | Not on this platform | Approved (Penpot 100) | Approved (Penpot 100) |
+| 100 | Country controls | Staff | Not on this platform | Changes asked (Penpot 100): languages, on/off switch, unit detail choices | Changes asked (Penpot 100): languages, on/off switch, unit detail choices |
 | 101 | Feature controls (messages, return times, dependency warnings, approvals) | Staff | Not on this platform | Approved (Penpot 101) | Approved (Penpot 101) |
 | 102 | Change record | Staff | Not on this platform | Approved (Penpot 102) | Approved (Penpot 102) |
 | 103 | Staff management | Staff | Not on this platform | Approved (Penpot 103) | Approved (Penpot 103) |
@@ -158,6 +160,9 @@ Penpot screen number, and its row is added to the tables further down with its l
 | 110 | Help | Public website | Not on this platform | Approved (Penpot 110) | Not on this platform |
 | 111 | Terms of use | Public website | Not on this platform | Approved (Penpot 111) | Not on this platform |
 | 112 | Privacy policy | Public website | Not on this platform | Approved (Penpot 112) | Not on this platform |
+| 113 | Regions and cities (switch on or off) | Staff | Not on this platform | To design | To design |
+| 114 | Property types and photo checklists | Staff | Not on this platform | To design | To design |
+| 115 | Document types | Staff | Not on this platform | To design | To design |
 
 ## Design system
 
