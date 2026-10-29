@@ -13,6 +13,8 @@ import { EmailModule } from './integrations/email/email.module.js';
 import { IdentityProviderModule } from './integrations/identity/identity.module.js';
 import { StorageModule } from './integrations/storage/storage.module.js';
 import { ReviewModule } from './review/review.module.js';
+import { PropertiesModule } from './properties/properties.module.js';
+import { ReferenceModule } from './reference/reference.module.js';
 import { SmsModule } from './integrations/sms/sms.module.js';
 import { StaffModule } from './staff/staff.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
@@ -37,6 +39,8 @@ import { PrismaModule } from './prisma/prisma.module.js';
     StaffModule,
     IdentityModule,
     DocumentsModule,
+    ReferenceModule,
+    PropertiesModule,
     ReviewModule,
     JobsModule,
   ],

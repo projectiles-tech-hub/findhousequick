@@ -834,7 +834,7 @@ paths:
                           id: { $ref: "#/components/schemas/Id" }
                           name: { type: string }
                           enabled: { type: boolean }
-                          centre: { $ref: "#/components/schemas/LatLng" }
+                          centre: { oneOf: [{ $ref: "#/components/schemas/LatLng" }, { type: "null" }] }
 
   # ------------------------------------------------------------------
   # Properties (buildings and units)
@@ -885,12 +885,13 @@ paths:
                       possibleDuplicates:
                         type: array
                         items: { $ref: "#/components/schemas/Id" }
-        "403": { $ref: "#/components/responses/Forbidden" }
+        "400": { description: "The city is not open yet (CITY_NOT_AVAILABLE), only agents may give a landlord's details, or the request is invalid" }
+        "403": { description: "Not a landlord or agent (NOT_A_LISTER), level 2 needed (VERIFICATION_REQUIRED) or switched off (FEATURE_UNAVAILABLE)" }
 
   /buildings/{buildingId}:
     get:
       tags: [Properties]
-      summary: A building the user owns, manages or created
+      summary: A building the user owns, registered, or has approved and unexpired authority for
       parameters: [{ $ref: "#/components/parameters/BuildingId" }]
       responses:
         "200":
@@ -898,6 +899,7 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Building" }
+        "404": { description: "Not found, or not one of the user's buildings" }
 
   /buildings/{buildingId}/units:
     post:
@@ -926,6 +928,8 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Unit" }
+        "400": { description: "Property type not offered (PROPERTY_TYPE_NOT_AVAILABLE) or details not valid (INVALID_DETAILS)" }
+        "409": { description: "The building already has a unit with this name (UNIT_LABEL_TAKEN)" }
 
   /units/{unitId}:
     get:
@@ -941,6 +945,9 @@ paths:
     patch:
       tags: [Properties]
       summary: Update unit details. Changing room counts regenerates the checklist, keeping captured media.
+      description: |
+        Parts that remain keep their notes and media. Parts no longer needed are removed, unless photos or videos were
+        already taken for them; those stay, as optional. Details are merged with the existing ones.
       parameters: [{ $ref: "#/components/parameters/UnitId" }]
       requestBody:
         content:
@@ -2369,35 +2376,47 @@ components:
         street: { type: string }
         houseNumber: { type: [string, "null"] }
         landmark: { type: [string, "null"] }
-        distanceToMainRoadM: { type: [integer, "null"] }
+        distanceToMainRoadM: { type: [integer, "null"], description: Metres to the main road (decision 56) }
         location: { $ref: "#/components/schemas/LatLng" }
-        ownerVerified: { type: boolean }
+        locationAccuracyM: { type: [integer, "null"] }
+        ownerOnPlatform: { type: boolean, description: True when the landlord has an account and owns the building on the platform }
+        ownerVerified: { type: boolean, description: True when that landlord's identity is checked (level 2) }
+        offPlatformOwnerName: { type: [string, "null"], description: The landlord's name when an agent lists for a landlord who is not on the app }
+        createdAt: { type: string, format: date-time }
         units: { type: array, items: { $ref: "#/components/schemas/Unit" } }
 
     UnitDetails:
       type: object
-      description: Validated against the country's detail fields.
+      description: |
+        Every field is optional. The choices shown are the defaults; each country can set its own lists in its
+        country settings (unitDetails), and the server checks details against them. Unknown fields are refused.
       properties:
         furnishing: { type: string, enum: [UNFURNISHED, SEMI_FURNISHED, FURNISHED] }
         power: { type: array, items: { type: string, enum: [PUBLIC_SUPPLY, PREPAID_METER, SHARED_METER, GENERATOR, INVERTER, SOLAR] } }
         water: { type: array, items: { type: string, enum: [BOREHOLE, PUBLIC_SUPPLY, TREATED] } }
         security: { type: array, items: { type: string, enum: [FENCED, GATED, GUARD, CCTV, ESTATE_SECURITY] } }
-        parkingSpaces: { type: integer }
+        parkingSpaces: { type: integer, minimum: 0 }
         roadCondition: { type: string, enum: [TARRED, UNTARRED, PARTLY_TARRED] }
-        finishing: { type: object, additionalProperties: true }
+        whoMayRent: { type: array, items: { type: string, enum: [SINGLES, FAMILIES, STUDENTS, CORPORATE] } }
+        petsAllowed: { type: boolean }
+        maxOccupants: { type: integer, minimum: 1 }
+        finishing: { type: object, additionalProperties: true, description: "Floor finish, ceiling, kitchen fittings, wardrobes, air conditioning and similar, as short values" }
 
     Unit:
       type: object
       properties:
         id: { $ref: "#/components/schemas/Id" }
+        buildingId: { $ref: "#/components/schemas/Id" }
         label: { type: string }
         propertyTypeId: { $ref: "#/components/schemas/Id" }
         bedrooms: { type: integer }
         bathrooms: { type: integer }
         toilets: { type: integer }
         floorLevel: { type: [integer, "null"] }
-        floorArea: { type: [number, "null"] }
+        floorArea: { type: [number, "null"], description: "In the country's area unit" }
+        areaUnit: { type: string, enum: [SQM, SQFT] }
         details: { $ref: "#/components/schemas/UnitDetails" }
+        checklistComplete: { type: boolean, description: Every required part has its photos or video }
         parts:
           type: array
           items:
