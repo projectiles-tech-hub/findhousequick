@@ -2163,11 +2163,15 @@ paths:
               required: [reason]
               properties:
                 enabled: { type: boolean }
-                languages: { type: array, items: { type: string } }
-                settings: { type: object, description: Partial settings; validated against the country settings schema }
-                reason: { type: string }
+                languages: { type: array, items: { type: string }, minItems: 1, description: "Must include the country's default language; each must be a language the platform offers" }
+                settings: { type: object, description: "Only the settings to change. Groups (fees, listings and so on) are merged key by key; lists and maps are replaced whole. Validated against the country settings rules; unknown settings are refused." }
+                reason: { type: string, minLength: 3, maxLength: 500 }
       responses:
-        "200": { description: Updated. }
+        "200": { description: "The country after the change, with all its settings. Applies at once; recorded with the values before and after." }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { description: The country is not set up. }
 
 components:
   securitySchemes:

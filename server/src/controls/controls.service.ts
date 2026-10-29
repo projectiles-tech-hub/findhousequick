@@ -7,7 +7,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { FeatureRule, FeatureScope, RuleStatus, StaffRole } from '../generated/prisma/client.js';
 import { apiError } from '../common/api-error.js';
-import { parseCountrySettings, type CountrySettings } from './country-settings.schema.js';
+import { applyCountrySettingsChange, parseCountrySettings, type CountrySettings } from './country-settings.schema.js';
 import {
   parsePlatformSettings,
   platformSettingsChangeSchema,
@@ -22,6 +22,14 @@ export interface StaffActor {
   roles: readonly StaffRole[];
   /** Country codes the staff member may act on; ['*'] means all. */
   countryScopes: readonly string[];
+}
+
+/** A change to a country: any of these may be sent. */
+export interface CountryChange {
+  enabled?: boolean;
+  languages?: string[];
+  /** Only the settings to change; groups are merged, lists and maps replaced. */
+  settings?: unknown;
 }
 
 export interface CreateRuleInput {
@@ -184,6 +192,58 @@ export class ControlsService implements OnModuleInit {
 
   async getCountrySettings(code: string): Promise<CountrySettings> {
     return (await this.getCountry(code)).settings;
+  }
+
+  /**
+   * Changes a country's settings, its languages, or switches it on or off. Super admins only; every change is
+   * recorded with the values before and after. Country settings are read fresh on every request, so the
+   * change applies at once on every server.
+   */
+  async updateCountry(code: string, change: CountryChange, reason: string, actor: StaffActor) {
+    if (!isSuperAdmin(actor)) throw apiError(403, 'FORBIDDEN', 'Only super admins can change country settings.');
+    if (!reason?.trim()) throw apiError(400, 'REASON_REQUIRED', 'A reason is required for every change.');
+    if (change.enabled === undefined && change.languages === undefined && change.settings === undefined) {
+      throw apiError(400, 'NOTHING_TO_CHANGE', 'Send at least one of enabled, languages or settings.');
+    }
+    const countryCode = code.toUpperCase();
+    return this.prisma.$transaction(async (tx) => {
+      // Lock the row so two changes at the same moment cannot overwrite each other.
+      const [row] = await tx.$queryRaw<{ code: string }[]>`SELECT "code" FROM "Country" WHERE "code" = ${countryCode} FOR UPDATE`;
+      if (!row) throw new NotFoundException(`Country ${countryCode} is not set up`);
+      const before = await tx.country.findUniqueOrThrow({ where: { code: countryCode } });
+
+      const data: { enabled?: boolean; languages?: string[]; settings?: object } = {};
+      if (change.enabled !== undefined) data.enabled = change.enabled;
+      if (change.languages !== undefined) {
+        const languages = [...new Set(change.languages.map((l) => l.trim().toLowerCase()))];
+        const unknown = languages.filter((l) => !isFeatureKey(`language.${l}`));
+        if (unknown.length) throw apiError(400, 'INVALID_SETTINGS', `These languages are not offered: ${unknown.join(', ')}`);
+        if (!languages.includes(before.defaultLanguage)) {
+          throw apiError(400, 'INVALID_SETTINGS', `The languages must include the country's default language (${before.defaultLanguage}).`);
+        }
+        data.languages = languages;
+      }
+      if (change.settings !== undefined) {
+        const result = applyCountrySettingsChange(before.settings, change.settings);
+        if (!result.ok) throw apiError(400, 'INVALID_SETTINGS', `These settings are not valid: ${result.problems.join('; ')}`);
+        data.settings = toJson(result.settings);
+      }
+
+      const after = await tx.country.update({ where: { code: countryCode }, data });
+      const snapshot = (c: typeof before) => ({ enabled: c.enabled, languages: c.languages, settings: parseCountrySettings(c.settings) });
+      await tx.controlChange.create({
+        data: {
+          entityType: 'Country',
+          entityId: countryCode,
+          action: 'COUNTRY_CHANGED',
+          before: toJson(snapshot(before)),
+          after: toJson(snapshot(after)),
+          reason: reason.trim(),
+          actorId: actor.userId,
+        },
+      });
+      return { ...after, settings: parseCountrySettings(after.settings) };
+    });
   }
 
   // -------------------------------------------------------------------
