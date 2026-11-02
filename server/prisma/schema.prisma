@@ -706,6 +706,16 @@ model MediaAsset {
   height           Int?
   durationSeconds  Int?
   qualityFlags     Json?
+  /// Declared at upload start and checked when the upload is complete.
+  contentType      String?
+  sizeBytes        Int?
+  /// Resumable upload: the file is sent in this many parts of partSizeBytes each (ADR 0009).
+  partCount        Int                                    @default(1)
+  partSizeBytes    Int?
+  /// The occupant agreed to interior photos being taken (Specification 5.3).
+  occupantConsent  Boolean                                @default(false)
+  /// The Idempotency-Key the upload was started with, so repeating the request resumes the same upload.
+  idempotencyKey   String?
   uploadedById     String                                 @db.Uuid
   createdAt        DateTime                               @default(now())
   removedAt        DateTime?
@@ -715,8 +725,10 @@ model MediaAsset {
   unitPart   UnitPart? @relation(fields: [unitPartId], references: [id])
   uploadedBy User      @relation(fields: [uploadedById], references: [id])
 
+  @@unique([uploadedById, idempotencyKey])
   @@index([perceptualHash])
   @@index([unitId, unitPartId])
+  @@index([status])
   @@index([captureLocation], map: "MediaAsset_captureLocation_gist", type: Gist)
 }
 

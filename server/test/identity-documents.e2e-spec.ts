@@ -132,7 +132,7 @@ describe('Identity documents and the verification queue (API)', () => {
       await api().put(path).set('Content-Type', 'image/png').send(Buffer.concat([PHOTO, PHOTO])).expect(413);
     });
 
-    it('accepts only the country’s identity document types, and only identity documents so far', async () => {
+    it('accepts only the country’s identity document types; ownership documents need a building; dispute evidence is not open yet', async () => {
       const p = await person();
       const body = { purpose: 'IDENTITY', contentType: 'image/jpeg', sizeBytes: 10, sha256: sha(PHOTO) };
       expect((await api().post('/v1/documents').set(bearer(p.token)).send({ ...body, documentTypeCode: 'NIN' }).expect(400)).body.code).toBe(
@@ -140,6 +140,10 @@ describe('Identity documents and the verification queue (API)', () => {
       );
       expect(
         (await api().post('/v1/documents').set(bearer(p.token)).send({ ...body, documentTypeCode: 'SURVEY_PLAN', purpose: 'OWNERSHIP' }).expect(400)).body
+          .message,
+      ).toMatch(/buildingId/);
+      expect(
+        (await api().post('/v1/documents').set(bearer(p.token)).send({ ...body, documentTypeCode: 'SURVEY_PLAN', purpose: 'DISPUTE_EVIDENCE' }).expect(400)).body
           .code,
       ).toBe('PURPOSE_NOT_AVAILABLE');
     });
