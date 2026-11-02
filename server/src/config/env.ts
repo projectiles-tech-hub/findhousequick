@@ -59,6 +59,12 @@ const envSchema = z.object({
     .enum(['true', 'false'])
     .default('true')
     .transform((v) => v === 'true'),
+  /**
+   * How many proxies (such as Cloudflare and a web server) stand in front of the API. The server then takes the
+   * visitor's address from the address header those proxies add, which the viewing limits need (decision 52).
+   * 0 means none: the address is taken from the connection itself.
+   */
+  TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),
   /** The sender shown on emails, e.g. "FindHouseQuick <no-reply@findhousequick.com>". */
   EMAIL_FROM: z.string().min(3).default('FindHouseQuick <no-reply@findhousequick.com>'),
 }).superRefine((env, ctx) => {

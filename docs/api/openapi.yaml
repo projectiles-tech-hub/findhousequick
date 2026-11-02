@@ -1230,7 +1230,7 @@ paths:
   /listings/{listingId}/related:
     get:
       tags: [Listings]
-      summary: Similar properties and more in the same area, for the property page (decision 77)
+      summary: Similar properties and more in the same area, for the property page (decisions 77 and 80; built)
       description: |
         Other live listings to show beside a listing: `similar` (same type, similar rent, nearby) and
         `nearby` (other listings in the same area). Each card shows that listing's own cover photo and
@@ -1258,19 +1258,25 @@ paths:
       tags: [Listings]
       summary: Property page
       description: |
-        Everyone gets the full page (decision 75). For signed-out visitors, `lister` is null and
-        `savedPlaceDistances` is empty. The exact location is returned only after an inspection is
-        confirmed. Viewing is limited per account, and for signed-out visitors per device and network
-        address (decisions 52 and 75).
+        Those who manage the listing get its owner view (`ListingOwnerView`), whatever its state. Everyone
+        else gets the property page of a live listing, in full (decision 75). For signed-out visitors,
+        `lister` is null and `savedPlaceDistances` is empty. The exact location is returned only after an
+        inspection is confirmed (part 4). Opening property pages is limited per hour, per account or,
+        without sign-in, per device (`X-Device-Id`) and network address (decisions 52 and 75; ADR 0010).
+        Built in step 5, part 2.
       security: [{}, { bearer: [] }]
       parameters: [{ $ref: "#/components/parameters/ListingId" }]
       responses:
         "200":
-          description: Property page (without the lister when signed out).
+          description: Property page (without the lister when signed out), or the owner view for those who manage it.
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/ListingPublicView" }
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/ListingPublicView"
+                  - $ref: "#/components/schemas/ListingOwnerView"
         "404": { description: Not found or not live. }
+        "429": { description: "`code` VIEW_LIMIT, with `retryAfterSeconds`." }
     patch:
       tags: [Listings]
       summary: Edit a draft, or edit text and fees of a live listing (fee changes are logged)
@@ -1383,9 +1389,11 @@ paths:
       tags: [Search]
       summary: Search live listings around a point, inside a map area, or near a landmark
       description: |
-        Exactly one of: `near` (with `radiusM`) for "around me" and landmark search, or `bbox` for
-        map search. Results include distance when `near` is used. Pins for the map are returned
-        grouped when zoomed out (`clusters`).
+        At most one of: `near` (with `radiusM`; `source` says whether it is the phone's location or a
+        landmark) for "around me" and landmark search, or `bbox` for map search; or neither, with `area`
+        or filters alone. Results include distance when `near` is used, rounded to 100 metres, and an
+        approximate position until an inspection is confirmed (ADR 0010). Below zoom 13, map pins are
+        returned grouped (`clusters`), each at the centre of its grid square. Built in step 5, part 2.
         Signed-out callers get the same results as signed-in users (decision 75). The "around me" location is never stored or logged (Specification 15.2).
       security: [{}, { bearer: [] }]
       parameters:
@@ -1396,6 +1404,14 @@ paths:
         - name: radiusM
           in: query
           schema: { type: integer, minimum: 100, maximum: 50000, default: 1000 }
+        - name: source
+          in: query
+          description: What `near` is. AROUND_ME needs the switch search.around_me; LANDMARK needs search.landmark.
+          schema: { type: string, enum: [AROUND_ME, LANDMARK], default: AROUND_ME }
+        - name: area
+          in: query
+          description: An area name, e.g. GRA, for the public search pages.
+          schema: { type: string, maxLength: 80 }
         - name: bbox
           in: query
           description: "south,west,north,east"
@@ -1456,6 +1472,9 @@ paths:
     get:
       tags: [Search]
       summary: Find areas and landmarks by name (for landmark search)
+      description: |
+        Area names and landmarks typed in by listers, starting with the text, in switched-on cities.
+        Full place search needs the maps provider (ADR 0010). Built in step 5, part 2.
       security: [{}, { bearer: [] }]
       parameters:
         - name: q
@@ -1491,7 +1510,10 @@ paths:
               schema: { type: array, items: { $ref: "#/components/schemas/SavedSearch" } }
     post:
       tags: [Saved]
-      summary: Save an area with filters; alerts arrive when a matching listing goes live
+      summary: Save an area with filters; alerts arrive when a matching listing goes live (alerts sent from part 3)
+      description: |
+        The area is either `polygon` (at least 3 points) or `circle` (`centre` and `radiusM`); it is always
+        returned as a polygon. At most 20 per user (409 TOO_MANY).
       x-feature: search.saved_alerts
       requestBody:
         required: true

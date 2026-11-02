@@ -76,6 +76,14 @@ export class ListingsService {
     }
   }
 
+  /** Whether the user may manage the listing's building (and so sees the owner view). */
+  async mayManage(user: RequestUser, listingId: string): Promise<boolean> {
+    return this.findManaged(user, listingId).then(
+      () => true,
+      () => false,
+    );
+  }
+
   async get(user: RequestUser, listingId: string) {
     await this.findManaged(user, listingId);
     return this.ownerView(listingId);

@@ -121,6 +121,22 @@ Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build 
     "occupied" detail on units); the property page for tenants (part 2); a real storage provider adapter (Cloudflare
     R2) once the account is opened.
 
+- **Release 1 step 5, part 2 (search, the property page and saved items)**: in pull request #48, awaiting
+  approval. Built on pull requests #46 and #47, so it is merged after them. Plan in
+  `docs/adr/0010-search-and-the-property-page.md`.
+  - Search: around me, landmark, map (grouped pins when zoomed out) and area, with every filter.
+  - Positions are approximate and distances rounded until an inspection is confirmed.
+  - The property page in full for everyone, with the lister and saved-place distances for signed-in users only
+    (decisions 75 and 80).
+  - Similar and nearby listings (decisions 77 and 80); viewing limits per account and per device in Redis
+    (decision 52), with the new server setting `TRUST_PROXY_HOPS`.
+  - Saved areas, saved places (decision 48) and favourites.
+  - Still to do from this part:
+    - a maps provider adapter (Google Maps or Mapbox) for place search, nearby amenities and travel times; until
+      then amenities are empty and distances are straight lines;
+    - alerts for saved areas (part 3);
+    - the exact position after a confirmed inspection (part 4).
+
 ## Small follow-ups
 
 - Technical points from the specification check (finding 21): move rate limits to Redis (they are still counted in
@@ -191,15 +207,13 @@ Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build 
    of the building's location with the first photos (with media upload, step 5); admin endpoints to switch cities
    on (switched on in the database for now, see `docs/DEPLOYMENT.md`).
 5. **Step 5, in five parts** (ADR 0009). Part 1, documents and media upload, agent authority, listings and
-   submission: in pull request #47. Then part 2, search and the property page
-   (signed-out visitors see listings in full, without the lister, decision 75; similar and nearby listings,
-   decisions 77 and 80; viewing limits per account, and per device and network address when signed out, in Redis,
-   decisions 52 and 75; saved
-   places and travel distance, decision 48), saved items, messaging with the live connection (decision 47) and
-   calls inside the app (decision 44, new feature switch `contact.in_app_call`), inspections with time slots
-   (decision 45), notifications (decision 46), reports, review tasks with badge removal and bans (decision 51),
-   the Release 1 automatic checks (decision 58), fee types shown on listings as a country setting (decision 55),
-   and the public website code structure with listing summaries (decision 39).
+   submission: in pull request #47. Part 2, search, the property page and saved items: in pull request #48. Then:
+   - part 3: messaging with the live connection (decision 47), calls inside the app (decision 44, new feature switch
+     `contact.in_app_call`), notifications (decision 46) and alerts for saved areas;
+   - part 4: inspections with time slots (decision 45), reports, review tasks with badge removal and bans
+     (decision 51), the Release 1 automatic checks and risk score (decision 58), and fee types shown on listings as
+     a country setting (decision 55);
+   - part 5: the public website code structure, with the public search and listing pages (decisions 75 and 77).
 5a. **Scouts** (decisions 70 to 72; plan in `docs/adr/0008-scouts-and-referral-rewards.md`), after buildings and
     listings (steps 4 and 5): opting in, reporting vacant properties, inviting landlords, the referral record, the
     conflict checks and the staff referral screens, behind the switch `growth.scouts`. The scout routes are added

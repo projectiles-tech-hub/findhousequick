@@ -18,6 +18,7 @@ GitHub repository secrets, **never in the code**. `server/.env.example` shows th
 | `PORT` | No (default 3000) | Port the API listens on | Usually set by the host | |
 | `DATABASE_URL` | Yes | Address and password of the PostgreSQL database (with PostGIS) | Given by the database host | **Secret** |
 | `REDIS_URL` | Yes | Address and password of Redis | Given by the Redis host | **Secret.** Background jobs run on it (from the identity documents pull request) |
+| `TRUST_PROXY_HOPS` | **Yes behind proxies** (default `0`) | How many proxies stand in front of the API, such as Cloudflare and a web server (ADR 0010) | e.g. `2` for Cloudflare in front of nginx; `0` when nothing is in front | Without it, every signed-out visitor seems to come from the proxy's address and all share one viewing limit (decision 52), so the site soon refuses them. Set it to exactly the number of proxies: one too many lets visitors fake their address |
 | `RUN_BACKGROUND_JOBS` | No (default `true`) | Whether this server runs background jobs, such as deleting identity photos whose retention period has ended | `true` or `false` | Leave `true` on at least one server. With several servers each job still runs once |
 | `STORAGE_PROVIDER` | Yes | Where private documents (identity photos, later ownership documents) are kept | `local` for development only | `local` keeps files in a folder and is refused in production. A real provider (Cloudflare R2) is added before any pilot (ADR 0007) |
 | `STORAGE_LOCAL_DIR` | No (default `.private-storage`) | Folder used by the `local` storage provider | A folder path | Development only |
@@ -40,6 +41,9 @@ change is recorded with the values before and after. They need nothing set on th
 
 | Setting | Default | What it is | Where it is changed | Notes |
 | --- | --- | --- | --- | --- |
+| `listingViewsPerHour` | 120 | Property pages one signed-in account may open in an hour (decision 52) | `PATCH /v1/admin/platform-settings` | 10 to 10,000. Counted in Redis (ADR 0010) |
+| `signedOutListingViewsPerHour` | 60 | Property pages one device and network address may open in an hour without signing in (decisions 52 and 75) | `PATCH /v1/admin/platform-settings` | 10 to 10,000 |
+| `signedOutViewsPerAddressPerHour` | 300 | Property pages one network address may open in an hour without signing in, whatever device it claims | `PATCH /v1/admin/platform-settings` | 10 to 100,000. Raise it if many people share one address, such as a university network |
 | `staffTwoStepMinutes` | 180 (3 hours) | How long a staff device's second step lasts before it must be done again | `PATCH /v1/admin/platform-settings` | Decision 32. Allowed from 15 to 1440 minutes. Reaches every server within 30 seconds |
 
 Country settings and feature switches are also changed this way (see ADR 0002 and the country controls).
@@ -62,6 +66,7 @@ The country settings used by photo and video upload (ADR 0009):
 | --- | --- | --- | --- |
 | `listings.maxCaptureAgeHours` | 72 | A photo or video must be uploaded within this many hours of being taken | 1 to 720 |
 | `listings.captureRadiusMetres` | 100 | A photo or video must be taken within this many metres of the building, plus the phone's reported accuracy | 10 to 1000 |
+| `listings.approximateLocationMetres` | 300 | Before an inspection is confirmed, a listing's map position is moved by up to this many metres, the same way every time (Specification 4.3; ADR 0010) | 100 to 2000 |
 | `listings.confirmAvailabilityDays` | 14 | A live listing expires unless the lister confirms it is still available within this many days | 7 to 14 (Specification 6.6) |
 
 ## 2. Outside accounts

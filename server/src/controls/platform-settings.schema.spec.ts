@@ -2,8 +2,12 @@ import { parsePlatformSettings, platformSettingsChangeSchema } from './platform-
 
 describe('platform settings', () => {
   it('defaults the staff second step to 3 hours (decision 32)', () => {
-    expect(parsePlatformSettings(undefined)).toEqual({ staffTwoStepMinutes: 180 });
-    expect(parsePlatformSettings({})).toEqual({ staffTwoStepMinutes: 180 });
+    expect(parsePlatformSettings(undefined)).toMatchObject({ staffTwoStepMinutes: 180 });
+    expect(parsePlatformSettings({})).toMatchObject({ staffTwoStepMinutes: 180 });
+  });
+
+  it('defaults the viewing limits on property pages (decisions 52 and 75)', () => {
+    expect(parsePlatformSettings({})).toMatchObject({ listingViewsPerHour: 120, signedOutListingViewsPerHour: 60, signedOutViewsPerAddressPerHour: 300 });
   });
 
   it('accepts 15 minutes to 24 hours, in whole minutes', () => {

@@ -11,6 +11,12 @@ export const platformSettingsSchema = z.object({
    * Allowed from 15 minutes to 24 hours.
    */
   staffTwoStepMinutes: z.number().int().min(15).max(24 * 60).default(180),
+  /** Property pages one signed-in account may open in an hour, against copying (decision 52). */
+  listingViewsPerHour: z.number().int().min(10).max(10_000).default(120),
+  /** Property pages one device and network address may open in an hour without signing in (decisions 52 and 75). */
+  signedOutListingViewsPerHour: z.number().int().min(10).max(10_000).default(60),
+  /** Property pages one network address may open in an hour without signing in, whatever device it claims. */
+  signedOutViewsPerAddressPerHour: z.number().int().min(10).max(100_000).default(300),
 });
 
 export type PlatformSettings = z.infer<typeof platformSettingsSchema>;
