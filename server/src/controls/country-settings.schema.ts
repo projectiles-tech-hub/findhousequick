@@ -133,3 +133,56 @@ export function publicCountrySettings(s: CountrySettings) {
     formats: s.formats,
   };
 }
+
+/** The full settings with every default filled in; used to tell which keys exist. */
+const DEFAULTS = parseCountrySettings({}) as unknown as Record<string, unknown>;
+
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
+}
+
+/**
+ * Applies a partial change to a country's stored settings and checks the result.
+ *
+ * Groups (fees, escrow, listings and so on) are merged key by key, so a change only needs the values it
+ * alters. Lists and maps (such as acceptedIdTypes or idNumberPatterns) are replaced whole. Unknown settings
+ * are refused rather than quietly dropped, so a typing mistake cannot look like a successful change.
+ *
+ * Returns the settings to store, or the list of problems.
+ */
+export function applyCountrySettingsChange(
+  current: unknown,
+  change: unknown,
+): { ok: true; settings: CountrySettings } | { ok: false; problems: string[] } {
+  if (!isPlainObject(change)) return { ok: false, problems: ['settings: must be an object'] };
+  const problems: string[] = [];
+  const merge = (base: Record<string, unknown>, patch: Record<string, unknown>, shape: Record<string, unknown>, path: string) => {
+    const out: Record<string, unknown> = { ...base };
+    for (const [key, value] of Object.entries(patch)) {
+      const where = path ? `${path}.${key}` : key;
+      if (!(key in shape)) {
+        problems.push(`${where}: not a known setting`);
+        continue;
+      }
+      const model = shape[key];
+      if (isPlainObject(model) && Object.keys(model).length > 0) {
+        if (!isPlainObject(value)) {
+          problems.push(`${where}: must be a group of settings`);
+          continue;
+        }
+        out[key] = merge(isPlainObject(base[key]) ? (base[key] as Record<string, unknown>) : {}, value, model, where);
+      } else {
+        out[key] = value;
+      }
+    }
+    return out;
+  };
+  const stored = isPlainObject(current) ? current : {};
+  const merged = merge(stored, change, DEFAULTS, '');
+  if (problems.length) return { ok: false, problems };
+  const parsed = countrySettingsSchema.safeParse(merged);
+  if (!parsed.success) {
+    return { ok: false, problems: parsed.error.issues.map((i) => `${i.path.join('.') || 'settings'}: ${i.message}`) };
+  }
+  return { ok: true, settings: parsed.data };
+}
