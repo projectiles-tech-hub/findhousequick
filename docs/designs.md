@@ -152,8 +152,8 @@ Penpot screen number, and its row is added to the tables further down with its l
 | 104 | Platform settings | Staff | Not on this platform | Approved (Penpot 104) | Approved (Penpot 104) |
 | 105 | Scout reward payout approvals | Staff | Not on this platform | Approved (Penpot 105) | Approved (Penpot 105) |
 | 106 | Home | Public website | Not on this platform | Approved: the website layout of screen 1 (Penpot 01) | Not on this platform |
-| 107 | Search results (summaries) | Public website | Not on this platform | Approved (Penpot 107) | Not on this platform |
-| 108 | Listing summary page | Public website | Not on this platform | Approved (Penpot 108) | Not on this platform |
+| 107 | Search results | Public website | Not on this platform | Approved (Penpot 107) | Not on this platform |
+| 108 | Listing page | Public website | Not on this platform | Approved (Penpot 108) | Not on this platform |
 | 109 | Create account or sign in prompt | Public website | Not on this platform | Approved (Penpot 109) | Not on this platform |
 | 110 | Help | Public website | Not on this platform | Approved (Penpot 110) | Not on this platform |
 | 111 | Terms of use | Public website | Not on this platform | Approved (Penpot 111) | Not on this platform |

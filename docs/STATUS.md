@@ -115,6 +115,8 @@ Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build 
 - A company dollar card, so the hosting account (and the test system) can be opened (decision 42).
 - Scouts and the referral reward (decisions 70 to 72): Decisions Log open points 16, 18 and 19: the reward amount
   and, before it goes live, state estate agency rules and withholding tax. The release is settled (decision 72).
+- Property media (decision 76, open point 20): whether the other limits in Specification 15.3 change (never sold,
+  never shared with other companies, never used to train artificial intelligence).
 - Decisions Log open points: the five escrow settings, escrow legal structure, launch city, partner API,
   mention of the Agent Emma channel in the launch plan, budget, hiring.
 
@@ -168,7 +170,9 @@ Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build 
    of the building's location with the first photos (with media upload, step 5); admin endpoints to switch cities
    on (switched on in the database for now, see `docs/DEPLOYMENT.md`).
 5. Documents and media upload (private storage adapter), listings and submission, search and the property page
-   (summary only for signed-out visitors, decision 39; viewing limits per account in Redis, decision 52; saved
+   (signed-out visitors see listings in full, without the lister, decision 75; similar and nearby listings,
+   decision 77; viewing limits per account, and per device and network address when signed out, in Redis,
+   decisions 52 and 75; saved
    places and travel distance, decision 48), saved items, messaging with the live connection (decision 47) and
    calls inside the app (decision 44, new feature switch `contact.in_app_call`), inspections with time slots
    (decision 45), notifications (decision 46), reports, review tasks with badge removal and bans (decision 51),
