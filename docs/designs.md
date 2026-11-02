@@ -213,7 +213,7 @@ All with a line height of 1.2. The public website pages also use a page heading 
 
 ### Figma file for pages 107 and 108 (decision 78)
 
-Pages 107 and 108 were redrawn in Figma, in the file "FindHouseQuick: Public pages 107 and 108" ([open the file](https://www.figma.com/design/NaB8jOcBvSM3DW08fEcbZe)), because the Penpot connector kept dropping. The file carries the colours and text styles above as Figma colour variables and text styles, and its own copies of the buttons, chips, badges, listing card, service tile, icons, header and footer. All other designs stay in Penpot.
+Pages 107 and 108 were redrawn in Figma, in the file "FindHouseQuick: Public pages 107 and 108" ([open the file](https://www.figma.com/design/NaB8jOcBvSM3DW08fEcbZe)), because the Penpot connector kept dropping. The file holds only the two pages, drawn as they will look, using the colours and text styles above; the design system itself stays in Penpot. All other designs stay in Penpot.
 
 ## Screens
 
