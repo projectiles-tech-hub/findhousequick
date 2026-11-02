@@ -152,8 +152,8 @@ Penpot screen number, and its row is added to the tables further down with its l
 | 104 | Platform settings | Staff | Not on this platform | Approved (Penpot 104) | Approved (Penpot 104) |
 | 105 | Scout reward payout approvals | Staff | Not on this platform | Approved (Penpot 105) | Approved (Penpot 105) |
 | 106 | Home | Public website | Not on this platform | Approved: the website layout of screen 1 (Penpot 01) | Not on this platform |
-| 107 | Search results | Public website | Not on this platform | Approved (Penpot 107) | Not on this platform |
-| 108 | Listing page | Public website | Not on this platform | Approved (Penpot 108) | Not on this platform |
+| 107 | Search results | Public website | Not on this platform | Redrawn in Figma (decisions 75 to 78); waiting for review | Not on this platform |
+| 108 | Listing page | Public website | Not on this platform | Redrawn in Figma (decisions 75 to 78); waiting for review | Not on this platform |
 | 109 | Create account or sign in prompt | Public website | Not on this platform | Approved (Penpot 109) | Not on this platform |
 | 110 | Help | Public website | Not on this platform | Approved (Penpot 110) | Not on this platform |
 | 111 | Terms of use | Public website | Not on this platform | Approved (Penpot 111) | Not on this platform |
@@ -179,6 +179,41 @@ page and names the part (board) it is for, so Penpot can go straight to it.
 | Navigation (bottom bar for landlords and agents) | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=a1d0afb0-4097-80c4-8008-d67477c131f7&board-id=a1d0afb0-4097-80c4-8008-d6744914e63e) | Approved | Approved by Emmanuel on 24 October 2026 with the listing creation screens. Added with the listing creation screens: five tabs (Search, Properties, Messages, Inspections, Me), in the same style as the approved tenant bar |
 | Side navigation (staff) | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87ff1edbdef&board-id=7edfee8f-ebaa-8084-8008-d88473e0fe58) | Approved | Added with the staff screens: every staff section, grouped (overview, people, review queue, enforcement, controls, scouts); the current page highlighted in green. At tablet width it folds into a menu button. |
 | Window title bar (desktop software) | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=7edfee8f-ebaa-8084-8008-d87ff1edbdef&board-id=7edfee8f-ebaa-8084-8008-d880c7216cab) | Approved | Added with the staff screens: the desktop software's window bar with minimise, maximise and close; the window can be resized (decision 74). |
+
+### Values (recorded 2 November 2026)
+
+Copied from the Penpot design system so they never depend on the Penpot connector. Font: Source Sans 3.
+
+| Colour | Code | | Colour | Code |
+| --- | --- | --- | --- | --- |
+| Green 700 (primary) | #0B6B3A | | Verified blue | #1D4ED8 |
+| Green 800 (pressed) | #08502B | | Info tint | #E6EDFD |
+| Green 50 (tint) | #E7F3EC | | Success | #15803D |
+| Ink 900 (text) | #111827 | | Success tint | #E3F4E8 |
+| Ink 600 (secondary text) | #4B5563 | | Warning | #B45309 |
+| Ink 400 (disabled) | #9CA3AF | | Warning tint | #FEF3E2 |
+| Background | #F6F6F3 | | Error | #B91C1C |
+| Surface | #FFFFFF | | Error tint | #FDE8E8 |
+| Border | #B8BEC7 | | Error pressed | #8F1717 |
+| Divider | #E5E7EB | | Amber 500 | #F2A900 |
+| | | | Amber 100 | #FDF0CC |
+
+| Text style | Weight | Size |
+| --- | --- | --- |
+| Display | 700 | 28 |
+| Title | 700 | 22 |
+| Price | 700 | 20 |
+| Subtitle | 500 | 18 |
+| Body | 400 | 16 |
+| Button | 500 | 16 |
+| Label | 500 | 14 |
+| Body small | 400 | 14 |
+
+All with a line height of 1.2. The public website pages also use a page heading of 36 (700) and a section heading of 24 (700).
+
+### Figma file for pages 107 and 108 (decision 78)
+
+Pages 107 and 108 were redrawn in Figma, in the file "FindHouseQuick: Public pages 107 and 108" ([open the file](https://www.figma.com/design/NaB8jOcBvSM3DW08fEcbZe)), because the Penpot connector kept dropping. The file carries the colours and text styles above as Figma colour variables and text styles, and its own copies of the buttons, chips, badges, listing card, service tile, icons, header and footer. All other designs stay in Penpot.
 
 ## Screens
 
@@ -574,12 +609,12 @@ Page "01 Sign-up and sign-in (phone)": [open the page](https://design.penpot.app
 | 105 Scout reward payout approvals | Staff | Website, 1366 | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=698d2d89-aebf-80e6-8008-d94ff9c7afde&board-id=698d2d89-aebf-80e6-8008-d953673a50cb) | Approved | Rewards waiting for staff approval with the scout checks; paid from Release 2 (decision 72); amounts are placeholders |
 | 105 Scout reward payout approvals | Staff | Website, 768 | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=698d2d89-aebf-80e6-8008-d94ff9c7afde&board-id=698d2d89-aebf-80e6-8008-d9539be77259) | Approved | Rewards waiting for staff approval with the scout checks; paid from Release 2 (decision 72); amounts are placeholders |
 | 105 Scout reward payout approvals | Staff | Desktop software | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=698d2d89-aebf-80e6-8008-d94ff9c7afde&board-id=698d2d89-aebf-80e6-8008-d953bcaa379f) | Approved | Rewards waiting for staff approval with the scout checks; paid from Release 2 (decision 72); amounts are placeholders |
-| 107 Search results | Public website | Website, 1366 | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=91585f0a-2371-808c-8008-dc4ce00de5e6&board-id=91585f0a-2371-808c-8008-dc4d0e76e324) | Approved | Summaries only for visitors (decision 39): cover photo, rent, area, rooms and badges; a band invites them to create a free account |
-| 107 Search results | Public website | Website, 768 | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=91585f0a-2371-808c-8008-dc4ce00de5e6&board-id=91585f0a-2371-808c-8008-dc4d43369e98) | Approved | Summaries only for visitors (decision 39): cover photo, rent, area, rooms and badges; a band invites them to create a free account |
-| 107 Search results | Public website | Website, 360 | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=91585f0a-2371-808c-8008-dc4ce00de5e6&board-id=91585f0a-2371-808c-8008-dc4d81287a3c) | Approved | Summaries only for visitors (decision 39): cover photo, rent, area, rooms and badges; a band invites them to create a free account |
-| 108 Listing summary page | Public website | Website, 1366 | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=91585f0a-2371-808c-8008-dc4ce00de5e6&board-id=91585f0a-2371-808c-8008-dc4dba2881df) | Approved | The summary of one listing; everything else is listed as needing a free account (decision 39) |
-| 108 Listing summary page | Public website | Website, 768 | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=91585f0a-2371-808c-8008-dc4ce00de5e6&board-id=429b35ef-9d95-80f4-8008-dc8fecb34e7d) | Approved | The summary of one listing; everything else is listed as needing a free account (decision 39) |
-| 108 Listing summary page | Public website | Website, 360 | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=91585f0a-2371-808c-8008-dc4ce00de5e6&board-id=b225621f-300e-80b2-8008-dc909ba774f8) | Approved | The summary of one listing; everything else is listed as needing a free account (decision 39) |
+| 107 Search results | Public website | Website, 1366 | [Open in Figma](https://www.figma.com/design/NaB8jOcBvSM3DW08fEcbZe?node-id=6-25) | Waiting for review | Full results for signed-out visitors; alerts, why rent here, list your property, newly listed, popular areas and services (decisions 75 and 77) |
+| 107 Search results | Public website | Website, 768 | [Open in Figma](https://www.figma.com/design/NaB8jOcBvSM3DW08fEcbZe?node-id=8-588) | Waiting for review | Full results for signed-out visitors; alerts, why rent here, list your property, newly listed, popular areas and services (decisions 75 and 77) |
+| 107 Search results | Public website | Website, 360 | [Open in Figma](https://www.figma.com/design/NaB8jOcBvSM3DW08fEcbZe?node-id=8-1143) | Waiting for review | Full results for signed-out visitors; alerts, why rent here, list your property, newly listed, popular areas and services (decisions 75 and 77) |
+| 108 Listing page | Public website | Website, 1366 | [Open in Figma](https://www.figma.com/design/NaB8jOcBvSM3DW08fEcbZe?node-id=7-25) | Waiting for review | Full listing for signed-out visitors without the lister; costs, photos by room, details, location, similar homes, more in the area and services (decisions 75 to 77) |
+| 108 Listing page | Public website | Website, 768 | [Open in Figma](https://www.figma.com/design/NaB8jOcBvSM3DW08fEcbZe?node-id=9-444) | Waiting for review | Full listing for signed-out visitors without the lister; costs, photos by room, details, location, similar homes, more in the area and services (decisions 75 to 77) |
+| 108 Listing page | Public website | Website, 360 | [Open in Figma](https://www.figma.com/design/NaB8jOcBvSM3DW08fEcbZe?node-id=9-981) | Waiting for review | Full listing for signed-out visitors without the lister; costs, photos by room, details, location, similar homes, more in the area and services (decisions 75 to 77) |
 | 109 Create account or sign in prompt | Public website | Website, 1366 | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=91585f0a-2371-808c-8008-dc4ce00de5e6&board-id=b225621f-300e-80b2-8008-dc90b2ed164c) | Approved | Opens over the listing summary when a visitor asks for more |
 | 109 Create account or sign in prompt | Public website | Website, 768 | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=91585f0a-2371-808c-8008-dc4ce00de5e6&board-id=707e98f5-9ce1-8080-8008-dc934b777d9a) | Approved | Opens over the listing summary when a visitor asks for more |
 | 109 Create account or sign in prompt | Public website | Website, 360 | [Open in Penpot](https://design.penpot.app/#/workspace?team-id=685eebd9-2ce2-80a4-8008-d5ccd136bc96&file-id=41725af0-a889-809a-8008-d5d0a0c28100&page-id=91585f0a-2371-808c-8008-dc4ce00de5e6&board-id=707e98f5-9ce1-8080-8008-dc93806b9115) | Approved | Opens over the listing summary when a visitor asks for more |
