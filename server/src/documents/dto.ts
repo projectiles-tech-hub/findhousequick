@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsIn, IsInt, Matches, Max, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsUUID, Matches, Max, Min } from 'class-validator';
 
 export const DOCUMENT_CONTENT_TYPES = ['application/pdf', 'image/jpeg', 'image/png'] as const;
 export const DOCUMENT_PURPOSES = ['IDENTITY', 'OWNERSHIP', 'AUTHORITY_LETTER', 'DISPUTE_EVIDENCE', 'OTHER'] as const;
@@ -13,9 +13,14 @@ export class StartDocumentUploadDto {
   @Matches(/^[A-Z0-9_]{2,60}$/, { message: 'documentTypeCode must be a document type code such as DRIVERS_LICENCE' })
   documentTypeCode!: string;
 
-  @ApiProperty({ enum: DOCUMENT_PURPOSES, description: 'Only IDENTITY is open so far; the others come with properties' })
+  @ApiProperty({ enum: DOCUMENT_PURPOSES, description: 'IDENTITY, OWNERSHIP and AUTHORITY_LETTER are open; the others come later' })
   @IsIn(DOCUMENT_PURPOSES)
   purpose!: (typeof DOCUMENT_PURPOSES)[number];
+
+  @ApiPropertyOptional({ description: 'The building an ownership document or authority letter is for' })
+  @IsOptional()
+  @IsUUID()
+  buildingId?: string;
 
   @ApiProperty({ enum: DOCUMENT_CONTENT_TYPES })
   @IsIn(DOCUMENT_CONTENT_TYPES)

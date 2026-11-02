@@ -399,7 +399,7 @@ describe('Staff: accounts, two-step login and feature rules (API)', () => {
       const manager = await staff(['COUNTRY_MANAGER'], ['NG']);
       try {
         const current = await api().get('/v1/admin/platform-settings').set(bearer(admin.token)).expect(200);
-        expect(current.body).toEqual({ staffTwoStepMinutes: 180 });
+        expect(current.body).toMatchObject({ staffTwoStepMinutes: 180 });
         await api().get('/v1/admin/platform-settings').set(bearer(manager.token)).expect(403);
         await api().patch('/v1/admin/platform-settings').set(bearer(manager.token)).send({ settings: { staffTwoStepMinutes: 60 }, reason: 'Test' }).expect(403);
 
@@ -412,7 +412,7 @@ describe('Staff: accounts, two-step login and feature rules (API)', () => {
           .set(bearer(admin.token))
           .send({ settings: { staffTwoStepMinutes: 60 }, reason: 'Tighter for the pilot' })
           .expect(200);
-        expect(changed.body).toEqual({ staffTwoStepMinutes: 60 });
+        expect(changed.body).toMatchObject({ staffTwoStepMinutes: 60 });
         const refused = await api().get('/v1/admin/staff').set(bearer(other.token)).expect(403);
         expect(refused.body.code).toBe('TWO_STEP_REQUIRED');
 
@@ -437,7 +437,7 @@ describe('Staff: accounts, two-step login and feature rules (API)', () => {
       }
       await api().patch('/v1/admin/platform-settings').set(bearer(admin.token)).send({ settings: { staffTwoStepMinutes: 120 } }).expect(400);
       const unchanged = await api().get('/v1/admin/platform-settings').set(bearer(admin.token)).expect(200);
-      expect(unchanged.body).toEqual({ staffTwoStepMinutes: 180 });
+      expect(unchanged.body).toMatchObject({ staffTwoStepMinutes: 180 });
     });
   });
 

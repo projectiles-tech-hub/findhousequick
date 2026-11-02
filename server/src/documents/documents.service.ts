@@ -36,9 +36,8 @@ export class DocumentsService {
   ) {}
 
   async startUpload(user: RequestUser, dto: StartDocumentUploadDto, idempotencyKey: string | undefined) {
-    // Ownership and authority documents need buildings, which arrive in a later step.
-    if (dto.purpose !== 'IDENTITY') {
-      throw apiError(400, 'PURPOSE_NOT_AVAILABLE', 'Only identity documents can be uploaded at the moment.');
+    if (dto.purpose === 'DISPUTE_EVIDENCE' || dto.purpose === 'OTHER') {
+      throw apiError(400, 'PURPOSE_NOT_AVAILABLE', 'This kind of document cannot be uploaded yet.');
     }
     if (idempotencyKey) {
       const earlier = await this.prisma.document.findUnique({
@@ -47,14 +46,25 @@ export class DocumentsService {
       if (earlier) return this.ticketFor(earlier);
     }
 
-    const settings = await this.controls.getCountrySettings(user.countryCode);
+    // Identity documents belong to the user's own country; ownership and authority documents to the building's.
+    let countryCode = user.countryCode;
+    let buildingId: string | null = null;
+    if (dto.purpose !== 'IDENTITY') {
+      if (!dto.buildingId) throw apiError(400, 'BAD_REQUEST', 'buildingId is needed for ownership and authority documents.');
+      const building = await this.buildingFor(user, dto.purpose, dto.buildingId);
+      countryCode = building.countryCode;
+      buildingId = building.id;
+    } else if (dto.buildingId) {
+      throw apiError(400, 'BAD_REQUEST', 'Identity documents are not tied to a building.');
+    }
+
+    const settings = await this.controls.getCountrySettings(countryCode);
     const type = await this.prisma.documentType.findUnique({
-      where: { countryCode_code: { countryCode: user.countryCode, code: dto.documentTypeCode } },
+      where: { countryCode_code: { countryCode, code: dto.documentTypeCode } },
     });
-    if (!type || !type.enabled || type.purpose !== dto.purpose || !settings.verification.idDocumentTypes.includes(type.code)) {
-      throw apiError(400, 'DOCUMENT_TYPE_NOT_ACCEPTED', 'This type of document is not accepted here.', {
-        acceptedDocumentTypes: settings.verification.idDocumentTypes,
-      });
+    const accepted = await this.acceptedTypes(dto.purpose, countryCode, settings.verification.idDocumentTypes);
+    if (!type || !type.enabled || !accepted.includes(type.code)) {
+      throw apiError(400, 'DOCUMENT_TYPE_NOT_ACCEPTED', 'This type of document is not accepted here.', { acceptedDocumentTypes: accepted });
     }
 
     try {
@@ -63,6 +73,7 @@ export class DocumentsService {
           ownerId: user.id,
           documentTypeId: type.id,
           purpose: dto.purpose,
+          buildingId,
           storageKey: `documents/${user.id}/${randomUUID()}`,
           sha256: dto.sha256,
           contentType: dto.contentType,
@@ -104,6 +115,34 @@ export class DocumentsService {
       include: { documentType: true },
     });
     return toDocumentView(saved);
+  }
+
+  /**
+   * Document types accepted for each purpose (ADR 0009): identity documents from the country setting; ownership
+   * documents from the country's ownership types; for an authority letter, the letter itself and the landlord's
+   * identity document (Specification 3.5).
+   */
+  private async acceptedTypes(purpose: string, countryCode: string, idDocumentTypes: string[]): Promise<string[]> {
+    if (purpose === 'IDENTITY') return idDocumentTypes;
+    const purposes = purpose === 'AUTHORITY_LETTER' ? ['AUTHORITY_LETTER', 'IDENTITY'] : ['OWNERSHIP'];
+    const types = await this.prisma.documentType.findMany({
+      where: { countryCode, enabled: true, purpose: { in: purposes as ('AUTHORITY_LETTER' | 'IDENTITY' | 'OWNERSHIP')[] } },
+      orderBy: { code: 'asc' },
+    });
+    return types.map((t) => t.code);
+  }
+
+  /**
+   * The building a document is for. Ownership documents come from the landlord who owns the building on the platform;
+   * authority letters from an agent. Anyone else is told the building is not found.
+   */
+  private async buildingFor(user: RequestUser, purpose: string, buildingId: string) {
+    const building = await this.prisma.building.findUnique({ where: { id: buildingId }, select: { id: true, countryCode: true, ownerId: true } });
+    const allowed =
+      !!building &&
+      (purpose === 'OWNERSHIP' ? building.ownerId === user.id : purpose === 'AUTHORITY_LETTER' && user.types.includes('AGENT'));
+    if (!building || !allowed) throw apiError(404, 'NOT_FOUND', 'Building not found.');
+    return building;
   }
 
   private async ticketFor(doc: Document) {

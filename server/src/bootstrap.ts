@@ -19,10 +19,14 @@ import { ControlsService } from './controls/controls.service.js';
  */
 export function configureApp(app: INestApplication): INestApplication {
   app.use(helmet());
-  const origins = app.get(ConfigService<Env, true>).get('CORS_ORIGINS', { infer: true });
+  const config = app.get(ConfigService<Env, true>);
+  // Behind proxies, the visitor's address comes from the header they add (TRUST_PROXY_HOPS).
+  const hops = config.get('TRUST_PROXY_HOPS', { infer: true });
+  if (hops > 0) (app.getHttpAdapter().getInstance() as { set(k: string, v: unknown): void }).set('trust proxy', hops);
+  const origins = config.get('CORS_ORIGINS', { infer: true });
   app.enableCors({
     origin: origins,
-    allowedHeaders: ['Authorization', 'Content-Type', 'Idempotency-Key', 'X-Country', 'X-Region', 'X-City'],
+    allowedHeaders: ['Authorization', 'Content-Type', 'Idempotency-Key', 'X-Country', 'X-Region', 'X-City', 'X-Device-Id'],
   });
   // Reads the sign-in token before any guard runs (see src/accounts/auth.ts).
   app.use(authMiddleware(app.get(SessionsService), app.get(PrismaService), app.get(ControlsService)));

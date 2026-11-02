@@ -28,8 +28,10 @@ info:
       `code: VERIFICATION_REQUIRED`, `requiredLevel`, `currentLevel` and `next` (as in `Me`), so the app can
       guide the user. Every action beyond browsing needs at least level 1 (decision 64). Routes show the
       level they need as `x-verification-level`.
-    - **Signed-out visitors** (decision 39) see a summary of each listing only (`ListingSummary`: cover
-      photo, rent, area, number of rooms, badges). Everything else needs an account.
+    - **Signed-out visitors** (decision 75, replacing decision 39) can view every listing in full
+      (`ListingPublicView`), except the lister, which is left out (`lister: null`), and the viewer's own
+      saved-place distances. Every further step (contact, inspections, saving, alerts, payments) needs an
+      account.
     - **Live connection** (decision 47): signed-in apps open `wss://<server>/v1/live`, sending the access
       token as the first message. The server pushes events: `message.created`, `conversation.read`,
       `inspection.updated`, and the call events `call.ringing`, `call.answered`, `call.ended`. When the
@@ -1011,10 +1013,11 @@ paths:
               properties:
                 method: { type: string, enum: [IN_APP_APPROVAL, LETTER] }
                 letterDocumentId: { $ref: "#/components/schemas/Id" }
+                landlordIdDocumentId: { $ref: "#/components/schemas/Id", description: "The landlord's identity document, uploaded as AUTHORITY_LETTER; needed with LETTER" }
                 validUntil: { type: string, format: date-time }
       responses:
         "201":
-          description: Request created.
+          description: "Request created. LETTER also creates an AUTHORITY_CONFIRMATION task: the team calls the landlord before approving." 
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Authority" }
@@ -1060,14 +1063,17 @@ paths:
   /documents:
     post:
       tags: [Documents]
-      summary: Start a private document upload (built for purpose IDENTITY)
+      summary: Start a private document upload (built for IDENTITY, OWNERSHIP and AUTHORITY_LETTER)
       x-verification-level: 1
       description: |
         Returns a short-lived upload address. Send the file there with PUT and `uploadHeaders`. Files go to
         private storage only; they are never publicly reachable. After upload, call
         `/documents/{id}/complete`, which checks the stored file's size and SHA-256 (lower-case hex) against
-        what was declared. Only purpose IDENTITY is open so far (document types in the country setting
-        `verification.idDocumentTypes`); the others open with buildings.
+        what was declared. IDENTITY uses the document types in the country setting
+        `verification.idDocumentTypes`. OWNERSHIP and AUTHORITY_LETTER need `buildingId` (ADR 0009):
+        ownership documents come from the landlord who owns the building, using the country's ownership
+        types; an agent's AUTHORITY_LETTER is either the letter itself or the landlord's identity document.
+        DISPUTE_EVIDENCE and OTHER are not open yet.
       parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
       requestBody:
         required: true
@@ -1090,6 +1096,7 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/UploadTicket" }
         "400": { description: "`code` PURPOSE_NOT_AVAILABLE or DOCUMENT_TYPE_NOT_ACCEPTED (with `acceptedDocumentTypes`)." }
+        "404": { description: "The building is not found, or the user may not add this kind of document to it." }
         "409": { description: "`code` DOCUMENT_ALREADY_UPLOADED: the Idempotency-Key belongs to a finished upload." }
 
   /documents/{documentId}/complete:
@@ -1115,8 +1122,13 @@ paths:
       summary: Start a photo or video upload for one part of the unit
       description: |
         Only media captured with the app's camera is accepted. The app sends the capture time and
-        GPS reading recorded at the moment of capture. Uploads are resumable: large files are sent in
-        parts, and an interrupted upload continues from the last part received.
+        GPS reading recorded at the moment of capture; the capture must be within the country settings
+        `listings.maxCaptureAgeHours` and `listings.captureRadiusMetres` (plus the reported accuracy) of the
+        building. The kind must suit the part: photos for photo parts, VIDEO for the walkthrough;
+        PHOTO_360 and FLOOR_PLAN need their feature switches. Uploads are resumable (ADR 0009): send part n
+        of `partSizeBytes` to `partUrls[n-1]`; asking again with the same Idempotency-Key returns fresh links
+        and `receivedParts`. Media cannot change while the unit's listing is waiting for review, live or
+        paused (409 LISTING_LOCKED). Built in step 5, part 1.
       parameters:
         - { $ref: "#/components/parameters/UnitId" }
         - { $ref: "#/components/parameters/IdempotencyKey" }
@@ -1150,7 +1162,10 @@ paths:
                       mediaId: { $ref: "#/components/schemas/Id" }
                       partSizeBytes: { type: integer }
                       partUrls: { type: array, items: { type: string, format: uri } }
-        "422": { description: "Capture location too far from the building, or capture time too old." }
+                      receivedParts: { type: array, items: { type: integer }, description: Part numbers already received }
+        "400": { description: "`code` UNKNOWN_PART, WRONG_MEDIA_KIND, WRONG_CONTENT_TYPE or FILE_TOO_LARGE." }
+        "409": { description: "`code` LISTING_LOCKED or MEDIA_ALREADY_UPLOADED." }
+        "422": { description: "`code` CAPTURE_TOO_FAR (with `distanceM`), CAPTURE_TOO_OLD or CAPTURE_TIME_INVALID." }
     get:
       tags: [Media]
       summary: Media captured for the unit, grouped by part (owner, agents and staff)
@@ -1171,18 +1186,23 @@ paths:
       parameters: [{ $ref: "#/components/parameters/MediaId" }]
       responses:
         "202":
-          description: Processing started. Status becomes READY or REJECTED (with reasons such as BLURRY or TOO_DARK).
+          description: |
+            Processing started. Status becomes READY or REJECTED (with reasons such as BLURRY, TOO_DARK,
+            LOW_RESOLUTION, TOO_SHORT for a walkthrough under 20 seconds, or UNREADABLE).
           content:
             application/json:
               schema: { $ref: "#/components/schemas/MediaItem" }
+        "400": { description: "`code` UPLOAD_MISMATCH: the file is not the one declared; it is removed, start again." }
+        "409": { description: "`code` UPLOAD_NOT_FOUND, with `receivedParts` and `partCount`." }
 
   /media/{mediaId}:
     delete:
       tags: [Media]
-      summary: Remove a photo or video from a draft listing
+      summary: Remove a photo or video while the unit has no listing waiting for review, live or paused
       parameters: [{ $ref: "#/components/parameters/MediaId" }]
       responses:
         "204": { description: Removed. }
+        "409": { description: "`code` LISTING_LOCKED." }
 
   # ------------------------------------------------------------------
   # Listings
@@ -1207,26 +1227,56 @@ paths:
               schema: { $ref: "#/components/schemas/ListingOwnerView" }
         "409": { description: The unit already has an open listing. }
 
+  /listings/{listingId}/related:
+    get:
+      tags: [Listings]
+      summary: Similar properties and more in the same area, for the property page (decisions 77 and 80; built)
+      description: |
+        Other live listings to show beside a listing: `similar` (same type, similar rent, nearby) and
+        `nearby` (other listings in the same area). Each card shows that listing's own cover photo and
+        links to its own page (decision 76). Open to signed-out visitors.
+      security: [{}, { bearer: [] }]
+      parameters:
+        - { $ref: "#/components/parameters/ListingId" }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 12, default: 6 }
+      responses:
+        "200":
+          description: Related listings.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  similar: { type: array, items: { $ref: "#/components/schemas/ListingCard" } }
+                  nearby: { type: array, items: { $ref: "#/components/schemas/ListingCard" } }
+        "404": { description: Not found or not live. }
+
   /listings/{listingId}:
     get:
       tags: [Listings]
       summary: Property page
       description: |
-        Signed-out visitors get the `ListingSummary` only (decision 39). Signed-in users get the full
-        page; the exact location is returned only after an inspection is confirmed. Viewing is limited
-        per account (decision 52).
+        Those who manage the listing get its owner view (`ListingOwnerView`), whatever its state. Everyone
+        else gets the property page of a live listing, in full (decision 75). For signed-out visitors,
+        `lister` is null and `savedPlaceDistances` is empty. The exact location is returned only after an
+        inspection is confirmed (part 4). Opening property pages is limited per hour, per account or,
+        without sign-in, per device (`X-Device-Id`) and network address (decisions 52 and 75; ADR 0010).
+        Built in step 5, part 2.
       security: [{}, { bearer: [] }]
       parameters: [{ $ref: "#/components/parameters/ListingId" }]
       responses:
         "200":
-          description: Property page (full when signed in, summary when signed out).
+          description: Property page (without the lister when signed out), or the owner view for those who manage it.
           content:
             application/json:
               schema:
                 oneOf:
                   - $ref: "#/components/schemas/ListingPublicView"
-                  - $ref: "#/components/schemas/ListingSummary"
+                  - $ref: "#/components/schemas/ListingOwnerView"
         "404": { description: Not found or not live. }
+        "429": { description: "`code` VIEW_LIMIT, with `retryAfterSeconds`." }
     patch:
       tags: [Listings]
       summary: Edit a draft, or edit text and fees of a live listing (fee changes are logged)
@@ -1248,9 +1298,11 @@ paths:
       summary: Submit for verification
       description: |
         Refused until every required part has its minimum photos and the walkthrough video, ownership
-        documents (landlord) or approved authority (agent) are in place. Runs the automatic checks,
-        sets the risk score and band, and then: GREEN goes live, AMBER goes to desk review, RED
-        needs a site visit.
+        documents (landlord) or approved authority (agent) are in place. Until the automatic checks and
+        risk score are built (step 5, part 4), every submitted listing goes to IN_REVIEW with a
+        LISTING_REVIEW task: a person reviews it before it goes live (ADR 0009). Then the automatic
+        checks set the risk score and band: GREEN goes live, AMBER goes to desk review, RED needs a
+        site visit. Built in step 5, part 1.
       parameters: [{ $ref: "#/components/parameters/ListingId" }]
       responses:
         "200":
@@ -1337,11 +1389,12 @@ paths:
       tags: [Search]
       summary: Search live listings around a point, inside a map area, or near a landmark
       description: |
-        Exactly one of: `near` (with `radiusM`) for "around me" and landmark search, or `bbox` for
-        map search. Results include distance when `near` is used. Pins for the map are returned
-        grouped when zoomed out (`clusters`).
-        **Signed-out callers** (decision 39) get `ListingSummary` items only: no map positions, no
-        distance and no `clusters`. The "around me" location is never stored or logged (Specification 15.2).
+        At most one of: `near` (with `radiusM`; `source` says whether it is the phone's location or a
+        landmark) for "around me" and landmark search, or `bbox` for map search; or neither, with `area`
+        or filters alone. Results include distance when `near` is used, rounded to 100 metres, and an
+        approximate position until an inspection is confirmed (ADR 0010). Below zoom 13, map pins are
+        returned grouped (`clusters`), each at the centre of its grid square. Built in step 5, part 2.
+        Signed-out callers get the same results as signed-in users (decision 75). The "around me" location is never stored or logged (Specification 15.2).
       security: [{}, { bearer: [] }]
       parameters:
         - name: near
@@ -1351,6 +1404,14 @@ paths:
         - name: radiusM
           in: query
           schema: { type: integer, minimum: 100, maximum: 50000, default: 1000 }
+        - name: source
+          in: query
+          description: What `near` is. AROUND_ME needs the switch search.around_me; LANDMARK needs search.landmark.
+          schema: { type: string, enum: [AROUND_ME, LANDMARK], default: AROUND_ME }
+        - name: area
+          in: query
+          description: An area name, e.g. GRA, for the public search pages.
+          schema: { type: string, maxLength: 80 }
         - name: bbox
           in: query
           description: "south,west,north,east"
@@ -1397,11 +1458,7 @@ paths:
                 properties:
                   items:
                     type: array
-                    description: ListingCard when signed in; ListingSummary when signed out.
-                    items:
-                      oneOf:
-                        - $ref: "#/components/schemas/ListingCard"
-                        - $ref: "#/components/schemas/ListingSummary"
+                    items: { $ref: "#/components/schemas/ListingCard" }
                   clusters:
                     type: array
                     items:
@@ -1415,6 +1472,9 @@ paths:
     get:
       tags: [Search]
       summary: Find areas and landmarks by name (for landmark search)
+      description: |
+        Area names and landmarks typed in by listers, starting with the text, in switched-on cities.
+        Full place search needs the maps provider (ADR 0010). Built in step 5, part 2.
       security: [{}, { bearer: [] }]
       parameters:
         - name: q
@@ -1450,7 +1510,10 @@ paths:
               schema: { type: array, items: { $ref: "#/components/schemas/SavedSearch" } }
     post:
       tags: [Saved]
-      summary: Save an area with filters; alerts arrive when a matching listing goes live
+      summary: Save an area with filters; alerts arrive when a matching listing goes live (alerts sent from part 3)
+      description: |
+        The area is either `polygon` (at least 3 points) or `circle` (`centre` and `radiusM`); it is always
+        returned as a polygon. At most 20 per user (409 TOO_MANY).
       x-feature: search.saved_alerts
       requestBody:
         required: true
@@ -1885,8 +1948,10 @@ paths:
       description: |
         IDENTITY_REVIEW and DUPLICATE_RESOLUTION: APPROVE passes the identity check (the user reaches level 2;
         refused with ID_HELD_BY_ANOTHER_ACCOUNT if the ID is verified on another account), REJECT fails it.
-        AGENT_PROFILE_REVIEW: APPROVE or REJECT. Other outcomes and task types answer OUTCOME_NOT_SUPPORTED
-        until their parts are built. Staff never decide their own case (OWN_CASE).
+        AGENT_PROFILE_REVIEW: APPROVE or REJECT. LISTING_REVIEW: APPROVE makes the listing live and starts
+        its availability clock; REJECT returns it to the lister. AUTHORITY_CONFIRMATION: APPROVE or REJECT
+        the agent's authority after calling the landlord. Other outcomes and task types answer
+        OUTCOME_NOT_SUPPORTED until their parts are built. Staff never decide their own case (OWN_CASE).
       parameters:
         - name: taskId
           in: path
@@ -2523,7 +2588,9 @@ components:
 
     ListingSummary:
       type: object
-      description: What signed-out visitors see of a listing (decision 39).
+      description: |
+        A short listing card. No longer used for signed-out visitors (decision 75 replaced decision 39);
+        kept for small places such as notifications.
       properties:
         id: { $ref: "#/components/schemas/Id" }
         coverImage: { type: string, format: uri }
@@ -2613,7 +2680,7 @@ components:
             unit: { $ref: "#/components/schemas/Unit" }
             gallery:
               type: array
-              description: Photos grouped by part, in checklist order. Signed-in users only.
+              description: Photos grouped by part, in checklist order; shown to everyone (decision 75).
               items:
                 type: object
                 properties:
@@ -2640,7 +2707,8 @@ components:
                   name: { type: string }
                   distanceM: { type: integer }
             lister:
-              type: object
+              type: [object, "null"]
+              description: Null for signed-out visitors (decision 75).
               properties:
                 id: { $ref: "#/components/schemas/Id" }
                 displayName: { type: string }

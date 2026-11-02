@@ -258,6 +258,7 @@ model User {
   authoritiesAsOwner  PropertyAuthority[]    @relation("AuthorityLandlord")
   savedSearches       SavedSearch[]
   savedListings       SavedListing[]
+  savedPlaces   SavedPlace[]
   sentMessages        Message[]
   inspectionsAsTenant Inspection[]           @relation("InspectionTenant")
   inspectionsAsHost   Inspection[]           @relation("InspectionHost")
@@ -706,6 +707,16 @@ model MediaAsset {
   height           Int?
   durationSeconds  Int?
   qualityFlags     Json?
+  /// Declared at upload start and checked when the upload is complete.
+  contentType      String?
+  sizeBytes        Int?
+  /// Resumable upload: the file is sent in this many parts of partSizeBytes each (ADR 0009).
+  partCount        Int                                    @default(1)
+  partSizeBytes    Int?
+  /// The occupant agreed to interior photos being taken (Specification 5.3).
+  occupantConsent  Boolean                                @default(false)
+  /// The Idempotency-Key the upload was started with, so repeating the request resumes the same upload.
+  idempotencyKey   String?
   uploadedById     String                                 @db.Uuid
   createdAt        DateTime                               @default(now())
   removedAt        DateTime?
@@ -715,8 +726,10 @@ model MediaAsset {
   unitPart   UnitPart? @relation(fields: [unitPartId], references: [id])
   uploadedBy User      @relation(fields: [uploadedById], references: [id])
 
+  @@unique([uploadedById, idempotencyKey])
   @@index([perceptualHash])
   @@index([unitId, unitPartId])
+  @@index([status])
   @@index([captureLocation], map: "MediaAsset_captureLocation_gist", type: Gist)
 }
 
@@ -814,6 +827,20 @@ model SavedSearch {
   user User @relation(fields: [userId], references: [id])
 
   @@index([area], map: "SavedSearch_area_gist", type: Gist)
+}
+
+/// A place the tenant chose to save, such as an office or school, for travel distances (decision 48).
+/// A tenant's location is never stored unless they save a place (Specification 15.2).
+model SavedPlace {
+  id        String                                @id @default(uuid(7)) @db.Uuid
+  userId    String                                @db.Uuid
+  name      String
+  location  Unsupported("geography(Point, 4326)")
+  createdAt DateTime                              @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 model SavedListing {

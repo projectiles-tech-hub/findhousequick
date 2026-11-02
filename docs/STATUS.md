@@ -84,6 +84,14 @@ Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build 
   107 to 112 are drawn at 1366, 768 and 360 (18 designs) on the Penpot pages "32 Website: 107 to 109 Public
   search and listings" and "33 Website: 110 to 112 Public help and legal".
 
+- **Pages 107 and 108 redrawn** (decisions 75 to 80): in pull request #46, awaiting approval. On 2 November 2026
+  Emmanuel found the public search results (107) and listing (108) pages too thin. They were redrawn in Figma
+  (decision 78), at 1366, 768 and 360: signed-out visitors see full listings without the lister (decision 75), and
+  both pages also show other properties and FindHouseQuick services (decision 77). The Penpot design system values
+  are now written into `docs/designs.md`. Screens 25 (list of results) and 30 (property page) for signed-in users, on the
+  phone app and the website, were redrawn the same way, with the lister shown (decision 80). Still to do: Emmanuel's
+  review of the twelve designs.
+
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
   #13. The server refuses actions above the user's level (`VERIFICATION_REQUIRED`, decision 64); identity
   checks (NIN, selfie, liveness) through a provider adapter, with a test provider for development; one ID on two
@@ -97,6 +105,37 @@ Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build 
   document views recorded with the reason; hourly deletion of photos whose retention period has ended (first
   background job, BullMQ). Still to do from step 3: real identity and storage provider adapters once the accounts
   are opened; app screens.
+
+- **Release 1 step 5, part 1 (ownership documents, agent authority, media upload, listings and submission)**: in
+  pull request #47, awaiting approval. Plan in `docs/adr/0009-media-listings-and-submission.md`, which also splits
+  step 5 into five parts.
+  - Ownership documents and authority letters through `/documents`; agent authority, approved by the landlord in the
+    app or, with a letter, by the team after calling the landlord.
+  - Resumable photo and video upload in parts, checked against where and when it was taken.
+  - Photo processing on the `media` queue: location data removed, quality checks (blurred, dark, small),
+    fingerprint, and three watermarked display copies behind 15-minute links. Videos have their length checked.
+  - Listings: drafts, every fee entered, edits recorded, submission with a list of what is missing, the staff desk
+    review, availability confirmation, hourly expiry, pause, resume, mark as rented and close.
+  - Still to do from this part: automatic blurring and the hidden watermark (with part 4); a watermarked copy of each
+    video (before any video is shown publicly); asking for the occupant's consent only when the unit is occupied (an
+    "occupied" detail on units); the property page for tenants (part 2); a real storage provider adapter (Cloudflare
+    R2) once the account is opened.
+
+- **Release 1 step 5, part 2 (search, the property page and saved items)**: in pull request #48, awaiting
+  approval. Built on pull requests #46 and #47, so it is merged after them. Plan in
+  `docs/adr/0010-search-and-the-property-page.md`.
+  - Search: around me, landmark, map (grouped pins when zoomed out) and area, with every filter.
+  - Positions are approximate and distances rounded until an inspection is confirmed.
+  - The property page in full for everyone, with the lister and saved-place distances for signed-in users only
+    (decisions 75 and 80).
+  - Similar and nearby listings (decisions 77 and 80); viewing limits per account and per device in Redis
+    (decision 52), with the new server setting `TRUST_PROXY_HOPS`.
+  - Saved areas, saved places (decision 48) and favourites.
+  - Still to do from this part:
+    - a maps provider adapter (Google Maps or Mapbox) for place search, nearby amenities and travel times; until
+      then amenities are empty and distances are straight lines;
+    - alerts for saved areas (part 3);
+    - the exact position after a confirmed inspection (part 4).
 
 ## Small follow-ups
 
@@ -133,7 +172,7 @@ Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build 
 2c. ~~**Screen designs in Penpot**~~: done (pull requests #16 to #41). (Release 0 work; decisions 42, 67 and 73): the 112 screens listed in
     `docs/designs.md`, for tenants, landlords, agents, scouts and staff and the public website, on the phone app
     (87), the website (112) and the desktop software (18, staff screens only): 217 designs. The step is complete
-    only when all 217 are approved. All 217 approved by 29 October 2026. Produced in the build sessions with the Penpot connector in Emmanuel's file "Release 1 Screens", for his
+    only when all 217 are approved. All 217 approved by 29 October 2026; the six designs of pages 107 and 108 were redrawn in Figma on 2 November 2026 for review (decisions 75 to 80, pull request #46; screens 25 and 30 redrawn too). Produced in the build sessions with the Penpot connector in Emmanuel's file "Release 1 Screens", for his
     review and approval; if the connector is not reliable, Claude's Design artifact type is used instead and
     Emmanuel is told. No longer blocked: the connector was tested on 23 October 2026. Order: the design system
     first (for approval before any screen), then the screens in groups, phone layouts first, then the staff screens
@@ -167,13 +206,14 @@ Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build 
    unit details checked against choices held in the country settings. Still to do from this step: the comparison
    of the building's location with the first photos (with media upload, step 5); admin endpoints to switch cities
    on (switched on in the database for now, see `docs/DEPLOYMENT.md`).
-5. Documents and media upload (private storage adapter), listings and submission, search and the property page
-   (summary only for signed-out visitors, decision 39; viewing limits per account in Redis, decision 52; saved
-   places and travel distance, decision 48), saved items, messaging with the live connection (decision 47) and
-   calls inside the app (decision 44, new feature switch `contact.in_app_call`), inspections with time slots
-   (decision 45), notifications (decision 46), reports, review tasks with badge removal and bans (decision 51),
-   the Release 1 automatic checks (decision 58), fee types shown on listings as a country setting (decision 55),
-   and the public website code structure with listing summaries (decision 39).
+5. **Step 5, in five parts** (ADR 0009). Part 1, documents and media upload, agent authority, listings and
+   submission: in pull request #47. Part 2, search, the property page and saved items: in pull request #48. Then:
+   - part 3: messaging with the live connection (decision 47), calls inside the app (decision 44, new feature switch
+     `contact.in_app_call`), notifications (decision 46) and alerts for saved areas;
+   - part 4: inspections with time slots (decision 45), reports, review tasks with badge removal and bans
+     (decision 51), the Release 1 automatic checks and risk score (decision 58), and fee types shown on listings as
+     a country setting (decision 55);
+   - part 5: the public website code structure, with the public search and listing pages (decisions 75 and 77).
 5a. **Scouts** (decisions 70 to 72; plan in `docs/adr/0008-scouts-and-referral-rewards.md`), after buildings and
     listings (steps 4 and 5): opting in, reporting vacant properties, inviting landlords, the referral record, the
     conflict checks and the staff referral screens, behind the switch `growth.scouts`. The scout routes are added
