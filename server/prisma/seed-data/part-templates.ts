@@ -9,6 +9,8 @@ export const RESIDENTIAL_PARTS: Item[] = [
   { code: 'living_room', label: 'Entrance and living room' },
   { code: 'bedroom', label: 'Bedroom', repeat: 'bedrooms' },
   { code: 'bathroom', label: 'Bathroom', repeat: 'bathrooms' },
+  // Toilets are counted and photographed separately from bathrooms (decision 56).
+  { code: 'toilet', label: 'Toilet', repeat: 'toilets' },
   { code: 'kitchen', label: 'Kitchen' },
   { code: 'dining', label: 'Dining area', required: false },
   { code: 'balcony', label: 'Balcony', required: false },
@@ -24,6 +26,7 @@ export const ROOM_PARTS: Item[] = [
   { code: 'compound', label: 'Compound and parking' },
   { code: 'room', label: 'Room' },
   { code: 'bathroom', label: 'Bathroom', repeat: 'bathrooms' },
+  { code: 'toilet', label: 'Toilet', repeat: 'toilets' },
   { code: 'kitchen', label: 'Kitchen or cooking area', required: false },
   { code: 'utilities', label: 'Electricity meter, water source and generator area' },
   { code: 'walkthrough', label: 'Walkthrough video', mediaKind: 'VIDEO' },

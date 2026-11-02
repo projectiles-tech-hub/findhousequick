@@ -458,6 +458,8 @@ model Building {
   street                String
   houseNumber           String?
   landmark              String?
+  /// Distance from the building to the main road, in metres (decision 56).
+  distanceToMainRoadM   Int?
   /// Normalised address used for duplicate detection.
   addressKey            String
   location              Unsupported("geography(Point, 4326)")
@@ -509,14 +511,16 @@ model Unit {
 
 /// One item of the media checklist, e.g. "Bedroom 2". Generated from the property type's part template.
 model UnitPart {
-  id        String  @id @default(uuid(7)) @db.Uuid
-  unitId    String  @db.Uuid
+  id        String    @id @default(uuid(7)) @db.Uuid
+  unitId    String    @db.Uuid
   code      String // e.g. "bedroom_2"
   label     String
-  required  Boolean @default(true)
-  minPhotos Int     @default(2)
+  required  Boolean   @default(true)
+  minPhotos Int       @default(2)
+  mediaKind MediaKind @default(PHOTO)
+  /// A note on this part, e.g. "newly tiled" (decision 56).
   note      String?
-  sortOrder Int     @default(0)
+  sortOrder Int       @default(0)
 
   unit  Unit         @relation(fields: [unitId], references: [id], onDelete: Cascade)
   media MediaAsset[]

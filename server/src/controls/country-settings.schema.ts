@@ -105,6 +105,21 @@ export const countrySettingsSchema = z.object({
     })
     .prefault({}),
 
+  /**
+   * The choices offered for each unit detail (Product Specification, Section 5.2). Tenants filter by these, so they
+   * are fixed lists per country rather than free text. A unit's details are checked against them.
+   */
+  unitDetails: z
+    .object({
+      furnishing: z.array(z.string()).default(['UNFURNISHED', 'SEMI_FURNISHED', 'FURNISHED']),
+      power: z.array(z.string()).default(['PUBLIC_SUPPLY', 'PREPAID_METER', 'SHARED_METER', 'GENERATOR', 'INVERTER', 'SOLAR']),
+      water: z.array(z.string()).default(['BOREHOLE', 'PUBLIC_SUPPLY', 'TREATED']),
+      security: z.array(z.string()).default(['FENCED', 'GATED', 'GUARD', 'CCTV', 'ESTATE_SECURITY']),
+      roadCondition: z.array(z.string()).default(['TARRED', 'PARTLY_TARRED', 'UNTARRED']),
+      whoMayRent: z.array(z.string()).default(['SINGLES', 'FAMILIES', 'STUDENTS', 'CORPORATE']),
+    })
+    .prefault({}),
+
   formats: z
     .object({
       areaUnit: z.enum(['SQM', 'SQFT']).default('SQM'),
