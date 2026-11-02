@@ -210,7 +210,7 @@ export class PropertiesService {
    * The building, if the user is its owner, registered it, or is an agent with approved and unexpired authority
    * for it. Anyone else gets "not found", so the building's existence is not revealed.
    */
-  private async assertMayManage(user: RequestUser, buildingId: string) {
+  async assertMayManage(user: RequestUser, buildingId: string) {
     const building = await this.prisma.building.findUnique({
       where: { id: buildingId },
       select: {
@@ -273,7 +273,7 @@ export class PropertiesService {
     };
   }
 
-  private async unitView(unitId: string, settings: CountrySettings) {
+  async unitView(unitId: string, settings: CountrySettings) {
     const unit = await this.prisma.unit.findUniqueOrThrow({ where: { id: unitId }, include: { parts: { orderBy: { sortOrder: 'asc' } } } });
     const counts = await this.prisma.mediaAsset.groupBy({
       by: ['unitPartId'],

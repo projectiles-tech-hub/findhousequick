@@ -14,6 +14,8 @@ import { IdentityProviderModule } from './integrations/identity/identity.module.
 import { StorageModule } from './integrations/storage/storage.module.js';
 import { ReviewModule } from './review/review.module.js';
 import { PropertiesModule } from './properties/properties.module.js';
+import { ListingsModule } from './listings/listings.module.js';
+import { MediaModule } from './media/media.module.js';
 import { ReferenceModule } from './reference/reference.module.js';
 import { SmsModule } from './integrations/sms/sms.module.js';
 import { StaffModule } from './staff/staff.module.js';
@@ -41,6 +43,8 @@ import { PrismaModule } from './prisma/prisma.module.js';
     DocumentsModule,
     ReferenceModule,
     PropertiesModule,
+    MediaModule,
+    ListingsModule,
     ReviewModule,
     JobsModule,
   ],

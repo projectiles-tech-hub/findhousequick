@@ -1,26 +1,17 @@
 import { Injectable, Logger, Module, type OnApplicationBootstrap, type OnApplicationShutdown } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Queue, Worker, type ConnectionOptions } from 'bullmq';
+import { Queue, Worker } from 'bullmq';
 import type { Env } from '../config/env.js';
+import { redisConnection } from './redis-connection.js';
+import { ListingsModule } from '../listings/listings.module.js';
+import { ListingsService } from '../listings/listings.service.js';
 import { RetentionService } from './retention.service.js';
+
+export { redisConnection };
 
 const QUEUE = 'maintenance';
 const PURGE_DOCUMENTS = 'purge-expired-documents';
-
-/** BullMQ connection settings from a redis:// or rediss:// address. */
-export function redisConnection(url: string): ConnectionOptions {
-  const u = new URL(url);
-  return {
-    host: u.hostname,
-    port: Number(u.port || 6379),
-    username: u.username ? decodeURIComponent(u.username) : undefined,
-    password: u.password ? decodeURIComponent(u.password) : undefined,
-    db: u.pathname.length > 1 ? Number(u.pathname.slice(1)) : 0,
-    tls: u.protocol === 'rediss:' ? {} : undefined,
-    // Required by BullMQ workers: wait for Redis instead of failing commands while it reconnects.
-    maxRetriesPerRequest: null,
-  };
-}
+const EXPIRE_LISTINGS = 'expire-listings';
 
 /**
  * Background jobs, run through BullMQ on Redis (decision 59: BullMQ starts with the first background job).
@@ -37,6 +28,7 @@ export class JobsRunner implements OnApplicationBootstrap, OnApplicationShutdown
   constructor(
     private readonly config: ConfigService<Env, true>,
     private readonly retention: RetentionService,
+    private readonly listings: ListingsService,
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
@@ -44,10 +36,13 @@ export class JobsRunner implements OnApplicationBootstrap, OnApplicationShutdown
     const connection = redisConnection(this.config.get('REDIS_URL', { infer: true }));
     this.queue = new Queue(QUEUE, { connection });
     await this.queue.upsertJobScheduler(PURGE_DOCUMENTS, { pattern: '0 * * * *' }, { name: PURGE_DOCUMENTS });
+    // Listings whose lister did not confirm availability in time (Specification 6.6).
+    await this.queue.upsertJobScheduler(EXPIRE_LISTINGS, { pattern: '15 * * * *' }, { name: EXPIRE_LISTINGS });
     this.worker = new Worker(
       QUEUE,
       async (job) => {
         if (job.name === PURGE_DOCUMENTS) return this.retention.purgeExpiredDocuments();
+        if (job.name === EXPIRE_LISTINGS) return this.listings.expireOverdue();
         this.logger.warn(`Unknown job ${job.name}`);
       },
       { connection },
@@ -63,6 +58,7 @@ export class JobsRunner implements OnApplicationBootstrap, OnApplicationShutdown
 }
 
 @Module({
+  imports: [ListingsModule],
   providers: [RetentionService, JobsRunner],
   exports: [RetentionService],
 })
