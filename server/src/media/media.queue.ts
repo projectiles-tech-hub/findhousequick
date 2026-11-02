@@ -26,13 +26,28 @@ export class MediaQueue implements OnApplicationBootstrap, OnApplicationShutdown
   ) {}
 
   private get producer(): Queue {
-    this.queue ??= new Queue(QUEUE, { connection: redisConnection(this.config.get('REDIS_URL', { infer: true })) });
+    // Adding work must never hold up a request: if Redis cannot be reached, fail at once rather than wait.
+    this.queue ??= new Queue(QUEUE, {
+      connection: { ...redisConnection(this.config.get('REDIS_URL', { infer: true })), maxRetriesPerRequest: 1, enableOfflineQueue: false, connectTimeout: 3_000 },
+    });
     return this.queue;
   }
 
-  /** Queues one photo or video for processing. */
-  async add(mediaId: string): Promise<void> {
-    await this.producer.add(PROCESS, { mediaId }, { jobId: mediaId, attempts: 3, backoff: { type: 'exponential', delay: 30_000 }, removeOnComplete: 1000, removeOnFail: 1000 });
+  /**
+   * Queues one photo or video for processing. If Redis cannot be reached the media stays PROCESSING, and the hourly
+   * sweep puts it on the queue once Redis is back; the upload itself has already succeeded.
+   */
+  async add(mediaId: string): Promise<boolean> {
+    try {
+      await withTimeout(
+        this.producer.add(PROCESS, { mediaId }, { jobId: mediaId, attempts: 3, backoff: { type: 'exponential', delay: 30_000 }, removeOnComplete: 1000, removeOnFail: 1000 }),
+        5_000,
+      );
+      return true;
+    } catch (err) {
+      this.logger.warn(`Could not queue media ${mediaId} for processing; the hourly sweep will retry: ${(err as Error).message}`);
+      return false;
+    }
   }
 
   async onApplicationBootstrap(): Promise<void> {
@@ -58,6 +73,22 @@ export class MediaQueue implements OnApplicationBootstrap, OnApplicationShutdown
 
   async onApplicationShutdown(): Promise<void> {
     await this.worker?.close();
-    await this.queue?.close();
+    await withTimeout(this.queue?.close() ?? Promise.resolve(), 5_000).catch(() => undefined);
   }
+}
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`timed out after ${ms} ms`)), ms);
+    p.then(
+      (v) => {
+        clearTimeout(timer);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(timer);
+        reject(e);
+      },
+    );
+  });
 }
