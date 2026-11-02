@@ -1,6 +1,6 @@
 import { Injectable, Logger, type OnApplicationBootstrap, type OnApplicationShutdown } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Queue, Worker } from 'bullmq';
+import { Queue, Worker, type ConnectionOptions } from 'bullmq';
 import type { Env } from '../config/env.js';
 import { redisConnection } from '../jobs/redis-connection.js';
 import { MediaProcessor } from './media.processor.js';
@@ -28,7 +28,12 @@ export class MediaQueue implements OnApplicationBootstrap, OnApplicationShutdown
   private get producer(): Queue {
     // Adding work must never hold up a request: if Redis cannot be reached, fail at once rather than wait.
     this.queue ??= new Queue(QUEUE, {
-      connection: { ...redisConnection(this.config.get('REDIS_URL', { infer: true })), maxRetriesPerRequest: 1, enableOfflineQueue: false, connectTimeout: 3_000 },
+      connection: {
+        ...(redisConnection(this.config.get('REDIS_URL', { infer: true })) as Record<string, unknown>),
+        maxRetriesPerRequest: 1,
+        enableOfflineQueue: false,
+        connectTimeout: 3_000,
+      } as ConnectionOptions,
     });
     return this.queue;
   }
