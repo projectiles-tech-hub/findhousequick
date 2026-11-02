@@ -1,6 +1,6 @@
 # Project status
 
-Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build session, and update it at the end.
+Updated: 2 November 2026. Read this after CLAUDE.md at the start of every build session, and update it at the end.
 
 ## Where things stand
 
@@ -8,7 +8,7 @@ Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build 
   The old PHP prototype is in `ecoraegbu/findhousequick-legacy`, for reference only.
 - **Release 0 (foundations)**: mostly complete; delivered in pull request #1. **Not yet done** (Technical
   Architecture, Section 15; found by the specification check, finding 4): screen designs for tenants, landlords,
-  agents and staff (now the design step 2c below, decisions 42 and 67); the test system on a cloud host (after the
+  agents and staff are now done (step 2c below, all 217 designs approved); the test system on a cloud host (after the
   hosting account, which needs a company dollar card); the public website code structure (with step 5).
   - Database design (Release 1 plus escrow ledger) with database-level safety rules
   - Country settings and feature controls (48 switches, approvals, emergency switches, change record)
@@ -98,6 +98,13 @@ Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build 
   background job, BullMQ). Still to do from step 3: real identity and storage provider adapters once the accounts
   are opened; app screens.
 
+- **Country settings changes**: complete. Merged in pull request #43 on 2 November 2026. Super admins change a
+  country's settings through `PATCH /admin/countries/{countryCode}`; every change is recorded.
+
+- **Release 1 step 4 (reference lists, buildings, units and the parts checklist)**: complete. Merged in pull
+  request #44 on 2 November 2026 (decision 56). Still to do from this step: comparing a building's location with
+  its first photos (with media upload, step 5); admin endpoints to switch cities on.
+
 ## Small follow-ups
 
 - Technical points from the specification check (finding 21): move rate limits to Redis (they are still counted in
@@ -125,8 +132,8 @@ Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build 
    is opened. App sign-in screens.
 2. ~~**Staff accounts and roles**~~, and the admin feature-rule endpoints: done (pull request #7).
    Still to do from this area: admin screens in the app; two-step login for ordinary users (ADR 0005, point 3).
-   Country settings changes (`PATCH /admin/countries/{countryCode}`, super admins, recorded) in pull request #43,
-   built before step 4 as Emmanuel asked on 29 October 2026.
+   Country settings changes (`PATCH /admin/countries/{countryCode}`, super admins, recorded): done (pull request
+   #43, merged on 2 November 2026), built before step 4 as Emmanuel asked on 29 October 2026.
 2a. ~~**Specification check**~~: done (pull requests #9 and #10; decisions 39 to 63).
 2b. ~~**Email**~~ (decisions 35 to 38, 64): done (pull request #11). Still to do: a real email provider adapter
     once the email sending account is opened (see `docs/DEPLOYMENT.md`).
@@ -159,8 +166,8 @@ Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build 
     decision 74.
 3. ~~**Verification ladder and identity checks**~~: done (pull requests #13 and #14). Still to do: real
    identity and storage provider adapters once the accounts are opened; app screens.
-4. **Reference data endpoints**, then buildings, units and the parts checklist, with the distance to the main
-   road, separate toilets in the checklist and a note per part (decision 56): in pull request #44. Built: the three
+4. ~~**Reference data endpoints**, then buildings, units and the parts checklist, with the distance to the main
+   road, separate toilets in the checklist and a note per part (decision 56)~~: done (pull request #44, merged on 2 November 2026). Built: the three
    reference lists (property types with their checklists, document types, regions with cities); registering a
    building at its location, with duplicates sent to the verification team; units with their checklists (one
    part per bedroom, bathroom and toilet), rebuilt when room counts change without losing photos; notes on parts;
