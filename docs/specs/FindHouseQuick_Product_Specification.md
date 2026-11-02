@@ -6,7 +6,7 @@ Projectiles Tech Hub Limited
 
 Emmanuel Chukwuka Oraegbu, Managing Director
 
-Version 1.9 \| 27 October 2026
+Version 1.10 \| 2 November 2026
 
 # Contents
 
@@ -109,7 +109,7 @@ The platform is delivered on three platforms sharing one central system, so that
 
 ## 3.1 General Rules
 
-- Every user must register to use the platform; visitors without an account see only a summary of each listing: cover photo, rent, area, number of rooms and badges (decision 39). Registration is free of charge.
+- Every user must register to use the platform beyond viewing. Visitors without an account can view every listing in full, but not the landlord or agent; contacting the lister, booking an inspection, saving, alerts and paying need an account (decision 75). Registration is free of charge.
 
 - Registration needs both a phone number and an email address. The user signs up with either one: a code sent to it confirms it at once, and the other is confirmed afterwards with a code sent to it (decision 35).
 
@@ -320,7 +320,7 @@ Each property has a page that shows every part of it clearly, laid out in this o
 
 6.  **Location:** approximate area on the map, nearby amenities, and travel distance to places the tenant has saved, such as an office or school.
 
-7.  **Lister:** verified landlord or agent, rating and typical response time.
+7.  **Lister:** verified landlord or agent, rating and typical response time; shown only to signed-in users (decision 75).
 
 8.  **Actions:** book an inspection, chat, save, compare, share and report.
 
@@ -331,6 +331,8 @@ Further presentation features:
 - **Data saver:** smaller images load first on slow connections, with full quality on request.
 
 - **Search results:** each result shows a cover photo, rent, key details, badges and distance. On the map, pins are grouped when zoomed out and show the rent when tapped.
+
+- **More to explore:** the search results and the property page, on the public website, the signed-in website and the phone app, also show other properties, such as similar properties and more in the same area, and FindHouseQuick services (decisions 77 and 80). Signed-in users also see the lister.
 
 # 6. Property Listing and Verification
 
@@ -772,9 +774,9 @@ Photos and videos of properties belong to the landlord or agent who created them
 
 **Rules on use**
 
-- By uploading, the lister grants Projectiles a limited right to display the media on the listing only.
+- By uploading and accepting the terms of use, the lister grants Projectiles the right to display the media on the listing, to use it to advertise FindHouseQuick itself, and to sell it, share it with other companies and use it to train artificial intelligence, with other standard rights set out in the terms of use (decisions 76 and 79).
 
-- Media is never sold, never shared with other companies, never used to advertise other properties or the platform itself, and never used to train artificial intelligence, unless the lister gives separate written consent.
+- Media is never used to advertise other properties. A listing's cover photo may appear in a card that links to that listing's own page, such as a search result or a similar property. Under the terms of use, media may also be sold, shared with other companies and used to train artificial intelligence (decision 79).
 
 - When a listing is closed, its media is removed from public view. It is kept privately only as verification evidence for a set period, then deleted.
 
@@ -796,7 +798,7 @@ Photos and videos of properties belong to the landlord or agent who created them
 
 - **Automatic blurring:** faces, vehicle number plates, documents and family photographs that appear in property photos are blurred automatically.
 
-- **Scraping protection:** galleries are only shown to logged-in users; unusual viewing patterns (for example one account opening hundreds of listings in minutes) are blocked.
+- **Scraping protection:** listings can be viewed without signing in (decision 75), so unusual viewing patterns (for example one account, device or network address opening hundreds of listings in minutes) are limited and blocked.
 
 - **Web monitoring:** the platform regularly searches the internet for FindHouseQuick images used elsewhere and issues takedown requests.
 
@@ -1046,15 +1048,16 @@ Tenants only come to a platform that already has listings, so landlords and agen
 
 This specification is kept as one document and updated in place; earlier versions remain in the code repository history (decision 60). Every decision recorded in the Decisions Log that changes what the platform does is written into this document, with the decision number.
 
-| Version              | What changed                                                                                                                                                                                              |
-|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.3, 22 October 2026 | The version given at the start of the build. It reflects decisions 1 to 23 of the Decisions Log.                                                                                                          |
-| 1.4, 23 October 2026 | Includes decisions 24 to 63, listed below with where each appears.                                                                                                                                        |
-| 1.5, 23 October 2026 | Includes decision 64: any action beyond browsing needs level 1 (Section 3.1).                                                                                                                             |
-| 1.6, 24 October 2026 | Includes decisions 65 to 71: scouts and the referral reward (decisions 70 and 71; Sections 2, 3.6, 8.3, 16.1, 17.1, 20 and 21), and decisions 65 to 69, listed below.                                     |
-| 1.7, 24 October 2026 | Includes decisions 72 and 73: scouts built in Release 1, with rewards paid once the completed rental fee exists (Section 3.6); every screen of the app on the website and desktop software (Section 1.4). |
-| 1.8, 25 October 2026 | Includes decision 74: the website is responsive, designed at desktop and tablet widths, and the desktop software runs in a resizable window (Section 1.4).                                                |
-| 1.9, 27 October 2026 | Decisions 73 and 74 changed: the desktop software is for staff only; tenants, landlords, agents and scouts use the phone app and the website (Section 1.4).                                               |
+| Version               | What changed                                                                                                                                                                                                                                                                                                                                                                                                                                |
+|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3, 22 October 2026  | The version given at the start of the build. It reflects decisions 1 to 23 of the Decisions Log.                                                                                                                                                                                                                                                                                                                                            |
+| 1.4, 23 October 2026  | Includes decisions 24 to 63, listed below with where each appears.                                                                                                                                                                                                                                                                                                                                                                          |
+| 1.5, 23 October 2026  | Includes decision 64: any action beyond browsing needs level 1 (Section 3.1).                                                                                                                                                                                                                                                                                                                                                               |
+| 1.6, 24 October 2026  | Includes decisions 65 to 71: scouts and the referral reward (decisions 70 and 71; Sections 2, 3.6, 8.3, 16.1, 17.1, 20 and 21), and decisions 65 to 69, listed below.                                                                                                                                                                                                                                                                       |
+| 1.7, 24 October 2026  | Includes decisions 72 and 73: scouts built in Release 1, with rewards paid once the completed rental fee exists (Section 3.6); every screen of the app on the website and desktop software (Section 1.4).                                                                                                                                                                                                                                   |
+| 1.8, 25 October 2026  | Includes decision 74: the website is responsive, designed at desktop and tablet widths, and the desktop software runs in a resizable window (Section 1.4).                                                                                                                                                                                                                                                                                  |
+| 1.9, 27 October 2026  | Decisions 73 and 74 changed: the desktop software is for staff only; tenants, landlords, agents and scouts use the phone app and the website (Section 1.4).                                                                                                                                                                                                                                                                                 |
+| 1.10, 2 November 2026 | Includes decisions 75 to 80: signed-out visitors view listings in full, without the lister (Sections 3.1 and 5.4); property media may advertise FindHouseQuick itself, and may be sold, shared with other companies and used to train artificial intelligence (Section 15.3); the public search results and listing pages also show other properties and services, also for signed-in users on the website and the phone app (Section 5.4). |
 
 Decisions 24 to 73 in versions 1.4 to 1.7. Some confirm what this specification already said, or only set when something is built; they are listed so that every decision can be traced. Decisions about how the platform is built, rather than what it does, are in the Technical Architecture and the architecture decision records.
 
@@ -1075,7 +1078,7 @@ Decisions 24 to 73 in versions 1.4 to 1.7. Some confirm what this specification 
 | 36\. Second step never uses the sign-in channel, in a set order; password reset by SMS or email | Sections 3.1 and 15.4                                                    |
 | 37\. Level 1 needs both phone and email confirmed                                               | Section 3.1 and the level tables                                         |
 | 38\. Staff added by confirmed email as well as phone                                            | Section 19.1                                                             |
-| 39\. Signed-out visitors see a listing summary only                                             | Section 3.1                                                              |
+| 39\. Signed-out visitors see a listing summary only (replaced by decision 75)                   | Section 3.1                                                              |
 | 40\. English and Pidgin at launch; users choose their language                                  | Section 18.2                                                             |
 | 41\. Customer support at launch; in-app support in Release 2                                    | Section 18.1                                                             |
 | 42\. Screen designs in Figma; hosting after a company dollar card                               | How the platform is built; not a product change                          |
@@ -1110,3 +1113,8 @@ Decisions 24 to 73 in versions 1.4 to 1.7. Some confirm what this specification 
 | 71\. Scouts: level 1, one reward per unit, no invitation expiry, payouts approved by staff      | Sections 2, 3.6, 16.1, 20 and 21                                         |
 | 72\. Scouts built in Release 1; rewards paid once the completed rental fee exists               | Section 3.6                                                              |
 | 73\. Screens on each platform; the full list in docs/designs.md                                 | Section 1.4                                                              |
+| 75\. Signed-out visitors view listings in full, without the lister                              | Sections 3.1, 5.4 and 15.3                                               |
+| 76\. Property media may advertise FindHouseQuick itself                                         | Section 15.3                                                             |
+| 77\. Public search and listing pages show other properties and services                         | Section 5.4                                                              |
+| 79\. Property media may be sold, shared and used to train artificial intelligence               | Section 15.3                                                             |
+| 80\. Signed-in search results and property page show the same additions, with the lister        | Section 5.4                                                              |
