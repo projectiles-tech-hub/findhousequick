@@ -84,7 +84,7 @@ Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build 
   107 to 112 are drawn at 1366, 768 and 360 (18 designs) on the Penpot pages "32 Website: 107 to 109 Public
   search and listings" and "33 Website: 110 to 112 Public help and legal".
 
-- **Pages 107 and 108 redrawn** (decisions 75 to 78): in pull request #46, awaiting approval. On 2 November 2026
+- **Pages 107 and 108 redrawn** (decisions 75 to 79): in pull request #46, awaiting approval. On 2 November 2026
   Emmanuel found the public search results (107) and listing (108) pages too thin. They were redrawn in Figma
   (decision 78), at 1366, 768 and 360: signed-out visitors see full listings without the lister (decision 75), and
   both pages also show other properties and FindHouseQuick services (decision 77). The Penpot design system values
@@ -121,8 +121,6 @@ Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build 
 - A company dollar card, so the hosting account (and the test system) can be opened (decision 42).
 - Scouts and the referral reward (decisions 70 to 72): Decisions Log open points 16, 18 and 19: the reward amount
   and, before it goes live, state estate agency rules and withholding tax. The release is settled (decision 72).
-- Property media (decision 76, open point 20): whether the other limits in Specification 15.3 change (never sold,
-  never shared with other companies, never used to train artificial intelligence).
 - Decisions Log open points: the five escrow settings, escrow legal structure, launch city, partner API,
   mention of the Agent Emma channel in the launch plan, budget, hiring.
 
@@ -141,7 +139,7 @@ Updated: 29 October 2026. Read this after CLAUDE.md at the start of every build 
 2c. ~~**Screen designs in Penpot**~~: done (pull requests #16 to #41). (Release 0 work; decisions 42, 67 and 73): the 112 screens listed in
     `docs/designs.md`, for tenants, landlords, agents, scouts and staff and the public website, on the phone app
     (87), the website (112) and the desktop software (18, staff screens only): 217 designs. The step is complete
-    only when all 217 are approved. All 217 approved by 29 October 2026; the six designs of pages 107 and 108 were redrawn in Figma on 2 November 2026 for review (decisions 75 to 78, pull request #46). Produced in the build sessions with the Penpot connector in Emmanuel's file "Release 1 Screens", for his
+    only when all 217 are approved. All 217 approved by 29 October 2026; the six designs of pages 107 and 108 were redrawn in Figma on 2 November 2026 for review (decisions 75 to 79, pull request #46). Produced in the build sessions with the Penpot connector in Emmanuel's file "Release 1 Screens", for his
     review and approval; if the connector is not reliable, Claude's Design artifact type is used instead and
     Emmanuel is told. No longer blocked: the connector was tested on 23 October 2026. Order: the design system
     first (for approval before any screen), then the screens in groups, phone layouts first, then the staff screens
