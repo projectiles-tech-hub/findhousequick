@@ -19,6 +19,8 @@ GitHub repository secrets, **never in the code**. `server/.env.example` shows th
 | `DATABASE_URL` | Yes | Address and password of the PostgreSQL database (with PostGIS) | Given by the database host | **Secret** |
 | `REDIS_URL` | Yes | Address and password of Redis | Given by the Redis host | **Secret.** Background jobs run on it (from the identity documents pull request) |
 | `TRUST_PROXY_HOPS` | **Yes behind proxies** (default `0`) | How many proxies stand in front of the API, such as Cloudflare and a web server (ADR 0010) | e.g. `2` for Cloudflare in front of nginx; `0` when nothing is in front | Without it, every signed-out visitor seems to come from the proxy's address and all share one viewing limit (decision 52), so the site soon refuses them. Set it to exactly the number of proxies: one too many lets visitors fake their address |
+| `PUSH_PROVIDER` | Yes on live servers (default `log`) | Which service sends push notifications (decision 46; ADR 0011) | `log` on development machines only | `log` writes notifications to the server log and is refused when `NODE_ENV` is `production`. The Firebase adapter and its key are added when the Google Cloud account is opened |
+| `CALL_PROVIDER` | Yes on live servers (default `test`) | Which calling service carries voice calls inside the app (decision 44; ADR 0011) | `test` on development machines only | `test` carries no voice and is refused when `NODE_ENV` is `production`. The real service gets its own adapter and keys when it is chosen |
 | `RUN_BACKGROUND_JOBS` | No (default `true`) | Whether this server runs background jobs, such as deleting identity photos whose retention period has ended | `true` or `false` | Leave `true` on at least one server. With several servers each job still runs once |
 | `STORAGE_PROVIDER` | Yes | Where private documents (identity photos, later ownership documents) are kept | `local` for development only | `local` keeps files in a folder and is refused in production. A real provider (Cloudflare R2) is added before any pilot (ADR 0007) |
 | `STORAGE_LOCAL_DIR` | No (default `.private-storage`) | Folder used by the `local` storage provider | A folder path | Development only |
@@ -115,7 +117,15 @@ login. Most need the CAC certificate (RC 7987623).
 Photos and videos are processed on the `media` queue in Redis (ADR 0009). Every server can add work to it; servers
 with `RUN_BACKGROUND_JOBS=true` do the work, two items at a time each. An hourly job puts back any media left
 processing for more than 15 minutes, and another marks live listings whose lister did not confirm availability in
-time as expired. Nothing needs setting up beyond Redis.
+time as expired. A job every minute marks calls nobody answered within 60 seconds as missed (ADR 0011). Nothing
+needs setting up beyond Redis.
+
+### Live connection
+
+Signed-in apps keep a WebSocket open at `/v1/live` (decision 47; ADR 0011). Any proxy or load balancer in front of
+the API must pass WebSocket connections through (in nginx: the `Upgrade` and `Connection` headers) and must not
+close idle connections in under 60 seconds; the server sends a ping every 30 seconds. Cloudflare passes WebSockets
+by default. With several servers, events travel between them through Redis.
 
 ## 4. One-time and manual steps
 

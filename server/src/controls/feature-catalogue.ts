@@ -47,6 +47,7 @@ export const FEATURES = [
   // Contact
   f('contact.chat', 'In-app chat', { on: true }),
   f('contact.phone_reveal', 'Phone number reveal after an inspection is booked', { on: true }),
+  f('contact.in_app_call', 'Voice calls inside the app, with phone numbers hidden (decision 44)', { on: true }),
   f('contact.inspection_booking', 'Inspection booking', { on: true }),
   f('contact.inspection_safety_share', 'Share inspection details with a trusted contact', { on: true }),
 

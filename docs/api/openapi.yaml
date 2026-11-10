@@ -33,9 +33,11 @@ info:
       saved-place distances. Every further step (contact, inspections, saving, alerts, payments) needs an
       account.
     - **Live connection** (decision 47): signed-in apps open `wss://<server>/v1/live`, sending the access
-      token as the first message. The server pushes events: `message.created`, `conversation.read`,
-      `inspection.updated`, and the call events `call.ringing`, `call.answered`, `call.ended`. When the
-      app is closed, the same events arrive as push notifications (decision 46).
+      token as the first message (built). The server answers `{event: "ready"}`, then pushes
+      `{event, data}` messages: `message.created`, `conversation.read`, `inspection.updated`, the call
+      events `call.ringing`, `call.answered`, `call.ended`, and `notification`. A connection that does not
+      sign in within 10 seconds, or whose device signs out, is closed with code 4401. When the app is
+      closed, the same events arrive as push notifications (decision 46).
     - **Viewing limits** (decision 52): viewing listings and photos is limited per account as well as per
       address, counted across all servers; over the limit the answer is `429`.
     - **Idempotency**: requests that create money movements or uploads accept an `Idempotency-Key`
@@ -527,7 +529,7 @@ paths:
   /me/devices:
     post:
       tags: [Notifications]
-      summary: Register this phone or computer for push notifications (decision 46)
+      summary: Register this phone or computer for push notifications (decision 46) (built)
       requestBody:
         required: true
         content:
@@ -571,7 +573,7 @@ paths:
     patch:
       tags: [Notifications]
       summary: Change notification settings
-      description: Security messages (codes and sign-in alerts) cannot be switched off; trying returns 400.
+      description: Security messages (codes and sign-in alerts) cannot be switched off; trying returns 400 INVALID_SETTINGS. Incoming calls can only use PUSH.
       requestBody:
         required: true
         content:
@@ -1605,7 +1607,8 @@ paths:
   /conversations:
     post:
       tags: [Messaging]
-      summary: Start (or reopen) a conversation about a listing
+      summary: Start (or reopen) a conversation about a live listing (built)
+      description: One conversation per tenant per listing. Nobody can message their own listing (400 OWN_LISTING).
       x-verification-level: 2
       x-feature: contact.chat
       requestBody:
@@ -1689,7 +1692,8 @@ paths:
   /conversations/{conversationId}/share-phones:
     post:
       tags: [Messaging]
-      summary: Agree to share phone numbers (allowed once an inspection is booked; both sides must agree)
+      summary: Agree to share phone numbers (allowed once an inspection is booked; both sides must agree) (built)
+      description: Before an inspection is booked the answer is 409 INSPECTION_NOT_BOOKED.
       x-feature: contact.phone_reveal
       parameters: [{ $ref: "#/components/parameters/ConversationId" }]
       responses:
@@ -1708,6 +1712,8 @@ paths:
         parties of a conversation, under the same rules as chat. The other party is alerted through the
         live connection, or a push notification (incoming-call alert) when the app is closed. The
         response carries the values the app passes to the calling service, reached through an adapter.
+        One call at a time per conversation (409 CALL_IN_PROGRESS). A call nobody answers within 60
+        seconds becomes MISSED. Every call leaves a line in the chat. (built, with a test calling service)
       x-verification-level: 2
       x-feature: contact.in_app_call
       parameters: [{ $ref: "#/components/parameters/ConversationId" }]
@@ -1722,7 +1728,11 @@ paths:
   /calls/{callId}/status:
     post:
       tags: [Messaging]
-      summary: Answer, decline or end a call
+      summary: Answer, decline or end a call (built)
+      description: |
+        Only the person being called can answer or decline (409 NOT_THE_CALLEE); answering returns their
+        `connection` values. Either side can end. Ending an unanswered call marks it MISSED. Other
+        refusals: 409 CALL_NOT_RINGING, 409 CALL_OVER.
       parameters:
         - { name: callId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
       requestBody:
@@ -2754,13 +2764,24 @@ components:
       properties:
         id: { $ref: "#/components/schemas/Id" }
         listingId: { $ref: "#/components/schemas/Id" }
+        role: { type: string, enum: [TENANT, LISTER], description: The caller's side of the conversation }
         otherParty:
           type: object
           properties:
             id: { $ref: "#/components/schemas/Id" }
             displayName: { type: string }
             phone: { type: [string, "null"], description: Only after both sides agree to share }
-        lastMessage: { $ref: "#/components/schemas/Message" }
+        phoneSharing:
+          type: object
+          properties:
+            youAgreed: { type: boolean }
+            theyAgreed: { type: boolean }
+            shared: { type: boolean }
+        lastMessage:
+          oneOf:
+            - $ref: "#/components/schemas/Message"
+            - type: "null"
+        lastMessageAt: { type: string, format: date-time }
         unreadCount: { type: integer }
 
     Message:
@@ -2768,6 +2789,7 @@ components:
       properties:
         id: { $ref: "#/components/schemas/Id" }
         senderId: { $ref: "#/components/schemas/Id" }
+        kind: { type: string, enum: [TEXT, CALL], description: "CALL is the line a call leaves in the chat (answered, missed or declined)" }
         body: { type: string }
         createdAt: { type: string, format: date-time }
 
