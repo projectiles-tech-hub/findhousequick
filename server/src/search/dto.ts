@@ -114,10 +114,32 @@ export class SearchListingsQuery extends SearchFiltersDto {
   @MaxLength(80)
   area?: string;
 
+  @ApiPropertyOptional({ description: 'City name, for the public search pages (e.g. Benin City)' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  city?: string;
+
   @ApiPropertyOptional({ description: 'From nextCursor of the previous page' })
   @IsOptional()
   @Matches(/^[A-Za-z0-9_-]{1,20}$/)
   cursor?: string;
+}
+
+export class AreasQuery {
+  @ApiPropertyOptional({ description: 'City name; all switched-on cities when left out' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  city?: string;
+
+  @ApiPropertyOptional({ default: 10, maximum: 30 })
+  @IsOptional()
+  @Transform(toInt)
+  @IsInt()
+  @Min(1)
+  @Max(30)
+  limit?: number;
 }
 
 export class PlacesQuery {

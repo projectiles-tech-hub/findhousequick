@@ -36,6 +36,23 @@ GitHub repository secrets, **never in the code**. `server/.env.example` shows th
 | `EMAIL_FROM` | No (has a default) | The sender shown on emails | e.g. `FindHouseQuick <no-reply@findhousequick.com>` | Must be an address on a domain the email service has verified |
 | `SMS_PROVIDER` | Yes | Which service sends SMS codes | `log` for development only | `log` prints codes instead of sending them and is refused in production. A real provider (e.g. Termii) is added before any pilot |
 
+### Public website settings (`web/`)
+
+The public website is a separate program (Next.js, ADR 0013). It needs Node.js 22 and runs beside the API, for
+example on the same server (`pnpm build`, then `pnpm start`, port 3100). It cannot be hosted as plain files, because
+each page is made when it is asked for. `web/.env.example` shows the format.
+
+| Setting | Required | What it is | How to set it | Notes |
+| --- | --- | --- | --- | --- |
+| `API_BASE_URL` | Yes | Where the website reaches the API, ending in `/v1` | The API's **internal** address, e.g. `http://127.0.0.1:3000/v1` | Not the public address. The website passes the visitor's network address on to the API for the viewing limits (decision 52); through the public address the API would see the web server instead, and all visitors would share one limit |
+| `NEXT_PUBLIC_SITE_URL` | Yes | The website's public address | e.g. `https://findhousequick.com` | Used in the links given to search engines. Set before `pnpm build` |
+| `NEXT_PUBLIC_APP_URL` | Yes | The address of the signed-in web app, where "Sign in" and "Create an account" lead | e.g. `https://app.findhousequick.com` | Set before `pnpm build` |
+| `SITE_COUNTRY` | Yes | The country the website is shown for (ISO code) | `NG` | Its currency, switches and choices then come from the API |
+| `NEXT_PUBLIC_PLAY_STORE_URL`, `NEXT_PUBLIC_APP_STORE_URL` | No | Store pages of the phone apps | When the apps are published | The "Get the app" links stay hidden until set |
+
+The website and the API must sit behind the same proxies, and `TRUST_PROXY_HOPS` on the API counts those proxies
+only. The API's port must not be open to the internet except through them.
+
 ### Settings changed in the admin panel (not server settings)
 
 These live in the database and are changed by super admins through the admin endpoints, with a reason; every

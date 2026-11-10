@@ -6,7 +6,7 @@ import { RequireLevel } from '../accounts/verification.guard.js';
 import type { RequestUser } from '../controls/request-context.js';
 import { contextFromRequest } from '../controls/request-context.js';
 import { RequireFeature } from '../controls/require-feature.guard.js';
-import { PlacesQuery, RelatedQuery, SavedPlaceDto, SavedSearchDto, SearchListingsQuery } from './dto.js';
+import { AreasQuery, PlacesQuery, RelatedQuery, SavedPlaceDto, SavedSearchDto, SearchListingsQuery } from './dto.js';
 import { SavedService } from './saved.service.js';
 import { SearchService } from './search.service.js';
 
@@ -39,6 +39,14 @@ export class SearchController {
   @ApiOkResponse({ description: 'Up to 10 places' })
   places(@Query() q: PlacesQuery) {
     return this.search.places(q.q);
+  }
+
+  @Get('search/areas')
+  @Public()
+  @ApiOperation({ summary: 'The areas with the most live listings, with their counts, for "popular areas" (decisions 77 and 80)' })
+  @ApiOkResponse({ description: 'Up to `limit` areas: area, city and count' })
+  areas(@Query() q: AreasQuery, @Req() req: Request) {
+    return this.search.areas(q.city, q.limit ?? 10, contextFromRequest(req));
   }
 
   @Get('listings/:listingId/related')

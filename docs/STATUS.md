@@ -9,7 +9,7 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
 - **Release 0 (foundations)**: mostly complete; delivered in pull request #1. **Not yet done** (Technical
   Architecture, Section 15; found by the specification check, finding 4): screen designs for tenants, landlords,
   agents and staff (now the design step 2c below, decisions 42 and 67); the test system on a cloud host (after the
-  hosting account, which needs a company dollar card); the public website code structure (with step 5).
+  hosting account, which needs a company dollar card); the public website code structure (built in step 5, part 5, pull request #51).
   - Database design (Release 1 plus escrow ledger) with database-level safety rules
   - Country settings and feature controls (48 switches, approvals, emergency switches, change record)
   - Seed data for Nigeria, Benin City, property types, documents
@@ -166,6 +166,18 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
     document numbers; a reminder before an inspection and a prompt for the follow-up answers; blocking another
     user in chat; the directions link through the maps provider adapter.
 
+- **Release 1 step 5, part 5 (the public website)**: in pull request #51. Built on pull request #50, so it is merged
+  after it; pages 107 and 108 follow the designs in pull request #46. Plan in `docs/adr/0013-public-website.md`.
+  - The website's code structure in `web/` (Next.js), with its own checks in CI. This also completes the "public
+    website code structure" item left over from Release 0.
+  - Page 107 (search results) at `/homes` and page 108 (listing page) at `/homes/{id}`, at all three widths, made
+    from the API for each request, with titles, a sitemap and descriptions for search engines.
+  - The visitor's network address and a device id are passed to the API, so the viewing limits count each visitor.
+  - Small API additions: the total and the city on search results, a city filter, popular areas, and the unit
+    detail choices in `/controls`.
+  - Still to do from this part: pages 106 and 109 to 112; the map and the "power and water" and "more filters"
+    filters; the app's own icons in place of the stand-ins; a cookie notice with the privacy page.
+
 ## Small follow-ups
 
 - Technical points from the specification check (finding 21): move rate limits to Redis (they are still counted in
@@ -241,8 +253,8 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
    `contact.in_app_call`), notifications (decision 46) and alerts for saved areas: in pull request #49. Part 4,
    inspections with time slots (decision 45), reports, review tasks with badge removal and bans (decision 51), the
    Release 1 automatic checks and risk score (decision 58), and fee types shown on listings as a country setting
-   (decision 55): in pull request #50. Then:
-   - part 5: the public website code structure, with the public search and listing pages (decisions 75 and 77).
+   (decision 55): in pull request #50. Part 5, the public website code structure with the public search and listing
+   pages (decisions 75 and 77): in pull request #51.
 5a. **Scouts** (decisions 70 to 72; plan in `docs/adr/0008-scouts-and-referral-rewards.md`), after buildings and
     listings (steps 4 and 5): opting in, reporting vacant properties, inviting landlords, the referral record, the
     conflict checks and the staff referral screens, behind the switch `growth.scouts`. The scout routes are added

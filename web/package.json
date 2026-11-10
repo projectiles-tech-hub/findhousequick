@@ -1,0 +1,29 @@
+{
+  "name": "findhousequick-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FindHouseQuick public website: the pages search engines and signed-out visitors see",
+  "scripts": {
+    "dev": "next dev --port 3100",
+    "build": "next build",
+    "start": "next start --port 3100",
+    "lint": "oxlint src",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fontsource-variable/source-sans-3": "^5.3.1",
+    "next": "^16.4.6",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "oxlint": "^1.58.0",
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
+  },
+  "packageManager": "pnpm@10.28.0"
+}

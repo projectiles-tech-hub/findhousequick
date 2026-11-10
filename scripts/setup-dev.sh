@@ -62,4 +62,7 @@ print([r for r in d["releases"] if r["hash"]==h][0]["archive"])')
   echo "Add Flutter to your PATH: export PATH=\"$FLUTTER_DIR/bin:\$PATH\""
 fi
 
+say "Installing the public website's packages"
+(cd "$ROOT/web" && pnpm install --frozen-lockfile >/dev/null)
+
 say "Done. Start the API with: cd server && pnpm start:dev   (docs at http://localhost:3000/docs)"

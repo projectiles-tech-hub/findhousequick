@@ -45,6 +45,8 @@ interface Row {
   distance: number | null;
   /** False when staff removed the lister's verified badge (decision 51). */
   badge: boolean;
+  city: string;
+  region: string;
 }
 
 export type ListingCard = Awaited<ReturnType<SearchService['cards']>>[number];
@@ -79,6 +81,7 @@ export class SearchService {
       where.push(Prisma.sql`ST_Intersects(b."location"::geometry, ST_MakeEnvelope(${w}, ${s}, ${e}, ${n}, 4326))`);
     }
     if (q.area) where.push(Prisma.sql`lower(b."area") = lower(${q.area})`);
+    if (q.city) where.push(Prisma.sql`lower(c."name") = lower(${q.city})`);
     const whereSql = Prisma.join(where, ' AND ');
 
     // Zoomed out on the map: groups of pins rather than single listings.
@@ -92,7 +95,8 @@ export class SearchService {
           JOIN "PropertyType" pt ON pt."id" = u."propertyTypeId" JOIN "City" c ON c."id" = b."cityId" JOIN "Region" r ON r."id" = c."regionId"
         WHERE ${whereSql}) g
         GROUP BY g."cell"`;
-      return { items: [], clusters: groups.map((g) => ({ centre: { lat: round5(g.lat), lng: round5(g.lng) }, count: Number(g.count) })), nextCursor: null };
+      const clusters = groups.map((g) => ({ centre: { lat: round5(g.lat), lng: round5(g.lng) }, count: Number(g.count) }));
+      return { items: [], clusters, total: clusters.reduce((sum, c) => sum + c.count, 0), nextCursor: null };
     }
 
     const sort = q.sort ?? (point ? 'DISTANCE' : 'NEWEST');
@@ -105,7 +109,26 @@ export class SearchService {
     const offset = q.cursor ? decodeCursor(q.cursor) : 0;
     const rows = await this.rows(whereSql, point, order, PAGE_SIZE + 1, offset);
     const page = rows.slice(0, PAGE_SIZE);
-    return { items: await this.cards(page), clusters: [], nextCursor: rows.length > PAGE_SIZE ? encodeCursor(offset + PAGE_SIZE) : null };
+    const [{ count }] = await this.prisma.$queryRaw<[{ count: bigint }]>`
+      SELECT count(*) AS "count"
+      FROM "Listing" l JOIN "Unit" u ON u."id" = l."unitId" JOIN "Building" b ON b."id" = u."buildingId"
+        JOIN "PropertyType" pt ON pt."id" = u."propertyTypeId" JOIN "City" c ON c."id" = b."cityId" JOIN "Region" r ON r."id" = c."regionId"
+      WHERE ${whereSql}`;
+    return { items: await this.cards(page), clusters: [], total: Number(count), nextCursor: rows.length > PAGE_SIZE ? encodeCursor(offset + PAGE_SIZE) : null };
+  }
+
+  /** The areas with the most live listings, for "popular areas" on the search pages (decisions 77 and 80). */
+  async areas(city: string | undefined, limit: number, ctx: EvaluationContext) {
+    const where = await this.baseWhere({}, ctx);
+    const rows = await this.prisma.$queryRaw<{ area: string; city: string; count: bigint }[]>`
+      SELECT min(b."area") AS "area", c."name" AS "city", count(*) AS "count"
+      FROM "Listing" l JOIN "Unit" u ON u."id" = l."unitId" JOIN "Building" b ON b."id" = u."buildingId"
+        JOIN "PropertyType" pt ON pt."id" = u."propertyTypeId" JOIN "City" c ON c."id" = b."cityId" JOIN "Region" r ON r."id" = c."regionId"
+      WHERE ${where} ${city ? Prisma.sql`AND lower(c."name") = lower(${city})` : Prisma.empty}
+      GROUP BY lower(b."area"), c."name"
+      ORDER BY count(*) DESC, min(b."area")
+      LIMIT ${limit}`;
+    return rows.map((r) => ({ area: r.area, city: r.city, count: Number(r.count) }));
   }
 
   /** Similar homes nearby and more homes in the same area, for the property page (decisions 77 and 80). */
@@ -281,7 +304,7 @@ export class SearchService {
              l."createdById", l."unitId", u."bedrooms", u."bathrooms", pt."label" AS "propertyTypeLabel", pt."code" AS "propertyTypeCode",
              b."area", b."ownerId", b."countryCode", b."cityId",
              ST_Y(b."location"::geometry) AS "lat", ST_X(b."location"::geometry) AS "lng", ${distance} AS "distance",
-             (cu."badgeRemovedAt" IS NULL) AS "badge"
+             (cu."badgeRemovedAt" IS NULL) AS "badge", c."name" AS "city", r."name" AS "region"
       FROM "Listing" l
         JOIN "User" cu ON cu."id" = l."createdById"
         JOIN "Unit" u ON u."id" = l."unitId"
@@ -335,6 +358,8 @@ export class SearchService {
           rent: { amountMinor: r.rentMinor.toString(), currency: r.currency },
           rentPeriod: r.rentPeriod,
           area: r.area,
+          city: r.city,
+          region: r.region,
           approximateLocation: approximateLocation(r.id, { lat: r.lat, lng: r.lng }, settingsByCountry.get(r.countryCode)!),
           distanceM: r.distance === null ? null : roundedDistance(r.distance),
           // Every live listing has passed review: the lister is the identity-checked owner, or an agent with approved
