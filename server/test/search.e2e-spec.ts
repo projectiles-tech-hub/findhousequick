@@ -215,6 +215,22 @@ describe('Search, the property page and saved items (API, step 5 part 2)', () =>
       expect([...res.similar, ...res.nearby].every((c: { distanceM: unknown }) => c.distanceM === null)).toBe(true);
     });
 
+    it('gives the total, the city on each card, a city filter and the popular areas', async () => {
+      const landlord = await person(['LANDLORD']);
+      const area = `Popular${run}`;
+      await liveListing(landlord, at(70_000), { area });
+      await liveListing(landlord, at(70_300), { area: area.toUpperCase() });
+      await liveListing(landlord, at(70_600), { area: `Quiet${run}` });
+      const res = (await api().get(`/v1/search/listings?city=benin%20city&area=${area}`).expect(200)).body;
+      expect(res.total).toBe(2);
+      expect(res.items[0]).toMatchObject({ city: 'Benin City', region: expect.any(String) });
+      expect((await api().get('/v1/search/listings?city=Nowhere').expect(200)).body).toMatchObject({ items: [], total: 0 });
+      const areas = (await api().get('/v1/search/areas?city=Benin%20City&limit=30').expect(200)).body as { area: string; count: number }[];
+      const popular = areas.find((a) => a.area.toLowerCase() === area.toLowerCase())!;
+      expect(popular.count).toBe(2);
+      expect(areas.map((a) => a.count)).toEqual(areas.map((a) => a.count).toSorted((x, y) => y - x));
+    });
+
     it('limits how many property pages one device can open in an hour without signing in', async () => {
       const landlord = await person(['LANDLORD']);
       const listing = await liveListing(landlord, at(60_000));

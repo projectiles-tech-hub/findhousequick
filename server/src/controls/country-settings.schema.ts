@@ -191,6 +191,8 @@ export function publicCountrySettings(s: CountrySettings) {
     shortLet: { allowed: s.shortLet.allowed },
     listings: { defaultMinPhotosPerPart: s.listings.defaultMinPhotosPerPart, feeTypes: s.listings.feeTypes },
     inspections: { minLeadMinutes: s.inspections.minLeadMinutes, maxDaysAhead: s.inspections.maxDaysAhead },
+    // The choices offered in forms and search filters.
+    unitDetails: s.unitDetails,
     formats: s.formats,
   };
 }

@@ -54,7 +54,7 @@ build them as configurable settings, not hard-coded guesses.
 | --- | --- | --- |
 | API server | `server/` | Node.js 22, NestJS, TypeScript, Prisma, PostgreSQL 16 with PostGIS, Redis, BullMQ |
 | Apps (mobile, desktop, logged-in web) | `app/` | Flutter (Dart) |
-| Public website | `web/` | Next.js (not started) |
+| Public website | `web/` | Next.js (App Router), TypeScript; reads the API, holds no data of its own (ADR 0013) |
 | Local services | `infra/` | Docker Compose (PostgreSQL with PostGIS, Redis) |
 
 ## Rules that apply to all code
@@ -105,6 +105,16 @@ cd app
 flutter pub get
 flutter analyze && flutter test
 flutter run -d chrome
+```
+
+## Commands (public website, uses pnpm)
+
+```bash
+cd web
+pnpm install
+cp .env.example .env.local   # where the API and the signed-in app are
+pnpm dev                     # http://localhost:3100, with the API running on port 3000
+pnpm lint && pnpm typecheck && pnpm test && pnpm build
 ```
 
 ## API design

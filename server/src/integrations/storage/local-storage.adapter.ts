@@ -183,6 +183,8 @@ export class LocalStorageController {
       throw apiError(404, 'NOT_FOUND', 'This link is not valid or has run out.');
     }
     res.setHeader('Cache-Control', 'no-store');
+    // The website and the web app show photos from their own addresses; the signed link is the permission.
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     this.storage.readStream(claims.key).pipe(res);
   }
 }

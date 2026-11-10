@@ -1414,6 +1414,10 @@ paths:
           in: query
           description: An area name, e.g. GRA, for the public search pages.
           schema: { type: string, maxLength: 80 }
+        - name: city
+          in: query
+          description: A city name, e.g. Benin City, for the public search pages.
+          schema: { type: string, maxLength: 80 }
         - name: bbox
           in: query
           description: "south,west,north,east"
@@ -1468,7 +1472,36 @@ paths:
                       properties:
                         centre: { $ref: "#/components/schemas/LatLng" }
                         count: { type: integer }
+                  total: { type: integer, description: How many live listings match the search in all }
                   nextCursor: { type: [string, "null"] }
+
+  /search/areas:
+    get:
+      tags: [Search]
+      summary: The areas with the most live listings, with their counts, for "popular areas" (built)
+      description: Open to signed-out visitors. Used by the search pages (decisions 77 and 80).
+      security: []
+      parameters:
+        - name: city
+          in: query
+          description: A city name; all switched-on cities when left out.
+          schema: { type: string, maxLength: 80 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 30, default: 10 }
+      responses:
+        "200":
+          description: Areas, most listings first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    area: { type: string }
+                    city: { type: string }
+                    count: { type: integer }
 
   /search/places:
     get:
@@ -2718,6 +2751,8 @@ components:
         rent: { $ref: "#/components/schemas/Money" }
         rentPeriod: { type: string }
         area: { type: string }
+        city: { type: string }
+        region: { type: string, description: The state or region the city is in }
         approximateLocation: { $ref: "#/components/schemas/LatLng" }
         distanceM: { type: [integer, "null"] }
         badges: { type: array, items: { type: string, enum: [OWNER_VERIFIED, AUTHORITY_VERIFIED, SITE_INSPECTED, ESCROW_PROTECTED] } }

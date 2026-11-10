@@ -41,6 +41,7 @@ How particular parts are built, and why. Read the one for the area you are worki
 | `0010-search-and-the-property-page.md` | Step 5, part 2: search (around me, map, landmark and area), approximate positions, the property page for tenants and visitors, similar and nearby listings, viewing limits in Redis, and saved areas, places and favourites. |
 | `0011-messaging-calls-and-notifications.md` | Step 5, part 3: chat with automatic monitoring and phone sharing, voice calls inside the app, the live connection, notifications by push, email and SMS, and alerts for saved areas. |
 | `0012-inspections-reports-and-automatic-checks.md` | Step 5, part 4: inspection time slots, the exact position after confirmation, safety sharing and follow-up, reports, sanctions recorded against the verified identity, the automatic checks with the risk score, and fee types per country. |
+| `0013-public-website.md` | Step 5, part 5: the public website in `web/` (Next.js): how it is structured, how it reads the API, pages 107 and 108, what search engines see, and what is not built yet. |
 
 ## Reviews (`docs/reviews/`)
 

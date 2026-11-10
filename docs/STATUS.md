@@ -9,7 +9,7 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
 - **Release 0 (foundations)**: mostly complete; delivered in pull request #1. **Not yet done** (Technical
   Architecture, Section 15; found by the specification check, finding 4): screen designs for tenants, landlords,
   agents and staff are now done (step 2c below, all 217 designs approved); the test system on a cloud host (after the
-  hosting account, which needs a company dollar card); the public website code structure (with step 5).
+  hosting account, which needs a company dollar card); the public website code structure (built in step 5, part 5, pull request #51).
   - Database design (Release 1 plus escrow ledger) with database-level safety rules
   - Country settings and feature controls (48 switches, approvals, emergency switches, change record)
   - Seed data for Nigeria, Benin City, property types, documents
@@ -84,13 +84,12 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
   107 to 112 are drawn at 1366, 768 and 360 (18 designs) on the Penpot pages "32 Website: 107 to 109 Public
   search and listings" and "33 Website: 110 to 112 Public help and legal".
 
-- **Pages 107 and 108 redrawn** (decisions 75 to 80): in pull request #46, awaiting approval. On 2 November 2026
+- **Pages 107 and 108 redrawn** (decisions 75 to 80): approved. Merged in pull request #46 on 10 November 2026. On 2 November 2026
   Emmanuel found the public search results (107) and listing (108) pages too thin. They were redrawn in Figma
   (decision 78), at 1366, 768 and 360: signed-out visitors see full listings without the lister (decision 75), and
   both pages also show other properties and FindHouseQuick services (decision 77). The Penpot design system values
   are now written into `docs/designs.md`. Screens 25 (list of results) and 30 (property page) for signed-in users, on the
-  phone app and the website, were redrawn the same way, with the lister shown (decision 80). Still to do: Emmanuel's
-  review of the twelve designs.
+  phone app and the website, were redrawn the same way, with the lister shown (decision 80). All twelve designs are approved.
 
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
   #13. The server refuses actions above the user's level (`VERIFICATION_REQUIRED`, decision 64); identity
@@ -114,7 +113,7 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
   its first photos (with media upload, step 5); admin endpoints to switch cities on.
 
 - **Release 1 step 5, part 1 (ownership documents, agent authority, media upload, listings and submission)**: in
-  pull request #47, awaiting approval. Plan in `docs/adr/0009-media-listings-and-submission.md`, which also splits
+  pull request #47. Plan in `docs/adr/0009-media-listings-and-submission.md`, which also splits
   step 5 into five parts.
   - Ownership documents and authority letters through `/documents`; agent authority, approved by the landlord in the
     app or, with a letter, by the team after calling the landlord.
@@ -123,13 +122,13 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
     fingerprint, and three watermarked display copies behind 15-minute links. Videos have their length checked.
   - Listings: drafts, every fee entered, edits recorded, submission with a list of what is missing, the staff desk
     review, availability confirmation, hourly expiry, pause, resume, mark as rented and close.
-  - Still to do from this part: automatic blurring and the hidden watermark (with part 4); a watermarked copy of each
+  - Still to do from this part: automatic blurring and the hidden watermark (not built in part 4; the privacy
+    policy and the terms describe both, so they must be built before any real user signs up); a watermarked copy of each
     video (before any video is shown publicly); asking for the occupant's consent only when the unit is occupied (an
     "occupied" detail on units); the property page for tenants (part 2); a real storage provider adapter (Cloudflare
     R2) once the account is opened.
 
-- **Release 1 step 5, part 2 (search, the property page and saved items)**: in pull request #48, awaiting
-  approval. Built on pull requests #46 and #47, so it is merged after them. Plan in
+- **Release 1 step 5, part 2 (search, the property page and saved items)**: in pull request #48. Built on pull requests #46 and #47, so it is merged after them. Plan in
   `docs/adr/0010-search-and-the-property-page.md`.
   - Search: around me, landmark, map (grouped pins when zoomed out) and area, with every filter.
   - Positions are approximate and distances rounded until an inspection is confirmed.
@@ -173,6 +172,21 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
     document numbers; a reminder before an inspection and a prompt for the follow-up answers; blocking another
     user in chat; the directions link through the maps provider adapter.
 
+- **Release 1 step 5, part 5 (the public website)**: in pull request #51. Built on pull request #50, so it is merged
+  after it; pages 107 and 108 follow the designs in pull request #46. Plan in `docs/adr/0013-public-website.md`.
+  - The website's code structure in `web/` (Next.js), with its own checks in CI. This also completes the "public
+    website code structure" item left over from Release 0.
+  - Page 107 (search results) at `/homes` and page 108 (listing page) at `/homes/{id}`, at all three widths, made
+    from the API for each request, with titles, a sitemap and descriptions for search engines.
+  - The visitor's network address and a device id are passed to the API, so the viewing limits count each visitor.
+  - Small API additions: the total and the city on search results, a city filter, popular areas, and the unit
+    detail choices in `/controls`.
+  - Pages 110 (help), 111 (terms of use) and 112 (privacy policy) at `/help`, `/terms` and `/privacy`, from the
+    approved Penpot designs, with the terms and policy written in standard terms for Nigeria.
+  - The icons are the app's own set, exported from the design file; the header and footer are the approved ones.
+  - Still to do from this part: pages 106 and 109; the map and the "power and water" and "more filters" filters;
+    the lawyer's review of the terms and the privacy policy; the real support numbers and contact emails.
+
 ## Small follow-ups
 
 - Technical points from the specification check (finding 21): move rate limits to Redis (they are still counted in
@@ -185,6 +199,9 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
 
 ## Waiting for Emmanuel
 
+- Before the website goes live: the lawyer's review of the terms of use and the privacy policy; the real support
+  WhatsApp and phone numbers; the support and privacy emails; the name of the Data Protection Officer.
+- Which maps provider to use (Google Maps or Mapbox), for the map, place search, nearby amenities and travel times.
 - Before identity checks go live: how long identity images are kept after verification, after legal advice
   (Decisions Log open point 15). Step 3 is built with this as a country setting (decision 55) that is not yet set.
 - A company dollar card, so the hosting account (and the test system) can be opened (decision 42).
@@ -248,8 +265,8 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
    `contact.in_app_call`), notifications (decision 46) and alerts for saved areas: in pull request #49. Part 4,
    inspections with time slots (decision 45), reports, review tasks with badge removal and bans (decision 51), the
    Release 1 automatic checks and risk score (decision 58), and fee types shown on listings as a country setting
-   (decision 55): in pull request #50. Then:
-   - part 5: the public website code structure, with the public search and listing pages (decisions 75 and 77).
+   (decision 55): in pull request #50. Part 5, the public website code structure with the public search and listing
+   pages (decisions 75 and 77): in pull request #51.
 5a. **Scouts** (decisions 70 to 72; plan in `docs/adr/0008-scouts-and-referral-rewards.md`), after buildings and
     listings (steps 4 and 5): opting in, reporting vacant properties, inviting landlords, the referral record, the
     conflict checks and the staff referral screens, behind the switch `growth.scouts`. The scout routes are added
