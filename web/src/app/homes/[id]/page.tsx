@@ -129,7 +129,7 @@ export default async function ListingPageView({ params }: { params: Promise<{ id
         <div>
           <h1 className="page-title">{headline(h)}</h1>
           <p className="where">
-            <Icon name="pin" />
+            <Icon name="location" />
             {h.area}, {h.city} (approximate area)
           </p>
         </div>
@@ -168,12 +168,12 @@ export default async function ListingPageView({ params }: { params: Promise<{ id
             <div className="chips">
               {verified && (
                 <span className="badge badge--verified">
-                  <Icon name="shield" size={16} />
+                  <Icon name="shieldCheck" size={16} />
                   Verified lister
                 </span>
               )}
               <span className="badge badge--free">
-                <Icon name="home" size={16} />
+                <Icon name="calendar" size={16} />
                 Inspections are free
               </span>
             </div>
@@ -273,7 +273,7 @@ export default async function ListingPageView({ params }: { params: Promise<{ id
               </div>
             </dl>
             <p className="note note--free">
-              <Icon name="home" />
+              <Icon name="calendar" />
               Inspections are free. No fee may be charged that is not shown here.
             </p>
           </div>
@@ -286,7 +286,7 @@ export default async function ListingPageView({ params }: { params: Promise<{ id
               Chat with the lister
             </a>
             <p className="note note--locked">
-              <Icon name="lock" />
+              <Icon name="person" />
               <span>
                 <strong>{verified ? 'Verified lister' : 'Lister'}</strong>
                 Sign in or create a free account to see who is letting this home and to contact them.

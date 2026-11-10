@@ -13,7 +13,7 @@ export function ListingCardView({ card }: { card: ListingCard }) {
       <Link href={href} className="listing__photo" aria-label={card.title}>
         {/* Photo links expire after 15 minutes, so the photo is shown as it comes, with no image cache in between. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        {card.coverImage ? <img src={card.coverImage} alt="" loading="lazy" /> : <Icon name="image" size={28} />}
+        {card.coverImage ? <img src={card.coverImage} alt="" loading="lazy" /> : <Icon name="camera" size={28} />}
       </Link>
       <a className="listing__save" href={links.signIn(href)} aria-label="Sign in to save this home">
         <Icon name="heart" size={18} />
@@ -26,7 +26,7 @@ export function ListingCardView({ card }: { card: ListingCard }) {
           <Link href={href}>{card.title}</Link>
         </h3>
         <p className="listing__line">
-          <Icon name="pin" size={16} />
+          <Icon name="location" size={16} />
           {card.area}, {card.city}
         </p>
         <p className="listing__line">
@@ -37,7 +37,7 @@ export function ListingCardView({ card }: { card: ListingCard }) {
         </p>
         {verified && (
           <p className="badge badge--verified">
-            <Icon name="shield" size={16} />
+            <Icon name="shieldCheck" size={16} />
             Verified lister
           </p>
         )}

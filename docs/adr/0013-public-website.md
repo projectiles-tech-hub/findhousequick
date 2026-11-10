@@ -30,8 +30,9 @@ request, so it can only be merged after it.
 - **The design values are one stylesheet** (`web/src/app/globals.css`): the approved colours and text styles from
   `docs/designs.md`. The font, Source Sans 3, is packaged with the site, so no visitor's browser calls Google.
 - **One layout for three widths.** The pages follow the 1366, 768 and 360 designs with the same code.
-- **Icons** are simple outline icons standing in for the app's own set (decision 68), until that set is exported
-  from the design file.
+- **Icons** are the app's own set (decision 68), read out of the Penpot design file into
+  `web/scripts/penpot-icons.txt` and turned into code by `web/scripts/make-icons.mjs`. The set has no icon for
+  money, a photo, several people or a lock, so the nearest icons of the set are used there (check, camera, person).
 
 ### Pages
 

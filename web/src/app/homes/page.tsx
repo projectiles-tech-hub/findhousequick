@@ -220,19 +220,19 @@ export default async function HomesPage({ searchParams }: { searchParams: Params
             <h2 className="panel__title">Why rent on FindHouseQuick</h2>
             <ul className="reasons">
               <li>
-                <Icon name="shield" />
+                <Icon name="shieldCheck" />
                 Every landlord and agent has proved who they are
               </li>
               <li>
-                <Icon name="home" />
+                <Icon name="calendar" />
                 Inspections are always free. Report anyone who asks you to pay
               </li>
               <li>
-                <Icon name="cash" />
+                <Icon name="check" />
                 Rent and every fee are shown before you call
               </li>
               <li>
-                <Icon name="image" />
+                <Icon name="camera" />
                 Photos taken on site, room by room
               </li>
             </ul>

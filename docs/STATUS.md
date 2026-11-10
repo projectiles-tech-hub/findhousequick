@@ -176,7 +176,7 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
   - Small API additions: the total and the city on search results, a city filter, popular areas, and the unit
     detail choices in `/controls`.
   - Still to do from this part: pages 106 and 109 to 112; the map and the "power and water" and "more filters"
-    filters; the app's own icons in place of the stand-ins; a cookie notice with the privacy page.
+    filters; a cookie notice with the privacy page. The icons are the app's own set, exported from the design file.
 
 ## Small follow-ups
 
