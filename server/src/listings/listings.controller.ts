@@ -1,10 +1,13 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { CurrentUser } from '../accounts/auth.js';
+import { CurrentUser, Public } from '../accounts/auth.js';
 import { RequireLevel } from '../accounts/verification.guard.js';
-import type { RequestUser } from '../controls/request-context.js';
+import { contextFromRequest, type RequestUser } from '../controls/request-context.js';
 import { RequireFeature } from '../controls/require-feature.guard.js';
 import { PropertiesService } from '../properties/properties.service.js';
+import { SearchService } from '../search/search.service.js';
+import { ViewLimitsService } from '../search/view-limits.service.js';
 import { AuthoritiesService } from './authorities.service.js';
 import { AuthorityDecisionDto, CreateListingDto, ListingFieldsDto, ListingStatusDto, MyListingsQuery, RequestAuthorityDto } from './dto.js';
 import { ListingsService } from './listings.service.js';
@@ -17,6 +20,8 @@ export class ListingsController {
     private readonly listings: ListingsService,
     private readonly authorities: AuthoritiesService,
     private readonly properties: PropertiesService,
+    private readonly search: SearchService,
+    private readonly viewLimits: ViewLimitsService,
   ) {}
 
   @Post('listings')
@@ -41,10 +46,23 @@ export class ListingsController {
   }
 
   @Get('listings/:listingId')
-  @ApiOperation({ summary: 'A listing, as its lister sees it (the property page for tenants comes with search)' })
-  @ApiOkResponse({ description: 'The listing with its state, costs, gallery and review outcome' })
-  get(@CurrentUser() user: RequestUser, @Param('listingId', ParseUUIDPipe) listingId: string) {
-    return this.listings.get(user, listingId);
+  @Public()
+  @ApiOperation({
+    summary: 'Property page',
+    description:
+      'Those who manage the listing get its full owner view, whatever its state. Everyone else gets the property page of a ' +
+      'live listing: in full, but without the lister for signed-out visitors (decision 75). Opening property pages is ' +
+      'limited per hour, per account or, without sign-in, per device and network address (decision 52).',
+  })
+  @ApiOkResponse({ description: 'Owner view, or the property page' })
+  @ApiResponse({ status: 404, description: 'Not found, or not live' })
+  @ApiResponse({ status: 429, description: 'VIEW_LIMIT, with retryAfterSeconds' })
+  async get(@CurrentUser() user: RequestUser | undefined, @Param('listingId', ParseUUIDPipe) listingId: string, @Req() req: Request) {
+    if (user && (await this.listings.mayManage(user, listingId))) return this.listings.get(user, listingId);
+    const view = await this.search.publicView(listingId, user, contextFromRequest(req));
+    const deviceId = typeof req.headers['x-device-id'] === 'string' ? req.headers['x-device-id'].slice(0, 100) : null;
+    await this.viewLimits.countView({ userId: user?.id ?? null, ip: req.ip ?? null, deviceId });
+    return view;
   }
 
   @Patch('listings/:listingId')

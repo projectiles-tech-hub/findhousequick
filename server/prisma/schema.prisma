@@ -258,6 +258,7 @@ model User {
   authoritiesAsOwner  PropertyAuthority[]    @relation("AuthorityLandlord")
   savedSearches       SavedSearch[]
   savedListings       SavedListing[]
+  savedPlaces   SavedPlace[]
   sentMessages        Message[]
   inspectionsAsTenant Inspection[]           @relation("InspectionTenant")
   inspectionsAsHost   Inspection[]           @relation("InspectionHost")
@@ -826,6 +827,20 @@ model SavedSearch {
   user User @relation(fields: [userId], references: [id])
 
   @@index([area], map: "SavedSearch_area_gist", type: Gist)
+}
+
+/// A place the tenant chose to save, such as an office or school, for travel distances (decision 48).
+/// A tenant's location is never stored unless they save a place (Specification 15.2).
+model SavedPlace {
+  id        String                                @id @default(uuid(7)) @db.Uuid
+  userId    String                                @db.Uuid
+  name      String
+  location  Unsupported("geography(Point, 4326)")
+  createdAt DateTime                              @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 model SavedListing {

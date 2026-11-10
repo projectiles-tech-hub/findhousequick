@@ -64,6 +64,11 @@ export const countrySettingsSchema = z.object({
       maxCaptureAgeHours: z.number().int().min(1).max(720).default(72),
       /** A photo or video must be taken within this many metres of the building, plus the phone's reported accuracy. */
       captureRadiusMetres: z.number().int().min(10).max(1000).default(100),
+      /**
+       * Before an inspection is confirmed, a listing's map position is moved by up to this many metres, the same way
+       * every time, so the exact building stays private (Specification 4.3).
+       */
+      approximateLocationMetres: z.number().int().min(100).max(2000).default(300),
     })
     .prefault({}),
 
