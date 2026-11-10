@@ -43,12 +43,24 @@ request, so it can only be merged after it.
 - **`/homes/{id}` (page 108).** The photo mosaic, the facts, photos by room, key details, the description, the
   approximate area, the total to move in with only the country's fee types, similar homes and more homes in the
   area. The lister is not shown; the buttons to book an inspection, chat, save, compare and report lead to sign-in.
+- **`/help` (page 110), `/terms` (page 111) and `/privacy` (page 112)**, from the approved Penpot designs.
+  - Help: a search over the common questions, the support lines, and the five questions of the design, each
+    opening to show its answer.
+  - Terms and privacy: the eight sections of each design, with the list of sections beside them. The designs show
+    grey lines where the text goes; the text is written in standard terms from what the platform does, and must be
+    reviewed by the company's lawyer before any real user signs up.
+  - **The words are kept per country** (`web/src/content/ng/` for Nigeria), because laws, regulators and time
+    limits differ between countries. A country with no text written gets "not found", never another country's terms.
+  - **Contact details are settings,** not text in the code: the support lines, emails and address. One left empty
+    is not shown.
+- **One header and footer for every page:** the approved public website header and footer from Penpot. The Figma
+  redraw of pages 107 and 108 showed a slightly different header; the approved one is used on those pages too.
 - **`/` goes to `/homes`** until the home page (page 106) is built.
 - **Signing in and everything after it** happens in the signed-in web app, at the address in
   `NEXT_PUBLIC_APP_URL`, with a return address so the visitor comes back to the same page.
-- **Links to things not built yet are left out,** not shown dead: help, terms, privacy, "show on map", the app
-  store links (until their addresses are set), and the "power and water" and "more filters" chips, which the API
-  cannot filter by yet.
+- **Links to things not built yet are left out,** not shown dead: "show on map", "homes around me", the language
+  button (English is the only language until Release 3), the app store links (until their addresses are set), and
+  the "power and water" and "more filters" chips, which the API cannot filter by yet.
 - **Feature switches are respected:** short lets, shops and offices, scouts and alerts appear only when their
   switches are on.
 
@@ -82,7 +94,8 @@ request, so it can only be merged after it.
 
 ## Not in this part
 
-- Pages 106 (home) and 109 to 112 (sign-in prompt, help, terms, privacy).
+- Pages 106 (home) and 109 (sign-in prompt).
 - The map: it needs the maps provider.
-- A cookie notice: the device cookie is needed for the site to work, but the wording belongs with the privacy page.
+- A cookie banner: the only cookie is the device number, which the site needs to work and which the privacy policy
+  describes; whether a banner is still wanted is for the lawyer's review.
 - Languages other than English (Release 3, decision 40).

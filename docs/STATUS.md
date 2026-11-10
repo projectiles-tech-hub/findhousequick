@@ -116,7 +116,8 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
     fingerprint, and three watermarked display copies behind 15-minute links. Videos have their length checked.
   - Listings: drafts, every fee entered, edits recorded, submission with a list of what is missing, the staff desk
     review, availability confirmation, hourly expiry, pause, resume, mark as rented and close.
-  - Still to do from this part: automatic blurring and the hidden watermark (with part 4); a watermarked copy of each
+  - Still to do from this part: automatic blurring and the hidden watermark (not built in part 4; the privacy
+    policy and the terms describe both, so they must be built before any real user signs up); a watermarked copy of each
     video (before any video is shown publicly); asking for the occupant's consent only when the unit is occupied (an
     "occupied" detail on units); the property page for tenants (part 2); a real storage provider adapter (Cloudflare
     R2) once the account is opened.
@@ -175,8 +176,11 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
   - The visitor's network address and a device id are passed to the API, so the viewing limits count each visitor.
   - Small API additions: the total and the city on search results, a city filter, popular areas, and the unit
     detail choices in `/controls`.
-  - Still to do from this part: pages 106 and 109 to 112; the map and the "power and water" and "more filters"
-    filters; a cookie notice with the privacy page. The icons are the app's own set, exported from the design file.
+  - Pages 110 (help), 111 (terms of use) and 112 (privacy policy) at `/help`, `/terms` and `/privacy`, from the
+    approved Penpot designs, with the terms and policy written in standard terms for Nigeria.
+  - The icons are the app's own set, exported from the design file; the header and footer are the approved ones.
+  - Still to do from this part: pages 106 and 109; the map and the "power and water" and "more filters" filters;
+    the lawyer's review of the terms and the privacy policy; the real support numbers and contact emails.
 
 ## Small follow-ups
 
@@ -190,6 +194,9 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
 
 ## Waiting for Emmanuel
 
+- Before the website goes live: the lawyer's review of the terms of use and the privacy policy; the real support
+  WhatsApp and phone numbers; the support and privacy emails; the name of the Data Protection Officer.
+- Which maps provider to use (Google Maps or Mapbox), for the map, place search, nearby amenities and travel times.
 - Before identity checks go live: how long identity images are kept after verification, after legal advice
   (Decisions Log open point 15). Step 3 is built with this as a country setting (decision 55) that is not yet set.
 - A company dollar card, so the hosting account (and the test system) can be opened (decision 42).

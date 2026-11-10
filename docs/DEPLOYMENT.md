@@ -48,6 +48,8 @@ each page is made when it is asked for. `web/.env.example` shows the format.
 | `NEXT_PUBLIC_SITE_URL` | Yes | The website's public address | e.g. `https://findhousequick.com` | Used in the links given to search engines. Set before `pnpm build` |
 | `NEXT_PUBLIC_APP_URL` | Yes | The address of the signed-in web app, where "Sign in" and "Create an account" lead | e.g. `https://app.findhousequick.com` | Set before `pnpm build` |
 | `SITE_COUNTRY` | Yes | The country the website is shown for (ISO code) | `NG` | Its currency, switches and choices then come from the API |
+| `NEXT_PUBLIC_SUPPORT_WHATSAPP`, `NEXT_PUBLIC_SUPPORT_PHONE` | Before launch | The support lines shown on the help page | The real numbers, as people should read them | Not decided yet: the designs show placeholder numbers. A line left empty is not shown. Set before `pnpm build` |
+| `NEXT_PUBLIC_SUPPORT_EMAIL`, `NEXT_PUBLIC_PRIVACY_EMAIL`, `NEXT_PUBLIC_COMPANY_ADDRESS` | Before launch | Contact details shown at the end of the terms and the privacy policy | The company's support email, the Data Protection Officer's email, and the registered address | The privacy policy names a Data Protection Officer, so one must be appointed and this email must reach them. Set before `pnpm build` |
 | `NEXT_PUBLIC_PLAY_STORE_URL`, `NEXT_PUBLIC_APP_STORE_URL` | No | Store pages of the phone apps | When the apps are published | The "Get the app" links stay hidden until set |
 
 The website and the API must sit behind the same proxies, and `TRUST_PROXY_HOPS` on the API counts those proxies
@@ -165,7 +167,7 @@ company and its lawyer, not the developers, but no real user may sign up until t
 
 | Step | Status |
 | --- | --- |
-| Terms of use and privacy policy drafted by a lawyer and published | Not yet |
+| Terms of use and privacy policy drafted by a lawyer and published | Drafts written in standard terms and built into the website (`web/src/content/ng/`, pages `/terms` and `/privacy`, ADR 0013). **Still to do: the lawyer's review**, then any changes go into those two files |
 | Registration with the Nigeria Data Protection Commission | Not yet |
 | Data Protection Officer appointed | Not yet |
 | Data protection impact assessment written | Not yet |

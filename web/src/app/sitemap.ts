@@ -8,7 +8,12 @@ const PAGES = 25;
 
 /** The list of pages for search engines: the search page, each popular area, and the newest live listings. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const entries: MetadataRoute.Sitemap = [{ url: `${SITE}/homes`, changeFrequency: 'hourly' }];
+  const entries: MetadataRoute.Sitemap = [
+    { url: `${SITE}/homes`, changeFrequency: 'hourly' },
+    { url: `${SITE}/help`, changeFrequency: 'monthly' },
+    { url: `${SITE}/terms`, changeFrequency: 'monthly' },
+    { url: `${SITE}/privacy`, changeFrequency: 'monthly' },
+  ];
   try {
     for (const a of await popularAreas(undefined, 30)) entries.push({ url: `${SITE}${homesUrl({ city: a.city, area: a.area })}`.replaceAll('&', '&amp;'), changeFrequency: 'daily' });
     let cursor: string | undefined;

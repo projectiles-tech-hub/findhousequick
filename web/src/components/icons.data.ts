@@ -1,5 +1,5 @@
 // Made by scripts/make-icons.mjs from the app's own icon set in the design file (decision 68). Do not edit by hand.
-// Outline icons on a 24 by 24 grid, drawn with a stroke of 2.
+// Icons on a 24 by 24 grid, drawn with a stroke of 2; the filled ones also fill their shape.
 export const ICONS = {
   search: '<ellipse cx="10.75" cy="10.75" rx="6.25" ry="6.25"/><path d="M15.4 15.4L20 20"/>',
   map: '<path d="M3.5 6.6L9 4.5L15 6.9L20.5 4.8L20.5 17.4L15 19.5L9 17.1L3.5 19.2L3.5 6.6"/><path d="M9 4.5L9 17.1M15 6.9L15 19.5"/>',
@@ -30,4 +30,5 @@ export const ICONS = {
   mail: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.75 7L12 13.25L20.25 7"/>',
   power: '<path d="M13.25 3L5.75 13.25L11.5 13.25L10.75 21L18.25 10.75L12.5 10.75L13.25 3"/>',
   water: '<path d="M12 3.5C12 3.5 5.75 10.4 5.75 14.5C5.75 17.952 8.548 20.75 12 20.75C15.452 20.75 18.25 17.952 18.25 14.5C18.25 10.4 12 3.5 12 3.5L12 3.5"/><path d="M9.25 15C9.25 16.519 10.481 17.75 12 17.75"/>',
+  homeFilled: '<path d="M5.5 9L12 3.9L18.5 9L18.5 18.5C18.5 19.328 17.828 20 17 20L7 20C6.172 20 5.5 19.328 5.5 18.5Z" fill="currentColor"/><path d="M3.5 10.5L12 3.75L20.5 10.5"/>',
 } as const;
