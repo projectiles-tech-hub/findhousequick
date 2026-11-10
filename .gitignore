@@ -36,3 +36,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Redis snapshot written when Redis is run from the project folder
+dump.rdb
