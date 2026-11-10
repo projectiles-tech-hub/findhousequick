@@ -216,6 +216,8 @@ export class AccountsService {
 
   async logout(sessionId: string): Promise<void> {
     await this.sessions.endFamily(sessionId);
+    // A signed-out device stops getting push notifications (decision 46).
+    await this.prisma.pushDevice.deleteMany({ where: { sessionId } });
   }
 
   async me(userId: string) {

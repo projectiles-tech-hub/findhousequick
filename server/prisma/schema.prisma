@@ -219,32 +219,34 @@ enum AccountStatus {
 }
 
 model User {
-  id                  String        @id @default(uuid(7)) @db.Uuid
+  id                   String        @id @default(uuid(7)) @db.Uuid
   /// E.164. Required at registration; can be empty only if it was released to another account that confirmed it
   /// (ADR 0006). Both phone and email must be confirmed to reach level 1 (decisions 35 and 37).
-  phone               String?       @unique
-  email               String?       @unique
-  phoneVerifiedAt     DateTime?
-  emailVerifiedAt     DateTime?
-  passwordHash        String
-  firstName           String
-  lastName            String
-  countryCode         String        @db.Char(2)
-  types               UserType[]
-  language            String        @default("en")
-  status              AccountStatus @default(ACTIVE)
+  phone                String?       @unique
+  email                String?       @unique
+  phoneVerifiedAt      DateTime?
+  emailVerifiedAt      DateTime?
+  passwordHash         String
+  firstName            String
+  lastName             String
+  countryCode          String        @db.Char(2)
+  types                UserType[]
+  /// Which notifications the user receives, and by which channel (decision 46). Empty means the defaults.
+  notificationSettings Json          @default("{}")
+  language             String        @default("en")
+  status               AccountStatus @default(ACTIVE)
   /// Set when identity (NIN or national equivalent, selfie, liveness) has passed.
-  identityVerifiedAt  DateTime?
+  identityVerifiedAt   DateTime?
   /// Versions of the terms of use and privacy policy the user agreed to at registration, and when.
-  termsVersion        String?
-  privacyVersion      String?
-  consentedAt         DateTime?
+  termsVersion         String?
+  privacyVersion       String?
+  consentedAt          DateTime?
   /// Password attempts since the last correct one; each attempt is counted before it is checked.
   /// Reaching the limit pauses password sign-in until passwordLockedUntil (src/accounts/accounts.service.ts).
-  failedPasswordCount Int           @default(0)
-  passwordLockedUntil DateTime?
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  failedPasswordCount  Int           @default(0)
+  passwordLockedUntil  DateTime?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
 
   staff               StaffMember?
   agentProfile        AgentProfile?
@@ -258,7 +260,8 @@ model User {
   authoritiesAsOwner  PropertyAuthority[]    @relation("AuthorityLandlord")
   savedSearches       SavedSearch[]
   savedListings       SavedListing[]
-  savedPlaces   SavedPlace[]
+  savedPlaces         SavedPlace[]
+  pushDevices         PushDevice[]
   sentMessages        Message[]
   inspectionsAsTenant Inspection[]           @relation("InspectionTenant")
   inspectionsAsHost   Inspection[]           @relation("InspectionHost")
@@ -855,28 +858,99 @@ model SavedListing {
 }
 
 model Conversation {
-  id             String    @id @default(uuid(7)) @db.Uuid
-  listingId      String    @db.Uuid
-  tenantId       String    @db.Uuid
-  listerId       String    @db.Uuid
+  id                   String    @id @default(uuid(7)) @db.Uuid
+  listingId            String    @db.Uuid
+  tenantId             String    @db.Uuid
+  listerId             String    @db.Uuid
   /// Set when both sides agree to share phone numbers (after an inspection is booked).
-  phonesSharedAt DateTime?
-  createdAt      DateTime  @default(now())
+  phonesSharedAt       DateTime?
+  /// Each side's agreement to share phone numbers; when both are set, phonesSharedAt is set.
+  tenantPhoneConsentAt DateTime?
+  listerPhoneConsentAt DateTime?
+  /// When each side last read the conversation, for unread counts.
+  tenantReadAt         DateTime?
+  listerReadAt         DateTime?
+  lastMessageAt        DateTime  @default(now())
+  createdAt            DateTime  @default(now())
 
   listing  Listing   @relation(fields: [listingId], references: [id])
   messages Message[]
+  calls    Call[]
 
   @@unique([listingId, tenantId, listerId])
+  @@index([tenantId, lastMessageAt])
+  @@index([listerId, lastMessageAt])
+}
+
+enum MessageKind {
+  TEXT
+  /// A line left in the chat by a call inside the app (answered, missed or declined).
+  CALL
+}
+
+enum CallStatus {
+  RINGING
+  ANSWERED
+  DECLINED
+  MISSED
+  ENDED
+}
+
+/// A voice call inside the app between the two sides of a conversation (decision 44). Neither side sees the other's
+/// phone number; the call itself runs through the calling service's adapter.
+model Call {
+  id             String     @id @default(uuid(7)) @db.Uuid
+  conversationId String     @db.Uuid
+  callerId       String     @db.Uuid
+  calleeId       String     @db.Uuid
+  status         CallStatus @default(RINGING)
+  /// The calling service's own reference for the call.
+  providerRef    String?
+  startedAt      DateTime   @default(now())
+  answeredAt     DateTime?
+  endedAt        DateTime?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+
+  @@index([status, startedAt])
+  @@index([conversationId, startedAt])
+}
+
+enum DevicePlatform {
+  ANDROID
+  IOS
+  WEB
+  DESKTOP
+}
+
+/// A phone or computer registered for push notifications (decision 46). Removed when its session signs out.
+model PushDevice {
+  id            String         @id @default(uuid(7)) @db.Uuid
+  userId        String         @db.Uuid
+  /// The sign-in session (refresh token family) that registered it.
+  sessionId     String         @db.Uuid
+  platform      DevicePlatform
+  pushToken     String         @unique
+  /// iPhone only: the token for incoming-call alerts (decision 44).
+  voipPushToken String?
+  createdAt     DateTime       @default(now())
+  lastSeenAt    DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([sessionId])
 }
 
 model Message {
-  id             String   @id @default(uuid(7)) @db.Uuid
-  conversationId String   @db.Uuid
-  senderId       String   @db.Uuid
+  id             String      @id @default(uuid(7)) @db.Uuid
+  conversationId String      @db.Uuid
+  senderId       String      @db.Uuid
+  kind           MessageKind @default(TEXT)
   body           String
   /// Results of automatic monitoring, e.g. phone number or bank details detected.
   flags          Json?
-  createdAt      DateTime @default(now())
+  createdAt      DateTime    @default(now())
 
   conversation Conversation @relation(fields: [conversationId], references: [id])
   sender       User         @relation(fields: [senderId], references: [id])

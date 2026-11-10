@@ -6,12 +6,15 @@ import { redisConnection } from './redis-connection.js';
 import { ListingsModule } from '../listings/listings.module.js';
 import { ListingsService } from '../listings/listings.service.js';
 import { RetentionService } from './retention.service.js';
+import { MessagingModule } from '../messaging/messaging.module.js';
+import { CallsService } from '../messaging/calls.service.js';
 
 export { redisConnection };
 
 const QUEUE = 'maintenance';
 const PURGE_DOCUMENTS = 'purge-expired-documents';
 const EXPIRE_LISTINGS = 'expire-listings';
+const MISSED_CALLS = 'missed-calls';
 
 /**
  * Background jobs, run through BullMQ on Redis (decision 59: BullMQ starts with the first background job).
@@ -29,6 +32,7 @@ export class JobsRunner implements OnApplicationBootstrap, OnApplicationShutdown
     private readonly config: ConfigService<Env, true>,
     private readonly retention: RetentionService,
     private readonly listings: ListingsService,
+    private readonly calls: CallsService,
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
@@ -38,11 +42,14 @@ export class JobsRunner implements OnApplicationBootstrap, OnApplicationShutdown
     await this.queue.upsertJobScheduler(PURGE_DOCUMENTS, { pattern: '0 * * * *' }, { name: PURGE_DOCUMENTS });
     // Listings whose lister did not confirm availability in time (Specification 6.6).
     await this.queue.upsertJobScheduler(EXPIRE_LISTINGS, { pattern: '15 * * * *' }, { name: EXPIRE_LISTINGS });
+    // Calls nobody answered within a minute are marked missed (decision 44).
+    await this.queue.upsertJobScheduler(MISSED_CALLS, { pattern: '* * * * *' }, { name: MISSED_CALLS });
     this.worker = new Worker(
       QUEUE,
       async (job) => {
         if (job.name === PURGE_DOCUMENTS) return this.retention.purgeExpiredDocuments();
         if (job.name === EXPIRE_LISTINGS) return this.listings.expireOverdue();
+        if (job.name === MISSED_CALLS) return this.calls.sweepUnanswered();
         this.logger.warn(`Unknown job ${job.name}`);
       },
       { connection },
@@ -58,7 +65,7 @@ export class JobsRunner implements OnApplicationBootstrap, OnApplicationShutdown
 }
 
 @Module({
-  imports: [ListingsModule],
+  imports: [ListingsModule, MessagingModule],
   providers: [RetentionService, JobsRunner],
   exports: [RetentionService],
 })

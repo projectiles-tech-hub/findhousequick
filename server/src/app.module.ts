@@ -21,6 +21,11 @@ import { ReferenceModule } from './reference/reference.module.js';
 import { SmsModule } from './integrations/sms/sms.module.js';
 import { StaffModule } from './staff/staff.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { PushModule } from './integrations/push/push.module.js';
+import { CallsProviderModule } from './integrations/calls/calls.module.js';
+import { LiveModule } from './live/live.module.js';
+import { NotificationsModule } from './notifications/notifications.module.js';
+import { MessagingModule } from './messaging/messaging.module.js';
 
 @Module({
   imports: [
@@ -38,7 +43,11 @@ import { PrismaModule } from './prisma/prisma.module.js';
     EmailModule,
     IdentityProviderModule,
     StorageModule,
+    PushModule,
+    CallsProviderModule,
     AccountsModule,
+    LiveModule,
+    NotificationsModule,
     StaffModule,
     IdentityModule,
     DocumentsModule,
@@ -48,6 +57,7 @@ import { PrismaModule } from './prisma/prisma.module.js';
     SearchModule,
     ListingsModule,
     ReviewModule,
+    MessagingModule,
     JobsModule,
   ],
   controllers: [HealthController],

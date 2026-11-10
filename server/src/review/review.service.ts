@@ -5,6 +5,8 @@ import { ControlsService } from '../controls/controls.service.js';
 import type { RequestUser } from '../controls/request-context.js';
 import type { Prisma, ReviewTask } from '../generated/prisma/client.js';
 import { PRIVATE_STORAGE, type PrivateStorage } from '../integrations/storage/private-storage.js';
+import { AlertsService } from '../notifications/alerts.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { ListReviewTasksQuery, ReviewDecisionDto } from './dto.js';
 
@@ -29,6 +31,8 @@ export class ReviewService {
     private readonly prisma: PrismaService,
     private readonly controls: ControlsService,
     @Inject(PRIVATE_STORAGE) private readonly storage: PrivateStorage,
+    private readonly alerts: AlertsService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async list(staff: Staff, q: ListReviewTasksQuery) {
@@ -57,7 +61,7 @@ export class ReviewService {
    */
   async decide(actor: RequestUser, taskId: string, dto: ReviewDecisionDto) {
     const staff = actor.staff!;
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT "id" FROM "ReviewTask" WHERE "id" = ${taskId}::uuid FOR UPDATE`;
       const task = await tx.reviewTask.findUnique({ where: { id: taskId } });
       if (!task || !inScope(staff, task.countryCode)) throw apiError(404, 'NOT_FOUND', 'Task not found.');
@@ -106,6 +110,20 @@ export class ReviewService {
       });
       return this.withDetails(closed, tx);
     });
+    // After the decision is saved: tell the lister, and alert tenants whose saved areas cover a newly live listing.
+    if (result.type === 'LISTING_REVIEW') {
+      const listing = await this.prisma.listing.findUnique({ where: { id: result.entityId }, select: { id: true, title: true, createdById: true, status: true } });
+      if (listing) {
+        const live = listing.status === 'LIVE';
+        await this.notifications.notify(listing.createdById, 'LISTING_UPDATE', {
+          title: live ? 'Your listing is live' : 'Your listing needs changes',
+          body: live ? `${listing.title} is now live on FindHouseQuick.` : `${listing.title} was not approved. Open it to see what to correct.`,
+          data: { listingId: listing.id },
+        });
+        if (live) await this.alerts.listingWentLive(listing.id);
+      }
+    }
+    return result;
   }
 
   /**

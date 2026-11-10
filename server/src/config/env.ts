@@ -65,6 +65,16 @@ const envSchema = z.object({
    * 0 means none: the address is taken from the connection itself.
    */
   TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(0),
+  /**
+   * Which push service sends notifications to phones and computers (decision 46). "log" writes them to the server log
+   * instead; it is for development and tests only and is refused in production.
+   */
+  PUSH_PROVIDER: z.enum(['log']).default('log'),
+  /**
+   * Which calling service carries voice calls inside the app (decision 44). "test" makes made-up connection values and
+   * carries no voice; it is for development and tests only and is refused in production.
+   */
+  CALL_PROVIDER: z.enum(['test']).default('test'),
   /** The sender shown on emails, e.g. "FindHouseQuick <no-reply@findhousequick.com>". */
   EMAIL_FROM: z.string().min(3).default('FindHouseQuick <no-reply@findhousequick.com>'),
 }).superRefine((env, ctx) => {
@@ -79,6 +89,12 @@ const envSchema = z.object({
   }
   if (env.NODE_ENV === 'production' && env.STORAGE_PROVIDER === 'local') {
     ctx.addIssue({ code: 'custom', path: ['STORAGE_PROVIDER'], message: 'The "local" storage provider cannot be used in production' });
+  }
+  if (env.NODE_ENV === 'production' && env.PUSH_PROVIDER === 'log') {
+    ctx.addIssue({ code: 'custom', path: ['PUSH_PROVIDER'], message: 'The "log" push provider cannot be used in production' });
+  }
+  if (env.NODE_ENV === 'production' && env.CALL_PROVIDER === 'test') {
+    ctx.addIssue({ code: 'custom', path: ['CALL_PROVIDER'], message: 'The "test" calling service cannot be used in production' });
   }
   if (env.NODE_ENV === 'production' && env.EMAIL_PROVIDER === 'log') {
     ctx.addIssue({ code: 'custom', path: ['EMAIL_PROVIDER'], message: 'The "log" email provider cannot be used in production' });

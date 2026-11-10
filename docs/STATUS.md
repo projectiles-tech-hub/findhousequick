@@ -1,6 +1,6 @@
 # Project status
 
-Updated: 2 November 2026. Read this after CLAUDE.md at the start of every build session, and update it at the end.
+Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build session, and update it at the end.
 
 ## Where things stand
 
@@ -144,6 +144,19 @@ Updated: 2 November 2026. Read this after CLAUDE.md at the start of every build 
     - alerts for saved areas (part 3);
     - the exact position after a confirmed inspection (part 4).
 
+- **Release 1 step 5, part 3 (messaging, calls and notifications)**: in pull request #49. Built on pull request
+  #48, so it is merged after it. Plan in `docs/adr/0011-messaging-calls-and-notifications.md`.
+  - Chat between a tenant and the lister, with unread counts, automatic monitoring with a warning, and phone
+    numbers shared only after an inspection is booked and both sides agree.
+  - Voice calls inside the app (decision 44) through a calling service adapter, with a test service for
+    development; missed calls marked every minute; each call leaves a line in the chat.
+  - The live connection at `/v1/live` (decision 47), across several servers through Redis.
+  - Notifications by push, email and SMS, chosen per kind (decision 46), with a push adapter that logs for
+    development; device registration.
+  - Alerts for saved areas when a listing goes live; listers told when their listing goes live or is sent back.
+  - Still to do from this part: real push (Firebase) and calling service adapters once the accounts are opened;
+    notifications for inspections (part 4) and verification results.
+
 ## Small follow-ups
 
 - Technical points from the specification check (finding 21): move rate limits to Redis (they are still counted in
@@ -214,9 +227,9 @@ Updated: 2 November 2026. Read this after CLAUDE.md at the start of every build 
    of the building's location with the first photos (with media upload, step 5); admin endpoints to switch cities
    on (switched on in the database for now, see `docs/DEPLOYMENT.md`).
 5. **Step 5, in five parts** (ADR 0009). Part 1, documents and media upload, agent authority, listings and
-   submission: in pull request #47. Part 2, search, the property page and saved items: in pull request #48. Then:
-   - part 3: messaging with the live connection (decision 47), calls inside the app (decision 44, new feature switch
-     `contact.in_app_call`), notifications (decision 46) and alerts for saved areas;
+   submission: in pull request #47. Part 2, search, the property page and saved items: in pull request #48. Part 3,
+   messaging with the live connection (decision 47), calls inside the app (decision 44, new feature switch
+   `contact.in_app_call`), notifications (decision 46) and alerts for saved areas: in pull request #49. Then:
    - part 4: inspections with time slots (decision 45), reports, review tasks with badge removal and bans
      (decision 51), the Release 1 automatic checks and risk score (decision 58), and fee types shown on listings as
      a country setting (decision 55);
