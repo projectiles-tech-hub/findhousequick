@@ -56,6 +56,14 @@ The country settings used by identity checks (ADR 0007):
 
 The feature switch `verification.identity_check` (critical) turns identity checks on or off, like any other switch.
 
+The country settings used by photo and video upload (ADR 0009):
+
+| Country setting | Nigeria at launch | What it is | Notes |
+| --- | --- | --- | --- |
+| `listings.maxCaptureAgeHours` | 72 | A photo or video must be uploaded within this many hours of being taken | 1 to 720 |
+| `listings.captureRadiusMetres` | 100 | A photo or video must be taken within this many metres of the building, plus the phone's reported accuracy | 10 to 1000 |
+| `listings.confirmAvailabilityDays` | 14 | A live listing expires unless the lister confirms it is still available within this many days | 7 to 14 (Specification 6.6) |
+
 ## 2. Outside accounts
 
 All accounts are opened in the name of Projectiles Tech Hub Limited, with the Managing Director holding the master
@@ -90,6 +98,20 @@ login. Most need the CAC certificate (RC 7987623).
 - If a secret is ever exposed (pasted in a chat, committed by mistake), replace it at once. For
   `FIELD_ENCRYPTION_KEY`, ask a developer first: it needs a re-encryption step, not a simple swap.
 
+### Server software
+
+| Software | Why | How | Notes |
+| --- | --- | --- | --- |
+| ffmpeg (which includes ffprobe) | Reading the length of uploaded videos (ADR 0009); later, making the watermarked video copies | On Ubuntu: `sudo apt install ffmpeg`. In a container image, add the `ffmpeg` package | Needed on every server with `RUN_BACKGROUND_JOBS=true`. Without it, every video is rejected as UNREADABLE |
+| sharp (image library) | Processing photos: removing location data, quality checks, watermarked display copies | Installed with the server's packages (`pnpm install`); it brings its own image tools | Nothing to do by hand |
+
+### Background queues
+
+Photos and videos are processed on the `media` queue in Redis (ADR 0009). Every server can add work to it; servers
+with `RUN_BACKGROUND_JOBS=true` do the work, two items at a time each. An hourly job puts back any media left
+processing for more than 15 minutes, and another marks live listings whose lister did not confirm availability in
+time as expired. Nothing needs setting up beyond Redis.
+
 ## 4. One-time and manual steps
 
 | Step | When | How | Notes |
@@ -120,7 +142,7 @@ company and its lawyer, not the developers, but no real user may sign up until t
    is set (section 1).
 3. Database migrations applied (`npx prisma migrate deploy`) and starter data loaded (`pnpm db:seed`).
    The launch city and its state are switched on (section 4).
-4. `GET /v1/health` returns `status: ok`.
+4. `GET /v1/health` returns `status: ok`, and `ffprobe -version` works on every server that runs background jobs.
 5. The first super admin has been created (section 4) and has completed two-step login.
 6. Daily database backups are running and one restore has been tested.
 7. HTTPS works on the API and web app addresses.

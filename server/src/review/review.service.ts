@@ -1,3 +1,4 @@
+import { parseCountrySettings } from '../controls/country-settings.schema.js';
 import { Inject, Injectable } from '@nestjs/common';
 import { apiError } from '../common/api-error.js';
 import { ControlsService } from '../controls/controls.service.js';
@@ -80,6 +81,12 @@ export class ReviewService {
           });
           break;
         }
+        case 'LISTING_REVIEW':
+          await this.decideListing(tx, task, actor.id, approve, now);
+          break;
+        case 'AUTHORITY_CONFIRMATION':
+          await this.decideAuthority(tx, task, actor.id, approve, now);
+          break;
         default:
           throw apiError(400, 'OUTCOME_NOT_SUPPORTED', 'Tasks of this kind cannot be decided yet.');
       }
@@ -120,6 +127,44 @@ export class ReviewService {
       data: { actorId: actor.id, action: 'document.viewed', entityType: 'Document', entityId: doc.id, metadata: { reason }, ipAddress: ipAddress ?? null },
     });
     return { url, expiresAt };
+  }
+
+  /**
+   * Desk review of a listing (ADR 0009). Approving makes it live, starts its availability clock and passes the
+   * building's ownership documents; rejecting returns it to the lister, who may correct it and submit again.
+   */
+  private async decideListing(tx: Prisma.TransactionClient, task: ReviewTask, staffId: string, approve: boolean, now: Date) {
+    const listing = await tx.listing.findUnique({ where: { id: task.entityId }, include: { unit: { include: { building: true } } } });
+    if (!listing) throw apiError(404, 'NOT_FOUND', 'The listing no longer exists.');
+    const building = listing.unit.building;
+    if (listing.createdById === staffId || building.ownerId === staffId) throw apiError(403, 'OWN_CASE', 'You cannot decide your own case.');
+    if (listing.status !== 'IN_REVIEW') throw apiError(409, 'TASK_CLOSED', 'This listing is no longer waiting for review.');
+    if (!approve) {
+      await tx.listing.update({ where: { id: listing.id }, data: { status: 'REJECTED' } });
+      return;
+    }
+    const country = await tx.country.findUniqueOrThrow({ where: { code: building.countryCode } });
+    const days = parseCountrySettings(country.settings).listings.confirmAvailabilityDays;
+    await tx.listing.update({
+      where: { id: listing.id },
+      data: { status: 'LIVE', publishedAt: now, lastConfirmedAt: now, expiresAt: new Date(now.getTime() + days * 86_400_000) },
+    });
+    await tx.document.updateMany({ where: { buildingId: building.id, purpose: 'OWNERSHIP', uploadedAt: { not: null }, status: 'PENDING' }, data: { status: 'PASSED' } });
+  }
+
+  /** The team has called the landlord about an agent's letter of authority (Specification 3.5). */
+  private async decideAuthority(tx: Prisma.TransactionClient, task: ReviewTask, staffId: string, approve: boolean, now: Date) {
+    const authority = await tx.propertyAuthority.findUnique({ where: { id: task.entityId } });
+    if (!authority) throw apiError(404, 'NOT_FOUND', 'The request no longer exists.');
+    if (authority.agentId === staffId) throw apiError(403, 'OWN_CASE', 'You cannot decide your own case.');
+    if (authority.status !== 'REQUESTED') throw apiError(409, 'TASK_CLOSED', 'This request has already been decided.');
+    await tx.propertyAuthority.update({
+      where: { id: authority.id },
+      data: { status: approve ? 'APPROVED' : 'REJECTED', decidedAt: now, reviewedById: staffId },
+    });
+    if (authority.letterDocumentId) {
+      await tx.document.update({ where: { id: authority.letterDocumentId }, data: { status: approve ? 'PASSED' : 'FAILED' } });
+    }
   }
 
   private async decideIdentity(tx: Prisma.TransactionClient, task: ReviewTask, staffId: string, approve: boolean, now: Date) {

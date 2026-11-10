@@ -60,6 +60,10 @@ export const countrySettingsSchema = z.object({
       defaultMinPhotosPerPart: z.number().int().min(1).default(2),
       /** Distance in metres within which a new listing is flagged as a possible duplicate. */
       duplicateRadiusMetres: z.number().int().positive().default(15),
+      /** A photo or video must be uploaded within this many hours of being taken with the app's camera (ADR 0009). */
+      maxCaptureAgeHours: z.number().int().min(1).max(720).default(72),
+      /** A photo or video must be taken within this many metres of the building, plus the phone's reported accuracy. */
+      captureRadiusMetres: z.number().int().min(10).max(1000).default(100),
     })
     .prefault({}),
 

@@ -1013,10 +1013,11 @@ paths:
               properties:
                 method: { type: string, enum: [IN_APP_APPROVAL, LETTER] }
                 letterDocumentId: { $ref: "#/components/schemas/Id" }
+                landlordIdDocumentId: { $ref: "#/components/schemas/Id", description: "The landlord's identity document, uploaded as AUTHORITY_LETTER; needed with LETTER" }
                 validUntil: { type: string, format: date-time }
       responses:
         "201":
-          description: Request created.
+          description: "Request created. LETTER also creates an AUTHORITY_CONFIRMATION task: the team calls the landlord before approving." 
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Authority" }
@@ -1062,14 +1063,17 @@ paths:
   /documents:
     post:
       tags: [Documents]
-      summary: Start a private document upload (built for purpose IDENTITY)
+      summary: Start a private document upload (built for IDENTITY, OWNERSHIP and AUTHORITY_LETTER)
       x-verification-level: 1
       description: |
         Returns a short-lived upload address. Send the file there with PUT and `uploadHeaders`. Files go to
         private storage only; they are never publicly reachable. After upload, call
         `/documents/{id}/complete`, which checks the stored file's size and SHA-256 (lower-case hex) against
-        what was declared. Only purpose IDENTITY is open so far (document types in the country setting
-        `verification.idDocumentTypes`); the others open with buildings.
+        what was declared. IDENTITY uses the document types in the country setting
+        `verification.idDocumentTypes`. OWNERSHIP and AUTHORITY_LETTER need `buildingId` (ADR 0009):
+        ownership documents come from the landlord who owns the building, using the country's ownership
+        types; an agent's AUTHORITY_LETTER is either the letter itself or the landlord's identity document.
+        DISPUTE_EVIDENCE and OTHER are not open yet.
       parameters: [{ $ref: "#/components/parameters/IdempotencyKey" }]
       requestBody:
         required: true
@@ -1092,6 +1096,7 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/UploadTicket" }
         "400": { description: "`code` PURPOSE_NOT_AVAILABLE or DOCUMENT_TYPE_NOT_ACCEPTED (with `acceptedDocumentTypes`)." }
+        "404": { description: "The building is not found, or the user may not add this kind of document to it." }
         "409": { description: "`code` DOCUMENT_ALREADY_UPLOADED: the Idempotency-Key belongs to a finished upload." }
 
   /documents/{documentId}/complete:
@@ -1117,8 +1122,13 @@ paths:
       summary: Start a photo or video upload for one part of the unit
       description: |
         Only media captured with the app's camera is accepted. The app sends the capture time and
-        GPS reading recorded at the moment of capture. Uploads are resumable: large files are sent in
-        parts, and an interrupted upload continues from the last part received.
+        GPS reading recorded at the moment of capture; the capture must be within the country settings
+        `listings.maxCaptureAgeHours` and `listings.captureRadiusMetres` (plus the reported accuracy) of the
+        building. The kind must suit the part: photos for photo parts, VIDEO for the walkthrough;
+        PHOTO_360 and FLOOR_PLAN need their feature switches. Uploads are resumable (ADR 0009): send part n
+        of `partSizeBytes` to `partUrls[n-1]`; asking again with the same Idempotency-Key returns fresh links
+        and `receivedParts`. Media cannot change while the unit's listing is waiting for review, live or
+        paused (409 LISTING_LOCKED). Built in step 5, part 1.
       parameters:
         - { $ref: "#/components/parameters/UnitId" }
         - { $ref: "#/components/parameters/IdempotencyKey" }
@@ -1152,7 +1162,10 @@ paths:
                       mediaId: { $ref: "#/components/schemas/Id" }
                       partSizeBytes: { type: integer }
                       partUrls: { type: array, items: { type: string, format: uri } }
-        "422": { description: "Capture location too far from the building, or capture time too old." }
+                      receivedParts: { type: array, items: { type: integer }, description: Part numbers already received }
+        "400": { description: "`code` UNKNOWN_PART, WRONG_MEDIA_KIND, WRONG_CONTENT_TYPE or FILE_TOO_LARGE." }
+        "409": { description: "`code` LISTING_LOCKED or MEDIA_ALREADY_UPLOADED." }
+        "422": { description: "`code` CAPTURE_TOO_FAR (with `distanceM`), CAPTURE_TOO_OLD or CAPTURE_TIME_INVALID." }
     get:
       tags: [Media]
       summary: Media captured for the unit, grouped by part (owner, agents and staff)
@@ -1173,18 +1186,23 @@ paths:
       parameters: [{ $ref: "#/components/parameters/MediaId" }]
       responses:
         "202":
-          description: Processing started. Status becomes READY or REJECTED (with reasons such as BLURRY or TOO_DARK).
+          description: |
+            Processing started. Status becomes READY or REJECTED (with reasons such as BLURRY, TOO_DARK,
+            LOW_RESOLUTION, TOO_SHORT for a walkthrough under 20 seconds, or UNREADABLE).
           content:
             application/json:
               schema: { $ref: "#/components/schemas/MediaItem" }
+        "400": { description: "`code` UPLOAD_MISMATCH: the file is not the one declared; it is removed, start again." }
+        "409": { description: "`code` UPLOAD_NOT_FOUND, with `receivedParts` and `partCount`." }
 
   /media/{mediaId}:
     delete:
       tags: [Media]
-      summary: Remove a photo or video from a draft listing
+      summary: Remove a photo or video while the unit has no listing waiting for review, live or paused
       parameters: [{ $ref: "#/components/parameters/MediaId" }]
       responses:
         "204": { description: Removed. }
+        "409": { description: "`code` LISTING_LOCKED." }
 
   # ------------------------------------------------------------------
   # Listings
@@ -1274,9 +1292,11 @@ paths:
       summary: Submit for verification
       description: |
         Refused until every required part has its minimum photos and the walkthrough video, ownership
-        documents (landlord) or approved authority (agent) are in place. Runs the automatic checks,
-        sets the risk score and band, and then: GREEN goes live, AMBER goes to desk review, RED
-        needs a site visit.
+        documents (landlord) or approved authority (agent) are in place. Until the automatic checks and
+        risk score are built (step 5, part 4), every submitted listing goes to IN_REVIEW with a
+        LISTING_REVIEW task: a person reviews it before it goes live (ADR 0009). Then the automatic
+        checks set the risk score and band: GREEN goes live, AMBER goes to desk review, RED needs a
+        site visit. Built in step 5, part 1.
       parameters: [{ $ref: "#/components/parameters/ListingId" }]
       responses:
         "200":
@@ -1906,8 +1926,10 @@ paths:
       description: |
         IDENTITY_REVIEW and DUPLICATE_RESOLUTION: APPROVE passes the identity check (the user reaches level 2;
         refused with ID_HELD_BY_ANOTHER_ACCOUNT if the ID is verified on another account), REJECT fails it.
-        AGENT_PROFILE_REVIEW: APPROVE or REJECT. Other outcomes and task types answer OUTCOME_NOT_SUPPORTED
-        until their parts are built. Staff never decide their own case (OWN_CASE).
+        AGENT_PROFILE_REVIEW: APPROVE or REJECT. LISTING_REVIEW: APPROVE makes the listing live and starts
+        its availability clock; REJECT returns it to the lister. AUTHORITY_CONFIRMATION: APPROVE or REJECT
+        the agent's authority after calling the landlord. Other outcomes and task types answer
+        OUTCOME_NOT_SUPPORTED until their parts are built. Staff never decide their own case (OWN_CASE).
       parameters:
         - name: taskId
           in: path

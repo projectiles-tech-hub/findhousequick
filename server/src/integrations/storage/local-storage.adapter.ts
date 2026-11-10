@@ -53,6 +53,40 @@ export class LocalStorageAdapter implements PrivateStorage {
     await rm(this.pathOf(key), { force: true });
   }
 
+  async createPartUploadLinks(key: string, partCount: number, maxPartBytes: number, contentType: string, expiresAt: Date): Promise<UploadLink[]> {
+    const links: UploadLink[] = [];
+    for (let n = 1; n <= partCount; n++) {
+      const token = this.sign({ op: 'put', key: partKey(key, n), exp: expiresAt.getTime(), type: contentType, size: maxPartBytes });
+      links.push({ url: `${this.apiUrl}/v1/storage/local/${token}`, headers: { 'Content-Type': contentType } });
+    }
+    return links;
+  }
+
+  async uploadedParts(key: string, partCount: number): Promise<number[]> {
+    const got: number[] = [];
+    for (let n = 1; n <= partCount; n++) if (await this.exists(partKey(key, n))) got.push(n);
+    return got;
+  }
+
+  async assembleParts(key: string, partCount: number): Promise<StoredFile | null> {
+    const parts: Buffer[] = [];
+    for (let n = 1; n <= partCount; n++) {
+      try {
+        parts.push(await readFile(this.pathOf(partKey(key, n))));
+      } catch {
+        // Already joined earlier: the parts are gone but the file is there.
+        return n === 1 ? this.inspect(key) : null;
+      }
+    }
+    await this.write(key, Buffer.concat(parts));
+    for (let n = 1; n <= partCount; n++) await rm(this.pathOf(partKey(key, n)), { force: true });
+    return this.inspect(key);
+  }
+
+  async read(key: string): Promise<Buffer> {
+    return readFile(this.pathOf(key));
+  }
+
   /** Reads a signed link back. Returns null if it was altered or has run out. */
   verify(token: string): LinkClaims | null {
     const [payload, sig] = token.split('.');
@@ -64,7 +98,7 @@ export class LocalStorageAdapter implements PrivateStorage {
     return claims.exp > Date.now() ? claims : null;
   }
 
-  async write(key: string, data: Buffer): Promise<void> {
+  async write(key: string, data: Buffer, _contentType?: string): Promise<void> {
     const path = this.pathOf(key);
     await mkdir(dirname(path), { recursive: true });
     await writeFile(path, data);
@@ -92,6 +126,11 @@ export class LocalStorageAdapter implements PrivateStorage {
     if (!path.startsWith(this.root + sep)) throw new Error('Storage key outside the storage folder');
     return path;
   }
+}
+
+/** Where one part of a resumable upload is kept until the parts are joined. */
+function partKey(key: string, n: number): string {
+  return `${key}.part-${String(n).padStart(5, '0')}`;
 }
 
 interface LinkClaims {

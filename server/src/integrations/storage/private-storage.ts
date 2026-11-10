@@ -37,6 +37,23 @@ export interface PrivateStorage {
   createViewLink(key: string, expiresAt: Date): Promise<string>;
   /** Removes the file. Removing a file that is not there is not an error. */
   delete(key: string): Promise<void>;
+
+  // Resumable uploads (ADR 0009). A large file is sent in numbered parts (1 to partCount), each to its own link.
+  // Real providers map these to their multipart uploads; the development provider keeps each part as a file.
+
+  /** One upload link per part, in part order, valid until `expiresAt`. Each part may be up to `maxPartBytes`. */
+  createPartUploadLinks(key: string, partCount: number, maxPartBytes: number, contentType: string, expiresAt: Date): Promise<UploadLink[]>;
+  /** The part numbers already received for `key`, so an interrupted upload can carry on. */
+  uploadedParts(key: string, partCount: number): Promise<number[]>;
+  /**
+   * Joins parts 1 to partCount into one file under `key` and removes the parts. Returns what is stored, or null if a
+   * part is missing (nothing is changed then). Joining a file that was already joined returns it as stored.
+   */
+  assembleParts(key: string, partCount: number): Promise<StoredFile | null>;
+  /** The stored file's bytes, for processing on the server. */
+  read(key: string): Promise<Buffer>;
+  /** Stores bytes made on the server, such as a display copy of a photo. */
+  write(key: string, data: Buffer, contentType: string): Promise<void>;
 }
 
 /** Injection token for the storage adapter chosen in configuration (STORAGE_PROVIDER). */

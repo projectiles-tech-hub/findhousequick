@@ -113,6 +113,21 @@ Updated: 2 November 2026. Read this after CLAUDE.md at the start of every build 
   request #44 on 2 November 2026 (decision 56). Still to do from this step: comparing a building's location with
   its first photos (with media upload, step 5); admin endpoints to switch cities on.
 
+- **Release 1 step 5, part 1 (ownership documents, agent authority, media upload, listings and submission)**: in
+  pull request #47, awaiting approval. Plan in `docs/adr/0009-media-listings-and-submission.md`, which also splits
+  step 5 into five parts.
+  - Ownership documents and authority letters through `/documents`; agent authority, approved by the landlord in the
+    app or, with a letter, by the team after calling the landlord.
+  - Resumable photo and video upload in parts, checked against where and when it was taken.
+  - Photo processing on the `media` queue: location data removed, quality checks (blurred, dark, small),
+    fingerprint, and three watermarked display copies behind 15-minute links. Videos have their length checked.
+  - Listings: drafts, every fee entered, edits recorded, submission with a list of what is missing, the staff desk
+    review, availability confirmation, hourly expiry, pause, resume, mark as rented and close.
+  - Still to do from this part: automatic blurring and the hidden watermark (with part 4); a watermarked copy of each
+    video (before any video is shown publicly); asking for the occupant's consent only when the unit is occupied (an
+    "occupied" detail on units); the property page for tenants (part 2); a real storage provider adapter (Cloudflare
+    R2) once the account is opened.
+
 ## Small follow-ups
 
 - Technical points from the specification check (finding 21): move rate limits to Redis (they are still counted in
@@ -182,10 +197,9 @@ Updated: 2 November 2026. Read this after CLAUDE.md at the start of every build 
    unit details checked against choices held in the country settings. Still to do from this step: the comparison
    of the building's location with the first photos (with media upload, step 5); admin endpoints to switch cities
    on (switched on in the database for now, see `docs/DEPLOYMENT.md`).
-5. Documents and media upload (private storage adapter), listings and submission, search and the property page
-   (signed-out visitors see listings in full, without the lister, decision 75; similar and nearby listings,
-   decision 77; viewing limits per account, and per device and network address when signed out, in Redis,
-   decisions 52 and 75; saved
+5. **Step 5, in five parts** (ADR 0009). Part 1, documents and media upload, agent authority, listings and
+   submission: in pull request #47. Then part 2, search and the property page
+   (summary only for signed-out visitors, decision 39; viewing limits per account in Redis, decision 52; saved
    places and travel distance, decision 48), saved items, messaging with the live connection (decision 47) and
    calls inside the app (decision 44, new feature switch `contact.in_app_call`), inspections with time slots
    (decision 45), notifications (decision 46), reports, review tasks with badge removal and bans (decision 51),
