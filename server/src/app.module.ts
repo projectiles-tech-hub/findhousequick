@@ -26,6 +26,8 @@ import { CallsProviderModule } from './integrations/calls/calls.module.js';
 import { LiveModule } from './live/live.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { MessagingModule } from './messaging/messaging.module.js';
+import { InspectionsModule } from './inspections/inspections.module.js';
+import { ReportsModule } from './reports/reports.module.js';
 
 @Module({
   imports: [
@@ -58,6 +60,8 @@ import { MessagingModule } from './messaging/messaging.module.js';
     ListingsModule,
     ReviewModule,
     MessagingModule,
+    ReportsModule,
+    InspectionsModule,
     JobsModule,
   ],
   controllers: [HealthController],

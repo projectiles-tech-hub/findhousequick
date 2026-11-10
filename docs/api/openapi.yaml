@@ -1757,8 +1757,11 @@ paths:
   /listings/{listingId}/inspection-availability:
     put:
       tags: [Inspections]
-      summary: Set the times the lister is available for inspections (decision 45)
-      description: Landlord or authorised agent only. Weekly windows, with the slot length; dates can be blocked.
+      summary: Set the times the lister is available for inspections (decision 45) (built)
+      description: |
+        Those who manage the listing only. Weekly windows in the country's time zone, with the slot
+        length; dates can be blocked. `GET` on the same path returns what is set. 400 INVALID_AVAILABILITY
+        lists the problems.
       parameters: [{ $ref: "#/components/parameters/ListingId" }]
       requestBody:
         required: true
@@ -1775,14 +1778,17 @@ paths:
   /listings/{listingId}/inspection-slots:
     get:
       tags: [Inspections]
-      summary: Free inspection time slots for a listing (decision 45)
+      summary: Free inspection time slots for a live listing (decision 45) (built)
+      description: |
+        Slots inside the lister's windows that are not blocked, not taken, at least the country's notice
+        period away (`inspections.minLeadMinutes`) and within `inspections.maxDaysAhead`.
       parameters:
         - { $ref: "#/components/parameters/ListingId" }
         - { name: from, in: query, required: true, schema: { type: string, format: date } }
         - { name: to, in: query, required: true, schema: { type: string, format: date, description: At most 14 days after from } }
       responses:
         "200":
-          description: Free slots, in the listing's local time zone and as UTC start times.
+          description: Free slots, as UTC start and end times, soonest first.
           content:
             application/json:
               schema:
@@ -1796,8 +1802,11 @@ paths:
   /listings/{listingId}/inspections:
     post:
       tags: [Inspections]
-      summary: Book an inspection (always free)
-      description: The time must be one of the free slots from `/listings/{listingId}/inspection-slots` (decision 45).
+      summary: Book an inspection (always free) (built)
+      description: |
+        The time must be one of the free slots from `/listings/{listingId}/inspection-slots` (decision 45):
+        otherwise 409 SLOT_NOT_FREE. One open inspection per tenant per listing (409 ALREADY_BOOKED);
+        nobody books their own listing (400 OWN_LISTING).
       x-verification-level: 2
       x-feature: contact.inspection_booking
       parameters: [{ $ref: "#/components/parameters/ListingId" }]
@@ -1821,7 +1830,7 @@ paths:
   /me/inspections:
     get:
       tags: [Inspections]
-      summary: Inspections the user booked or hosts
+      summary: Inspections the user booked or hosts, newest first (built)
       parameters: [{ $ref: "#/components/parameters/Cursor" }]
       responses:
         "200":
@@ -1837,8 +1846,13 @@ paths:
   /inspections/{inspectionId}/status:
     post:
       tags: [Inspections]
-      summary: Confirm, reschedule, cancel, complete or mark no-show
-      description: Confirming releases the exact location and directions to the tenant.
+      summary: Confirm, reschedule, cancel, complete or mark no-show (built)
+      description: |
+        The side that did not propose the time confirms it (409 NOT_YOURS_TO_CONFIRM otherwise): the
+        lister after a booking, the tenant after the lister reschedules. RESCHEDULE needs `scheduledAt`,
+        a free slot, and returns the inspection to REQUESTED. Either side may CANCEL, with a `reason`.
+        COMPLETE and NO_SHOW apply to a confirmed inspection once its time has come (409 TOO_EARLY).
+        Confirming releases the exact location, address and directions to the tenant.
       parameters: [{ $ref: "#/components/parameters/InspectionId" }]
       requestBody:
         required: true
@@ -1861,7 +1875,11 @@ paths:
   /inspections/{inspectionId}/safety-share:
     post:
       tags: [Inspections]
-      summary: Send inspection details to a trusted contact by SMS
+      summary: Send inspection details to a trusted contact by SMS (built)
+      description: |
+        Tenant only, once the inspection is confirmed (409 NOT_CONFIRMED). Sends the address, the time and
+        the lister's name. Limited per inspection (429 TOO_MANY_SHARES; country setting
+        `inspections.maxSafetyShares`). The contact's number is not stored.
       x-feature: contact.inspection_safety_share
       parameters: [{ $ref: "#/components/parameters/InspectionId" }]
       requestBody:
@@ -1880,7 +1898,10 @@ paths:
   /inspections/{inspectionId}/follow-up:
     post:
       tags: [Inspections]
-      summary: Answer the follow-up questions after an inspection
+      summary: Answer the follow-up questions after a completed inspection (built)
+      description: |
+        A tenant's "No" on `matchedListing` raises the listing's risk score and is sent to the
+        verification team as a report (Specification 6.4).
       parameters: [{ $ref: "#/components/parameters/InspectionId" }]
       requestBody:
         required: true
@@ -1904,7 +1925,8 @@ paths:
   /listings/{listingId}/reports:
     post:
       tags: [Reports]
-      summary: Report a listing (fake, already taken, inspection fee demanded, extra fees, does not match)
+      summary: Report a listing (fake, already taken, inspection fee demanded, extra fees, does not match) (built)
+      x-verification-level: 1
       x-feature: trust.report_button
       parameters: [{ $ref: "#/components/parameters/ListingId" }]
       requestBody:
@@ -1921,6 +1943,8 @@ paths:
                 details: { type: string, maxLength: 2000 }
       responses:
         "201": { description: Report received and queued for review. }
+        "409": { description: "ALREADY_REPORTED: the user's earlier report of this listing is still open." }
+        "429": { description: "TOO_MANY_REPORTS: at most 10 reports a day." }
 
   # ------------------------------------------------------------------
   # Admin (staff only; every action is recorded)
@@ -1954,14 +1978,23 @@ paths:
   /admin/review-tasks/{taskId}/decision:
     post:
       tags: [Admin]
-      summary: Record the outcome of a review, site visit or report (built for identity, duplicate ID and agent company reviews)
+      summary: Record the outcome of a review, site visit or report (built)
       description: |
         IDENTITY_REVIEW and DUPLICATE_RESOLUTION: APPROVE passes the identity check (the user reaches level 2;
         refused with ID_HELD_BY_ANOTHER_ACCOUNT if the ID is verified on another account), REJECT fails it.
         AGENT_PROFILE_REVIEW: APPROVE or REJECT. LISTING_REVIEW: APPROVE makes the listing live and starts
-        its availability clock; REJECT returns it to the lister. AUTHORITY_CONFIRMATION: APPROVE or REJECT
-        the agent's authority after calling the landlord. Other outcomes and task types answer
-        OUTCOME_NOT_SUPPORTED until their parts are built. Staff never decide their own case (OWN_CASE).
+        its availability clock; REJECT returns it to the lister; NEEDS_SITE_VISIT opens a SITE_VISIT task
+        and the listing keeps waiting. SITE_VISIT: APPROVE or REJECT, as for a listing review.
+        RANDOM_AUDIT: APPROVE leaves the listing live; REJECT takes it down for correction.
+        DUPLICATE_RESOLUTION about a building: APPROVE (a different building) or REJECT (the same
+        property; its listings are taken down). AUTHORITY_CONFIRMATION: APPROVE or REJECT the agent's
+        authority after calling the landlord. REPORT: NO_ACTION, WARN_USER, REMOVE_BADGE, SUSPEND_USER,
+        BAN_USER or NEEDS_SITE_VISIT; each sanction is recorded against the lister's verified identity
+        (decision 51). Suspension signs the lister out and pauses their listings; a ban removes them and
+        blocks the same ID on any other account. `removeListing` also takes the reported listing down.
+        An outcome a task does not take answers OUTCOME_NOT_SUPPORTED, with the list `allowed`. Staff
+        never decide their own case (OWN_CASE), and staff accounts are not sanctioned through a report
+        (STAFF_ACCOUNT).
       parameters:
         - name: taskId
           in: path
@@ -1980,6 +2013,7 @@ paths:
                   description: REMOVE_BADGE and BAN_USER are recorded against the user's verified identity (decision 51).
                   enum: [APPROVE, REJECT, NEEDS_SITE_VISIT, MERGE_DUPLICATE, WARN_USER, REMOVE_BADGE, SUSPEND_USER, BAN_USER, NO_ACTION]
                 notes: { type: string }
+                removeListing: { type: boolean, description: "With a REPORT task: also take the reported listing down" }
       responses:
         "200":
           description: Recorded.
@@ -2593,6 +2627,17 @@ components:
         legalFee: { $ref: "#/components/schemas/Money" }
         cautionDeposit: { $ref: "#/components/schemas/Money" }
         serviceCharge: { $ref: "#/components/schemas/Money" }
+        fees:
+          type: array
+          description: |
+            The fee types shown in the listing's country, in the order of the cost box (country setting
+            `listings.feeTypes`, decision 55). On the property page a fee type that is not shown is null
+            above and absent here, and cannot be charged (400 FEE_NOT_ALLOWED when a lister enters it).
+          items:
+            type: object
+            properties:
+              type: { type: string, enum: [AGENCY_FEE, LEGAL_FEE, CAUTION_DEPOSIT, SERVICE_CHARGE] }
+              amount: { $ref: "#/components/schemas/Money" }
         total: { $ref: "#/components/schemas/Money" }
         inspectionFee: { type: string, const: FREE }
 
@@ -2800,6 +2845,17 @@ components:
         listingId: { $ref: "#/components/schemas/Id" }
         scheduledAt: { type: string, format: date-time }
         status: { type: string, enum: [REQUESTED, CONFIRMED, CANCELLED, COMPLETED, NO_SHOW] }
+        listingTitle: { type: string }
+        role: { type: string, enum: [TENANT, HOST], description: The caller's side }
+        awaitingYou: { type: boolean, description: True when the caller is the one who must confirm the proposed time }
+        note: { type: [string, "null"] }
+        cancelReason: { type: [string, "null"] }
+        address: { type: [string, "null"], description: "Released with the exact location" }
+        followUp:
+          type: object
+          properties:
+            matchedListing: { type: [boolean, "null"] }
+            rented: { type: [boolean, "null"] }
         exactLocation:
           oneOf:
             - $ref: "#/components/schemas/LatLng"

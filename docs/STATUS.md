@@ -134,8 +134,8 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
   - Still to do from this part:
     - a maps provider adapter (Google Maps or Mapbox) for place search, nearby amenities and travel times; until
       then amenities are empty and distances are straight lines;
-    - alerts for saved areas (part 3);
-    - the exact position after a confirmed inspection (part 4).
+    - alerts for saved areas (built in part 3);
+    - the exact position after a confirmed inspection (built in part 4).
 
 - **Release 1 step 5, part 3 (messaging, calls and notifications)**: in pull request #49. Built on pull request
   #48, so it is merged after it. Plan in `docs/adr/0011-messaging-calls-and-notifications.md`.
@@ -148,7 +148,23 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
     development; device registration.
   - Alerts for saved areas when a listing goes live; listers told when their listing goes live or is sent back.
   - Still to do from this part: real push (Firebase) and calling service adapters once the accounts are opened;
-    notifications for inspections (part 4) and verification results.
+    notifications for verification results.
+
+- **Release 1 step 5, part 4 (inspections, reports, enforcement and the automatic checks)**: in pull request #50.
+  Built on pull request #49, so it is merged after it. Plan in
+  `docs/adr/0012-inspections-reports-and-automatic-checks.md`.
+  - Inspections with time slots (decision 45): availability, booking, confirming, rescheduling, cancelling,
+    completing; the exact position, address and directions for the tenant once confirmed; safety sharing by SMS;
+    follow-up answers.
+  - Reports of listings, and what the team can do about them (decision 51): warning, badge removal, suspension and
+    ban, each recorded against the verified identity; a banned ID is refused on any other account.
+  - The Release 1 automatic checks and the risk score (decision 58): green listings go live at once, amber go to a
+    desk review, red wait for a site visit; random audits; site visit, audit and duplicate building tasks can be
+    decided.
+  - Fee types shown on listings as a country setting (decision 55).
+  - Still to do from this part: the walkthrough's GPS path (needs the phone app, step 6); automatic reading of
+    document numbers; a reminder before an inspection and a prompt for the follow-up answers; blocking another
+    user in chat; the directions link through the maps provider adapter.
 
 ## Small follow-ups
 
@@ -222,10 +238,10 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
 5. **Step 5, in five parts** (ADR 0009). Part 1, documents and media upload, agent authority, listings and
    submission: in pull request #47. Part 2, search, the property page and saved items: in pull request #48. Part 3,
    messaging with the live connection (decision 47), calls inside the app (decision 44, new feature switch
-   `contact.in_app_call`), notifications (decision 46) and alerts for saved areas: in pull request #49. Then:
-   - part 4: inspections with time slots (decision 45), reports, review tasks with badge removal and bans
-     (decision 51), the Release 1 automatic checks and risk score (decision 58), and fee types shown on listings as
-     a country setting (decision 55);
+   `contact.in_app_call`), notifications (decision 46) and alerts for saved areas: in pull request #49. Part 4,
+   inspections with time slots (decision 45), reports, review tasks with badge removal and bans (decision 51), the
+   Release 1 automatic checks and risk score (decision 58), and fee types shown on listings as a country setting
+   (decision 55): in pull request #50. Then:
    - part 5: the public website code structure, with the public search and listing pages (decisions 75 and 77).
 5a. **Scouts** (decisions 70 to 72; plan in `docs/adr/0008-scouts-and-referral-rewards.md`), after buildings and
     listings (steps 4 and 5): opting in, reporting vacant properties, inviting landlords, the referral record, the

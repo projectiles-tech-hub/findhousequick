@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsIn, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsIn, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
 
 export const REVIEW_TASK_TYPES = [
   'LISTING_REVIEW',
@@ -45,7 +45,7 @@ export class ListReviewTasksQuery {
 }
 
 export class ReviewDecisionDto {
-  @ApiProperty({ enum: REVIEW_OUTCOMES, description: 'Identity and agent company reviews take APPROVE or REJECT' })
+  @ApiProperty({ enum: REVIEW_OUTCOMES, description: 'Which outcomes a task takes depends on its type; others answer OUTCOME_NOT_SUPPORTED' })
   @IsIn(REVIEW_OUTCOMES)
   outcome!: (typeof REVIEW_OUTCOMES)[number];
 
@@ -55,6 +55,11 @@ export class ReviewDecisionDto {
   @MinLength(3)
   @MaxLength(2000)
   notes!: string;
+
+  @ApiPropertyOptional({ description: 'With a REPORT task: also take the reported listing down' })
+  @IsOptional()
+  @IsBoolean()
+  removeListing?: boolean;
 }
 
 export class ViewDocumentDto {

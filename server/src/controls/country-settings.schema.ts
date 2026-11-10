@@ -69,6 +69,25 @@ export const countrySettingsSchema = z.object({
        * every time, so the exact building stays private (Specification 4.3).
        */
       approximateLocationMetres: z.number().int().min(100).max(2000).default(300),
+      /**
+       * Which of the fixed fees are shown on listings in this country, in the order of the cost box (decision 55).
+       * A fee type that is not listed cannot be charged: listers cannot enter it and it is not shown.
+       */
+      feeTypes: z
+        .array(z.enum(['AGENCY_FEE', 'LEGAL_FEE', 'CAUTION_DEPOSIT', 'SERVICE_CHARGE']))
+        .refine((a) => new Set(a).size === a.length, { message: 'must not repeat a fee type' })
+        .default(['AGENCY_FEE', 'LEGAL_FEE', 'CAUTION_DEPOSIT', 'SERVICE_CHARGE']),
+    })
+    .prefault({}),
+
+  inspections: z
+    .object({
+      /** A slot can be booked only this many minutes or more before it starts, so the lister has notice. */
+      minLeadMinutes: z.number().int().min(0).max(10_080).default(120),
+      /** How many days ahead slots can be booked. */
+      maxDaysAhead: z.number().int().min(1).max(90).default(30),
+      /** How many times one inspection's details can be sent to a trusted contact; each SMS costs money. */
+      maxSafetyShares: z.number().int().min(1).max(10).default(3),
     })
     .prefault({}),
 
@@ -95,6 +114,23 @@ export const countrySettingsSchema = z.object({
       riskBands: z
         .object({ amberFrom: z.number().int().default(30), redFrom: z.number().int().default(60) })
         .prefault({}),
+      /** Points each automatic check adds to a listing's risk score when it finds something (Specification 6.4). */
+      riskPoints: z
+        .object({
+          /** Ownership documents the verification team has not yet matched to the owner's name. */
+          nameMatchPending: z.number().int().min(0).max(100).default(30),
+          /** Another building with an open listing at the same spot or address. */
+          duplicateLocation: z.number().int().min(0).max(100).default(40),
+          /** A photo that matches one on another building. */
+          duplicatePhoto: z.number().int().min(0).max(100).default(40),
+          /** A document number already used on another building. */
+          duplicateDocument: z.number().int().min(0).max(100).default(60),
+          /** A tenant said after an inspection that the property did not match the listing. */
+          tenantMismatch: z.number().int().min(0).max(100).default(20),
+        })
+        .prefault({}),
+      /** Two photo fingerprints (64 bits) differing in this many bits or fewer count as the same photo. */
+      photoMatchBits: z.number().int().min(0).max(16).default(6),
     })
     .prefault({}),
 
@@ -153,7 +189,8 @@ export function publicCountrySettings(s: CountrySettings) {
       completedRentalLandlordBps: s.fees.completedRentalLandlordBps,
     },
     shortLet: { allowed: s.shortLet.allowed },
-    listings: { defaultMinPhotosPerPart: s.listings.defaultMinPhotosPerPart },
+    listings: { defaultMinPhotosPerPart: s.listings.defaultMinPhotosPerPart, feeTypes: s.listings.feeTypes },
+    inspections: { minLeadMinutes: s.inspections.minLeadMinutes, maxDaysAhead: s.inspections.maxDaysAhead },
     formats: s.formats,
   };
 }

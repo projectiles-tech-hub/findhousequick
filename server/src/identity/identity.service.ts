@@ -107,6 +107,15 @@ export class IdentityService {
     }
     const idNumberHash = idLookupHash(this.lookupSecret, u.countryCode, dto.idType, idNumber);
 
+    // A ban is recorded against the verified identity, so the same person cannot return on a new account (decision 51).
+    const banned = await this.prisma.enforcementAction.findFirst({ where: { kind: 'BAN', idNumberHash, userId: { not: user.id } }, select: { id: true } });
+    if (banned) {
+      await this.prisma.auditLog.create({
+        data: { actorId: user.id, action: 'identity.banned_id_used', entityType: 'EnforcementAction', entityId: banned.id, metadata: { idType: dto.idType } },
+      });
+      throw apiError(403, 'ID_BANNED', 'This ID cannot be used on FindHouseQuick. Please contact support.');
+    }
+
     const { check, duplicate } = await this.prisma.$transaction(async (tx) => {
       // Lock the user's row so two checks started at the same moment are handled one after the other.
       await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${user.id}::uuid FOR UPDATE`;
