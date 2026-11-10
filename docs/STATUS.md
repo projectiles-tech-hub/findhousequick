@@ -84,6 +84,14 @@ Updated: 2 November 2026. Read this after CLAUDE.md at the start of every build 
   107 to 112 are drawn at 1366, 768 and 360 (18 designs) on the Penpot pages "32 Website: 107 to 109 Public
   search and listings" and "33 Website: 110 to 112 Public help and legal".
 
+- **Pages 107 and 108 redrawn** (decisions 75 to 80): in pull request #46, awaiting approval. On 2 November 2026
+  Emmanuel found the public search results (107) and listing (108) pages too thin. They were redrawn in Figma
+  (decision 78), at 1366, 768 and 360: signed-out visitors see full listings without the lister (decision 75), and
+  both pages also show other properties and FindHouseQuick services (decision 77). The Penpot design system values
+  are now written into `docs/designs.md`. Screens 25 (list of results) and 30 (property page) for signed-in users, on the
+  phone app and the website, were redrawn the same way, with the lister shown (decision 80). Still to do: Emmanuel's
+  review of the twelve designs.
+
 - **Release 1 step 3, first part (verification ladder and identity checks)**: complete. Merged in pull request
   #13. The server refuses actions above the user's level (`VERIFICATION_REQUIRED`, decision 64); identity
   checks (NIN, selfie, liveness) through a provider adapter, with a test provider for development; one ID on two
@@ -140,7 +148,7 @@ Updated: 2 November 2026. Read this after CLAUDE.md at the start of every build 
 2c. ~~**Screen designs in Penpot**~~: done (pull requests #16 to #41). (Release 0 work; decisions 42, 67 and 73): the 112 screens listed in
     `docs/designs.md`, for tenants, landlords, agents, scouts and staff and the public website, on the phone app
     (87), the website (112) and the desktop software (18, staff screens only): 217 designs. The step is complete
-    only when all 217 are approved. All 217 approved by 29 October 2026. Produced in the build sessions with the Penpot connector in Emmanuel's file "Release 1 Screens", for his
+    only when all 217 are approved. All 217 approved by 29 October 2026; the six designs of pages 107 and 108 were redrawn in Figma on 2 November 2026 for review (decisions 75 to 80, pull request #46; screens 25 and 30 redrawn too). Produced in the build sessions with the Penpot connector in Emmanuel's file "Release 1 Screens", for his
     review and approval; if the connector is not reliable, Claude's Design artifact type is used instead and
     Emmanuel is told. No longer blocked: the connector was tested on 23 October 2026. Order: the design system
     first (for approval before any screen), then the screens in groups, phone layouts first, then the staff screens
@@ -175,7 +183,9 @@ Updated: 2 November 2026. Read this after CLAUDE.md at the start of every build 
    of the building's location with the first photos (with media upload, step 5); admin endpoints to switch cities
    on (switched on in the database for now, see `docs/DEPLOYMENT.md`).
 5. Documents and media upload (private storage adapter), listings and submission, search and the property page
-   (summary only for signed-out visitors, decision 39; viewing limits per account in Redis, decision 52; saved
+   (signed-out visitors see listings in full, without the lister, decision 75; similar and nearby listings,
+   decision 77; viewing limits per account, and per device and network address when signed out, in Redis,
+   decisions 52 and 75; saved
    places and travel distance, decision 48), saved items, messaging with the live connection (decision 47) and
    calls inside the app (decision 44, new feature switch `contact.in_app_call`), inspections with time slots
    (decision 45), notifications (decision 46), reports, review tasks with badge removal and bans (decision 51),
