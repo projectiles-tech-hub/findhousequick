@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { apiError } from '../common/api-error.js';
 import { ControlsService } from '../controls/controls.service.js';
 import type { RequestUser } from '../controls/request-context.js';
-import type { Prisma, ReviewTask } from '../generated/prisma/client.js';
+import type { EnforcementKind, Prisma, ReviewTask } from '../generated/prisma/client.js';
 import { PRIVATE_STORAGE, type PrivateStorage } from '../integrations/storage/private-storage.js';
 import { AlertsService } from '../notifications/alerts.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
@@ -66,18 +66,25 @@ export class ReviewService {
       const task = await tx.reviewTask.findUnique({ where: { id: taskId } });
       if (!task || !inScope(staff, task.countryCode)) throw apiError(404, 'NOT_FOUND', 'Task not found.');
       if (task.status === 'DONE' || task.status === 'CANCELLED') throw apiError(409, 'TASK_CLOSED', 'This task has already been decided.');
-      if (dto.outcome !== 'APPROVE' && dto.outcome !== 'REJECT') {
-        throw apiError(400, 'OUTCOME_NOT_SUPPORTED', 'This kind of task takes APPROVE or REJECT.');
-      }
-      const approve = dto.outcome === 'APPROVE';
       const now = new Date();
+      // Each kind of task takes its own outcomes.
+      const only = (...allowed: ReviewDecisionDto['outcome'][]) => {
+        if (!allowed.includes(dto.outcome)) throw apiError(400, 'OUTCOME_NOT_SUPPORTED', `This kind of task takes ${allowed.join(', ')}.`, { allowed });
+      };
+      const approve = dto.outcome === 'APPROVE';
 
       switch (task.type) {
         case 'IDENTITY_REVIEW':
-        case 'DUPLICATE_RESOLUTION':
+          only('APPROVE', 'REJECT');
           await this.decideIdentity(tx, task, actor.id, approve, now);
           break;
+        case 'DUPLICATE_RESOLUTION':
+          only('APPROVE', 'REJECT');
+          if (task.entityType === 'Building') await this.decideBuildingDuplicate(tx, task, actor.id, approve);
+          else await this.decideIdentity(tx, task, actor.id, approve, now);
+          break;
         case 'AGENT_PROFILE_REVIEW': {
+          only('APPROVE', 'REJECT');
           if (task.entityId === actor.id) throw apiError(403, 'OWN_CASE', 'You cannot decide your own case.');
           await tx.agentProfile.update({
             where: { userId: task.entityId },
@@ -86,10 +93,25 @@ export class ReviewService {
           break;
         }
         case 'LISTING_REVIEW':
+          only('APPROVE', 'REJECT', 'NEEDS_SITE_VISIT');
+          if (dto.outcome === 'NEEDS_SITE_VISIT') await this.sendForSiteVisit(tx, task, actor.id, dto.notes);
+          else await this.decideListing(tx, task, actor.id, approve, now);
+          break;
+        case 'SITE_VISIT':
+          only('APPROVE', 'REJECT');
           await this.decideListing(tx, task, actor.id, approve, now);
           break;
+        case 'RANDOM_AUDIT':
+          only('APPROVE', 'REJECT');
+          await this.decideAudit(tx, task, actor.id, approve);
+          break;
         case 'AUTHORITY_CONFIRMATION':
+          only('APPROVE', 'REJECT');
           await this.decideAuthority(tx, task, actor.id, approve, now);
+          break;
+        case 'REPORT':
+          only('NO_ACTION', 'WARN_USER', 'REMOVE_BADGE', 'SUSPEND_USER', 'BAN_USER', 'NEEDS_SITE_VISIT');
+          await this.decideReport(tx, task, actor.id, dto, now);
           break;
         default:
           throw apiError(400, 'OUTCOME_NOT_SUPPORTED', 'Tasks of this kind cannot be decided yet.');
@@ -111,7 +133,7 @@ export class ReviewService {
       return this.withDetails(closed, tx);
     });
     // After the decision is saved: tell the lister, and alert tenants whose saved areas cover a newly live listing.
-    if (result.type === 'LISTING_REVIEW') {
+    if ((result.type === 'LISTING_REVIEW' || result.type === 'SITE_VISIT') && dto.outcome !== 'NEEDS_SITE_VISIT') {
       const listing = await this.prisma.listing.findUnique({ where: { id: result.entityId }, select: { id: true, title: true, createdById: true, status: true } });
       if (listing) {
         const live = listing.status === 'LIVE';
@@ -123,7 +145,108 @@ export class ReviewService {
         if (live) await this.alerts.listingWentLive(listing.id);
       }
     }
+    if (result.type === 'REPORT') await this.afterReport(result.entityId, dto);
     return result;
+  }
+
+  /** A desk reviewer asks for a visit: the listing keeps waiting and a site visit task is opened. */
+  private async sendForSiteVisit(tx: Prisma.TransactionClient, task: ReviewTask, staffId: string, notes: string) {
+    const listing = await tx.listing.findUnique({ where: { id: task.entityId }, include: { unit: { include: { building: true } } } });
+    if (!listing) throw apiError(404, 'NOT_FOUND', 'The listing no longer exists.');
+    if (listing.createdById === staffId || listing.unit.building.ownerId === staffId) throw apiError(403, 'OWN_CASE', 'You cannot decide your own case.');
+    if (listing.status !== 'IN_REVIEW') throw apiError(409, 'TASK_CLOSED', 'This listing is no longer waiting for review.');
+    await tx.reviewTask.create({
+      data: { type: 'SITE_VISIT', countryCode: task.countryCode, entityType: 'Listing', entityId: listing.id, notes: `Asked for at the desk review: ${notes}`.slice(0, 1000) },
+    });
+  }
+
+  /** A random visit of a live listing (Specification 6.4). Approve leaves it live; reject takes it down for correction. */
+  private async decideAudit(tx: Prisma.TransactionClient, task: ReviewTask, staffId: string, approve: boolean) {
+    const listing = await tx.listing.findUnique({ where: { id: task.entityId }, include: { unit: { include: { building: true } } } });
+    if (!listing) throw apiError(404, 'NOT_FOUND', 'The listing no longer exists.');
+    if (listing.createdById === staffId || listing.unit.building.ownerId === staffId) throw apiError(403, 'OWN_CASE', 'You cannot decide your own case.');
+    if (!approve) await tx.listing.updateMany({ where: { id: listing.id, status: { in: ['LIVE', 'PAUSED'] } }, data: { status: 'REJECTED' } });
+  }
+
+  /**
+   * A building flagged as a possible duplicate when it was registered (Specification 6.5). Approve: it is a different
+   * building. Reject: it is the same property, so its open listings are taken down.
+   */
+  private async decideBuildingDuplicate(tx: Prisma.TransactionClient, task: ReviewTask, staffId: string, approve: boolean) {
+    const building = await tx.building.findUnique({ where: { id: task.entityId }, select: { id: true, ownerId: true, createdById: true } });
+    if (!building) throw apiError(404, 'NOT_FOUND', 'The building no longer exists.');
+    if (building.ownerId === staffId || building.createdById === staffId) throw apiError(403, 'OWN_CASE', 'You cannot decide your own case.');
+    if (!approve) {
+      await tx.listing.updateMany({
+        where: { unit: { buildingId: building.id }, status: { in: ['DRAFT', 'SUBMITTED', 'IN_REVIEW', 'LIVE', 'PAUSED'] } },
+        data: { status: 'REJECTED' },
+      });
+    }
+  }
+
+  /**
+   * A report about a listing (Specification 7.2 and 7.3, decision 51). The team may take no action, warn the lister,
+   * remove their verified badge, suspend or ban them, or ask for a visit. Each sanction is recorded against the
+   * lister's verified identity. Suspending or banning always takes their listings down; otherwise the reported
+   * listing is taken down when removeListing is set.
+   */
+  private async decideReport(tx: Prisma.TransactionClient, task: ReviewTask, staffId: string, dto: ReviewDecisionDto, now: Date) {
+    const report = await tx.listingReport.findUnique({ where: { id: task.entityId }, include: { listing: { select: { id: true, createdById: true } } } });
+    if (!report) throw apiError(404, 'NOT_FOUND', 'The report no longer exists.');
+    const listerId = report.listing.createdById;
+    if (listerId === staffId || report.reporterId === staffId) throw apiError(403, 'OWN_CASE', 'You cannot decide your own case.');
+    await tx.listingReport.update({ where: { id: report.id }, data: { status: 'DONE' } });
+
+    if (dto.outcome === 'NEEDS_SITE_VISIT') {
+      await tx.reviewTask.create({
+        data: { type: 'RANDOM_AUDIT', countryCode: task.countryCode, entityType: 'Listing', entityId: report.listingId, notes: `Visit after a report (${report.reason}): ${dto.notes}`.slice(0, 1000) },
+      });
+    }
+    const kind = ({ WARN_USER: 'WARNING', REMOVE_BADGE: 'BADGE_REMOVED', SUSPEND_USER: 'SUSPENSION', BAN_USER: 'BAN' } as const)[dto.outcome as 'WARN_USER'];
+    if (kind) await this.sanction(tx, listerId, kind, task, staffId, dto.notes, now);
+    if (dto.removeListing && dto.outcome !== 'NO_ACTION') {
+      await tx.listing.updateMany({ where: { id: report.listingId, status: { in: ['LIVE', 'PAUSED'] } }, data: { status: 'REMOVED' } });
+    }
+  }
+
+  /** Applies a sanction and records it against the user's verified identity (decision 51). */
+  private async sanction(tx: Prisma.TransactionClient, userId: string, kind: EnforcementKind, task: ReviewTask, staffId: string, reason: string, now: Date) {
+    const user = await tx.user.findUniqueOrThrow({ where: { id: userId }, select: { countryCode: true, staff: { select: { active: true } } } });
+    if (user.staff?.active) throw apiError(409, 'STAFF_ACCOUNT', 'A staff account is handled by a super admin, not through a report.');
+    const identity = await tx.identityVerification.findFirst({ where: { userId, status: 'PASSED' }, orderBy: { completedAt: 'desc' }, select: { idType: true, idNumberHash: true } });
+    await tx.enforcementAction.create({
+      data: { userId, kind, reason, reviewTaskId: task.id, staffId, countryCode: user.countryCode, idType: identity?.idType ?? null, idNumberHash: identity?.idNumberHash ?? null },
+    });
+    if (kind === 'BADGE_REMOVED') await tx.user.update({ where: { id: userId }, data: { badgeRemovedAt: now } });
+    if (kind === 'SUSPENSION' || kind === 'BAN') {
+      await tx.user.update({ where: { id: userId }, data: { status: kind === 'BAN' ? 'BANNED' : 'SUSPENDED' } });
+      // Every device is signed out, and their listings leave the search: paused for a suspension, removed for a ban.
+      await tx.refreshToken.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: now } });
+      await tx.pushDevice.deleteMany({ where: { userId } });
+      if (kind === 'SUSPENSION') await tx.listing.updateMany({ where: { createdById: userId, status: 'LIVE' }, data: { status: 'PAUSED' } });
+      else await tx.listing.updateMany({ where: { createdById: userId, status: { in: ['DRAFT', 'SUBMITTED', 'IN_REVIEW', 'LIVE', 'PAUSED', 'REJECTED'] } }, data: { status: 'REMOVED' } });
+    }
+    await tx.auditLog.create({
+      data: { actorId: staffId, action: `enforcement.${kind.toLowerCase()}`, entityType: 'User', entityId: userId, metadata: { taskId: task.id, reason } },
+    });
+  }
+
+  /** After a report is decided: a warning or badge removal is told to the lister; the reporter is thanked. */
+  private async afterReport(reportId: string, dto: ReviewDecisionDto) {
+    const report = await this.prisma.listingReport.findUnique({ where: { id: reportId }, include: { listing: { select: { id: true, title: true, createdById: true } } } });
+    if (!report) return;
+    if (dto.outcome === 'WARN_USER' || dto.outcome === 'REMOVE_BADGE') {
+      await this.notifications.notify(report.listing.createdById, 'LISTING_UPDATE', {
+        title: dto.outcome === 'WARN_USER' ? 'Warning about your listing' : 'Your verified badge was removed',
+        body: `After a report about ${report.listing.title}, our team reviewed your account. Please open the app for details.`,
+        data: { listingId: report.listing.id },
+      });
+    }
+    await this.notifications.notify(report.reporterId, 'LISTING_UPDATE', {
+      title: 'Your report was reviewed',
+      body: `Thank you. Our team has reviewed your report about ${report.listing.title}.`,
+      data: { listingId: report.listing.id },
+    });
   }
 
   /**
@@ -277,6 +400,44 @@ export class ReviewService {
           businessName: p.businessName,
           registrationNumber: p.registrationNumber,
           profileStatus: p.status,
+        },
+      };
+    }
+    if (task.entityType === 'Listing') {
+      const l = await db.listing.findUnique({ where: { id: task.entityId }, select: { id: true, title: true, status: true, riskScore: true, riskBand: true, submittedAt: true, createdById: true } });
+      if (!l) return { ...base, details: null };
+      // The results of the latest run of the automatic checks (Specification 6.3).
+      const checks = await db.verificationCheck.findMany({ where: { listingId: l.id, ...(l.submittedAt ? { ranAt: { gte: l.submittedAt } } : {}) }, orderBy: { ranAt: 'asc' } });
+      return {
+        ...base,
+        details: {
+          listingId: l.id,
+          title: l.title,
+          listingStatus: l.status,
+          listerId: l.createdById,
+          riskScore: l.riskScore,
+          riskBand: l.riskBand,
+          checks: checks.map((c) => ({ type: c.type, result: c.result, riskPoints: c.riskPoints, details: c.details })),
+        },
+      };
+    }
+    if (task.entityType === 'ListingReport') {
+      const r = await db.listingReport.findUnique({ where: { id: task.entityId }, include: { listing: { select: { id: true, title: true, status: true, createdById: true } } } });
+      if (!r) return { ...base, details: null };
+      // Earlier sanctions guide the next one: a warning, then the badge, then suspension (Specification 7.2).
+      const earlier = await db.enforcementAction.findMany({ where: { userId: r.listing.createdById }, orderBy: { createdAt: 'asc' }, select: { kind: true, createdAt: true } });
+      return {
+        ...base,
+        details: {
+          reportId: r.id,
+          reason: r.reason,
+          reportDetails: r.details,
+          reporterId: r.reporterId,
+          listingId: r.listing.id,
+          title: r.listing.title,
+          listingStatus: r.listing.status,
+          listerId: r.listing.createdById,
+          earlierSanctions: earlier,
         },
       };
     }

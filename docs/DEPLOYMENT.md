@@ -69,6 +69,12 @@ The country settings used by photo and video upload (ADR 0009):
 | `listings.maxCaptureAgeHours` | 72 | A photo or video must be uploaded within this many hours of being taken | 1 to 720 |
 | `listings.captureRadiusMetres` | 100 | A photo or video must be taken within this many metres of the building, plus the phone's reported accuracy | 10 to 1000 |
 | `listings.approximateLocationMetres` | 300 | Before an inspection is confirmed, a listing's map position is moved by up to this many metres, the same way every time (Specification 4.3; ADR 0010) | 100 to 2000 |
+| `listings.feeTypes` | all four | Which fixed fees are shown on listings, in order: `AGENCY_FEE`, `LEGAL_FEE`, `CAUTION_DEPOSIT`, `SERVICE_CHARGE` (decision 55; ADR 0012) | A fee type left out cannot be entered or charged |
+| `inspections.minLeadMinutes` | 120 | How long before it starts a slot can still be booked (ADR 0012) | 0 to 10,080 |
+| `inspections.maxDaysAhead` | 30 | How many days ahead inspections can be booked | 1 to 90 |
+| `inspections.maxSafetyShares` | 3 | How many times one inspection's details can be sent to a trusted contact by SMS | 1 to 10. Each SMS costs money |
+| `verification.riskPoints.*` | 30, 40, 40, 60, 20 | Points added to a listing's risk score by: `nameMatchPending`, `duplicateLocation`, `duplicatePhoto`, `duplicateDocument`, `tenantMismatch` (ADR 0012) | 0 to 100 each. With `verification.riskBands` (amber from 30, red from 60) they decide whether a listing goes live at once, to a desk review or to a site visit |
+| `verification.photoMatchBits` | 6 | How different two photo fingerprints may be and still count as the same photo | 0 to 16. Lower means stricter matching |
 | `listings.confirmAvailabilityDays` | 14 | A live listing expires unless the lister confirms it is still available within this many days | 7 to 14 (Specification 6.6) |
 
 ## 2. Outside accounts

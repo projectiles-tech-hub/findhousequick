@@ -7,6 +7,7 @@ import type { RequestUser } from '../controls/request-context.js';
 import { Prisma } from '../generated/prisma/client.js';
 import { PRIVATE_STORAGE, type PrivateStorage } from '../integrations/storage/private-storage.js';
 import { DISPLAY_LINK_MINUTES, MediaService } from '../media/media.service.js';
+import { shownFees } from '../listings/fee-types.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { approximateLocation, roundedDistance } from './approximate.js';
 import type { SearchFiltersDto, SearchListingsQuery } from './dto.js';
@@ -42,6 +43,8 @@ interface Row {
   lat: number;
   lng: number;
   distance: number | null;
+  /** False when staff removed the lister's verified badge (decision 51). */
+  badge: boolean;
 }
 
 export type ListingCard = Awaited<ReturnType<SearchService['cards']>>[number];
@@ -168,7 +171,7 @@ export class SearchService {
       where: { id: listingId },
       include: { unit: { include: { parts: { orderBy: { sortOrder: 'asc' } } } } },
     });
-    const createdBy = await this.prisma.user.findUniqueOrThrow({ where: { id: l.createdById }, select: { firstName: true, lastName: true, identityVerifiedAt: true, createdAt: true } });
+    const createdBy = await this.prisma.user.findUniqueOrThrow({ where: { id: l.createdById }, select: { firstName: true, lastName: true, identityVerifiedAt: true, badgeRemovedAt: true, createdAt: true } });
     const media = await this.prisma.mediaAsset.findMany({
       where: { unitId: l.unitId, status: 'READY', kind: { not: 'VIDEO' } },
       include: { unitPart: true },
@@ -190,22 +193,32 @@ export class SearchService {
         id: l.createdById,
         displayName: `${createdBy.firstName} ${createdBy.lastName}`.trim(),
         role: l.createdById === row.ownerId ? 'LANDLORD' : 'AGENT',
-        verified: !!createdBy.identityVerifiedAt,
+        verified: !!createdBy.identityVerifiedAt && !createdBy.badgeRemovedAt,
         memberSince: createdBy.createdAt,
         typicalResponseMinutes: null,
       };
     }
-    const total = l.rentMinor + l.agencyFeeMinor + l.legalFeeMinor + l.cautionDepositMinor + l.serviceChargeMinor;
+    // Only the fee types shown in this country appear in the cost box (decision 55).
+    const fees = shownFees(settings).map((f) => ({ type: f.type, field: f.field, minor: l[f.column] }));
+    const fee = (field: string) => {
+      const found = fees.find((f) => f.field === field);
+      return found ? money(found.minor) : null;
+    };
+    const total = fees.reduce((sum, f) => sum + f.minor, l.rentMinor);
+    // The exact position is released to a tenant whose inspection is confirmed (Specification 4.3).
+    const released =
+      !!user && (await this.prisma.inspection.count({ where: { listingId, tenantId: user.id, status: { in: ['CONFIRMED', 'COMPLETED'] } } })) > 0;
     return {
       ...card,
       kind: l.kind,
       description: l.description,
       moveInCost: {
         rent: money(l.rentMinor),
-        agencyFee: money(l.agencyFeeMinor),
-        legalFee: money(l.legalFeeMinor),
-        cautionDeposit: money(l.cautionDepositMinor),
-        serviceCharge: money(l.serviceChargeMinor),
+        agencyFee: fee('agencyFee'),
+        legalFee: fee('legalFee'),
+        cautionDeposit: fee('cautionDeposit'),
+        serviceCharge: fee('serviceCharge'),
+        fees: fees.map((f) => ({ type: f.type, amount: money(f.minor) })),
         total: money(total),
         inspectionFee: 'FREE',
       },
@@ -231,7 +244,7 @@ export class SearchService {
       // Filled from the maps provider when it is connected.
       nearbyAmenities: [],
       lister,
-      exactLocation: null,
+      exactLocation: released ? { lat: row.lat, lng: row.lng } : null,
     };
   }
 
@@ -267,8 +280,10 @@ export class SearchService {
       SELECT l."id", l."title", l."kind"::text AS "kind", l."rentMinor", l."rentPeriod"::text AS "rentPeriod", l."currency", l."publishedAt",
              l."createdById", l."unitId", u."bedrooms", u."bathrooms", pt."label" AS "propertyTypeLabel", pt."code" AS "propertyTypeCode",
              b."area", b."ownerId", b."countryCode", b."cityId",
-             ST_Y(b."location"::geometry) AS "lat", ST_X(b."location"::geometry) AS "lng", ${distance} AS "distance"
+             ST_Y(b."location"::geometry) AS "lat", ST_X(b."location"::geometry) AS "lng", ${distance} AS "distance",
+             (cu."badgeRemovedAt" IS NULL) AS "badge"
       FROM "Listing" l
+        JOIN "User" cu ON cu."id" = l."createdById"
         JOIN "Unit" u ON u."id" = l."unitId"
         JOIN "Building" b ON b."id" = u."buildingId"
         JOIN "PropertyType" pt ON pt."id" = u."propertyTypeId"
@@ -322,8 +337,9 @@ export class SearchService {
           area: r.area,
           approximateLocation: approximateLocation(r.id, { lat: r.lat, lng: r.lng }, settingsByCountry.get(r.countryCode)!),
           distanceM: r.distance === null ? null : roundedDistance(r.distance),
-          // Every live listing has passed review: the lister is the identity-checked owner, or an agent with approved authority.
-          badges: [r.createdById === r.ownerId ? 'OWNER_VERIFIED' : 'AUTHORITY_VERIFIED'],
+          // Every live listing has passed review: the lister is the identity-checked owner, or an agent with approved
+          // authority. A lister whose badge staff removed shows none (decision 51).
+          badges: r.badge ? [r.createdById === r.ownerId ? 'OWNER_VERIFIED' : 'AUTHORITY_VERIFIED'] : [],
           photosTakenAt: takenAt,
           publishedAt: r.publishedAt,
         };

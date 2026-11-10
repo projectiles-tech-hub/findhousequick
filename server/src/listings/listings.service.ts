@@ -11,6 +11,12 @@ import { PropertiesService } from '../properties/properties.service.js';
 import { ACTIVE_AUTHORITY } from './authorities.service.js';
 import type { CreateListingDto, ListingFieldsDto, ListingStatusDto, MoneyDto, MyListingsQuery } from './dto.js';
 
+import { randomInt } from 'node:crypto';
+import { AlertsService } from '../notifications/alerts.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
+import { shownFees } from './fee-types.js';
+import { ListingChecksService } from './listing-checks.service.js';
+
 const FEE_FIELDS = ['agencyFee', 'legalFee', 'cautionDeposit', 'serviceCharge'] as const;
 const MONEY_COLUMNS = {
   rent: 'rentMinor',
@@ -27,7 +33,8 @@ type Missing = { kind: 'PART_MEDIA' | 'WALKTHROUGH' | 'OWNERSHIP_DOCUMENT' | 'AU
 
 /**
  * Listings and submission (Specification 6.2, 6.6 and 8.2; ADR 0009). A listing is for one unit, made and managed by
- * those who may manage its building. It goes live only after a person on the verification team has reviewed it.
+ * those who may manage its building. On submission the automatic checks decide whether it goes live at once, to a desk
+ * review or to a site visit (ADR 0012).
  */
 @Injectable()
 export class ListingsService {
@@ -36,6 +43,9 @@ export class ListingsService {
     private readonly controls: ControlsService,
     private readonly properties: PropertiesService,
     private readonly media: MediaService,
+    private readonly checks: ListingChecksService,
+    private readonly notifications: NotificationsService,
+    private readonly alerts: AlertsService,
   ) {}
 
   async create(user: RequestUser, dto: CreateListingDto) {
@@ -57,7 +67,8 @@ export class ListingsService {
       throw apiError(403, 'FEATURE_UNAVAILABLE', 'This kind of listing is not available at the moment.', { feature });
     }
 
-    for (const field of ['title', 'description', 'rent', 'rentPeriod', ...FEE_FIELDS] as const) {
+    // Every fee shown in this country must be entered (decision 55).
+    for (const field of ['title', 'description', 'rent', 'rentPeriod', ...shownFees(settings).map((f) => f.field)] as const) {
       if (dto[field] === undefined) {
         throw apiError(400, 'BAD_REQUEST', `${field} is needed. Enter every fee, using 0 when there is none: no fee may be charged that is not shown.`);
       }
@@ -126,10 +137,7 @@ export class ListingsService {
     return this.ownerView(listing.id);
   }
 
-  /**
-   * Sends a complete listing for review. Until the automatic checks and risk score arrive (step 5, part 4), every
-   * listing is reviewed by a person before it goes live (ADR 0009).
-   */
+  /** Submits a complete listing: the automatic checks run and their risk score decides the next step (ADR 0012). */
   async submit(user: RequestUser, listingId: string) {
     const listing = await this.findManaged(user, listingId);
     if (listing.status !== 'DRAFT' && listing.status !== 'REJECTED') {
@@ -139,14 +147,39 @@ export class ListingsService {
     const missing = await this.missing(user, listing, unit.buildingId, unit.building.ownerId);
     if (missing.length) throw apiError(422, 'LISTING_INCOMPLETE', 'This listing is not ready to submit yet.', { missing });
 
+    // The automatic checks decide what happens next (Specification 6.4): green goes live at once, amber goes to a desk
+    // review, red waits for a site visit.
+    const settings = await this.controls.getCountrySettings(unit.building.countryCode);
+    const assessment = await this.checks.assess(listing, unit.buildingId, settings);
+    const now = new Date();
+    const green = assessment.band === 'GREEN';
+    const audit = green && randomInt(0, 10_000) < settings.verification.randomAuditPercent * 100;
+    const findings = assessment.checks.filter((c) => c.riskPoints > 0).map((c) => c.summary).join(' ');
+
     await this.prisma.$transaction(async (tx) => {
-      const moved = await tx.listing.updateMany({ where: { id: listing.id, status: listing.status }, data: { status: 'IN_REVIEW', submittedAt: new Date() } });
+      const data: Prisma.ListingUpdateManyMutationInput = green
+        ? { status: 'LIVE', submittedAt: now, publishedAt: now, lastConfirmedAt: now, expiresAt: addDays(now, settings.listings.confirmAvailabilityDays) }
+        : { status: 'IN_REVIEW', submittedAt: now };
+      const moved = await tx.listing.updateMany({ where: { id: listing.id, status: listing.status }, data });
       if (moved.count !== 1) throw apiError(409, 'NOT_A_DRAFT', 'This listing has just changed. Please try again.');
-      await tx.reviewTask.create({
-        data: { type: 'LISTING_REVIEW', countryCode: unit.building.countryCode, entityType: 'Listing', entityId: listing.id, notes: 'Desk review before the listing goes live.' },
+      await this.checks.record(tx, listing.id, assessment);
+      const task = (type: 'LISTING_REVIEW' | 'SITE_VISIT' | 'RANDOM_AUDIT', notes: string) =>
+        tx.reviewTask.create({ data: { type, countryCode: unit.building.countryCode, entityType: 'Listing', entityId: listing.id, notes: notes.slice(0, 1000) } });
+      if (assessment.band === 'AMBER') await task('LISTING_REVIEW', `Desk review before the listing goes live. ${findings}`);
+      else if (assessment.band === 'RED') await task('SITE_VISIT', `Site visit needed before the listing goes live. ${findings}`);
+      else if (audit) await task('RANDOM_AUDIT', 'Random visit of a listing that was approved automatically.');
+      await tx.auditLog.create({
+        data: { actorId: user.id, action: 'listing.submitted', entityType: 'Listing', entityId: listing.id, metadata: { riskScore: assessment.score, riskBand: assessment.band } },
       });
-      await tx.auditLog.create({ data: { actorId: user.id, action: 'listing.submitted', entityType: 'Listing', entityId: listing.id } });
     });
+    if (green) {
+      await this.notifications.notify(listing.createdById, 'LISTING_UPDATE', {
+        title: 'Your listing is live',
+        body: `${listing.title} passed the automatic checks and is now live on FindHouseQuick.`,
+        data: { listingId: listing.id },
+      });
+      await this.alerts.listingWentLive(listing.id);
+    }
     return this.ownerView(listing.id);
   }
 
@@ -336,6 +369,7 @@ export class ListingsService {
   /** Checks and converts the fields sent into database columns. */
   private fields(dto: ListingFieldsDto, kind: string, currency: string, settings: CountrySettings, current?: Listing) {
     const data: Record<string, unknown> = {};
+    const shown = new Set<string>(shownFees(settings).map((f) => f.field));
     if (dto.title !== undefined) data.title = dto.title;
     if (dto.description !== undefined) data.description = dto.description;
     if (dto.rentPeriod !== undefined) {
@@ -349,6 +383,9 @@ export class ListingsService {
       if (value.currency !== currency) throw apiError(400, 'WRONG_CURRENCY', `Amounts for this listing are in ${currency}.`);
       const minor = BigInt(value.amountMinor);
       if (field === 'rent' && minor <= 0n) throw apiError(400, 'BAD_REQUEST', 'The rent must be more than zero.');
+      if (field !== 'rent' && minor > 0n && !shown.has(field)) {
+        throw apiError(400, 'FEE_NOT_ALLOWED', `${field} is not a fee shown on listings in this country, so it cannot be charged.`);
+      }
       data[column] = minor;
     }
     if (dto.serviceChargeCovers !== undefined) data.serviceChargeCovers = dto.serviceChargeCovers || null;

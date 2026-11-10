@@ -237,6 +237,8 @@ model User {
   status               AccountStatus @default(ACTIVE)
   /// Set when identity (NIN or national equivalent, selfie, liveness) has passed.
   identityVerifiedAt   DateTime?
+  /// Set when staff remove the verified badge (decision 51). The account keeps working, without the badge.
+  badgeRemovedAt       DateTime?
   /// Versions of the terms of use and privacy policy the user agreed to at registration, and when.
   termsVersion         String?
   privacyVersion       String?
@@ -261,6 +263,7 @@ model User {
   savedSearches       SavedSearch[]
   savedListings       SavedListing[]
   savedPlaces         SavedPlace[]
+  enforcementActions  EnforcementAction[]
   pushDevices         PushDevice[]
   sentMessages        Message[]
   inspectionsAsTenant Inspection[]           @relation("InspectionTenant")
@@ -591,12 +594,13 @@ model Listing {
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
 
-  unit          Unit                @relation(fields: [unitId], references: [id])
-  checks        VerificationCheck[]
-  savedBy       SavedListing[]
-  conversations Conversation[]
-  inspections   Inspection[]
-  reports       ListingReport[]
+  unit                   Unit                    @relation(fields: [unitId], references: [id])
+  checks                 VerificationCheck[]
+  savedBy                SavedListing[]
+  conversations          Conversation[]
+  inspections            Inspection[]
+  reports                ListingReport[]
+  inspectionAvailability InspectionAvailability?
 
   // A unit can have only one active listing; enforced by a partial unique index in the migrations.
   @@index([status])
@@ -979,6 +983,15 @@ model Inspection {
   matchedListing   Boolean?
   tenantSaysRented Boolean?
   hostSaysRented   Boolean?
+  /// The tenant's note to the lister when booking.
+  note             String?
+  /// Who proposed the current time; the other side confirms it (decision 45).
+  proposedById     String?          @db.Uuid
+  cancelReason     String?
+  /// Who cancelled, completed or marked the no-show.
+  closedById       String?          @db.Uuid
+  /// How many times the details were sent to a trusted contact (limited, as each SMS costs money).
+  safetyShareCount Int              @default(0)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
@@ -987,6 +1000,48 @@ model Inspection {
   host    User    @relation("InspectionHost", fields: [hostId], references: [id])
 
   @@index([listingId, status])
+}
+
+/// The times a lister is available for inspections of a listing (decision 45). Tenants book one of the free slots.
+model InspectionAvailability {
+  listingId    String   @id @db.Uuid
+  slotMinutes  Int      @default(30)
+  /// Weekly windows: [{ "weekday": 1, "from": "10:00", "to": "16:00" }], 1 is Monday, in the country's time zone.
+  weekly       Json     @default("[]")
+  /// Dates with no inspections, as YYYY-MM-DD.
+  blockedDates Json     @default("[]")
+  updatedById  String   @db.Uuid
+  updatedAt    DateTime @updatedAt
+
+  listing Listing @relation(fields: [listingId], references: [id])
+}
+
+enum EnforcementKind {
+  WARNING
+  BADGE_REMOVED
+  SUSPENSION
+  BAN
+}
+
+/// A sanction decided by staff (decision 51), recorded against the user's verified identity so it follows the
+/// person, not just the account.
+model EnforcementAction {
+  id           String          @id @default(uuid(7)) @db.Uuid
+  userId       String          @db.Uuid
+  kind         EnforcementKind
+  reason       String
+  reviewTaskId String?         @db.Uuid
+  staffId      String          @db.Uuid
+  countryCode  String          @db.Char(2)
+  /// The verified ID the user held when sanctioned (hash only), if any.
+  idType       String?
+  idNumberHash String?
+  createdAt    DateTime        @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([idNumberHash])
 }
 
 enum ReportReason {

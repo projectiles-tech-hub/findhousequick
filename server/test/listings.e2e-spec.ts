@@ -3,6 +3,9 @@ import { createHash } from 'node:crypto';
 import sharp from 'sharp';
 import request from 'supertest';
 import { hashPassword } from '../src/accounts/secrets.js';
+import { uuidv7 } from '../src/common/ids.js';
+import { ControlsService } from '../src/controls/controls.service.js';
+import { ListingChecksService } from '../src/listings/listing-checks.service.js';
 import type { StaffRole, UserType } from '../src/generated/prisma/client.js';
 import { ListingsService } from '../src/listings/listings.service.js';
 import { MediaProcessor } from '../src/media/media.processor.js';
@@ -15,6 +18,23 @@ const PASSWORD = 'a good long password';
 const HERE = { lat: 6.3912, lng: 5.6198 };
 const sha = (b: Buffer) => createHash('sha256').update(b).digest('hex');
 const naira = (n: number) => ({ amountMinor: String(n * 100), currency: 'NGN' });
+
+/** A sharp, well-lit photo of large light and dark blocks, so its fingerprint is its own. */
+async function shapedPhoto(): Promise<Buffer> {
+  const w = 1200;
+  const h = 900;
+  const raw = Buffer.alloc(w * h * 3);
+  const shade = [220, 60, 180, 90, 240, 50, 150, 110, 200, 70, 230, 40];
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const block = Math.floor(x / 150) * 5 + Math.floor(y / 150) * 7;
+      // Fine texture inside each block keeps the photo sharp.
+      const v = shade[block % shade.length]! + (((x >> 2) + (y >> 2)) % 2 === 0 ? 12 : -12);
+      raw.fill(v, (y * w + x) * 3, (y * w + x) * 3 + 3);
+    }
+  }
+  return sharp(raw, { raw: { width: w, height: h, channels: 3 } }).jpeg({ quality: 88 }).toBuffer();
+}
 
 /** A sharp, well-lit test photo with a fine pattern, so it passes the quality checks. */
 async function goodPhoto(seed = 0): Promise<Buffer> {
@@ -401,6 +421,106 @@ describe('Media, listings, submission and agent authority (API, step 5 part 1)',
 
       await api().post(`/v1/authorities/${req.id}/decision`).set(bearer(landlord.token)).send({ decision: 'REVOKE' }).expect(200);
       await api().get(`/v1/listings/${listing.id}`).set(bearer(agent.token)).expect(404);
+    });
+  });
+  describe('automatic checks and the risk score (step 5 part 4)', () => {
+    /** Submits a complete listing for a unit and returns it. */
+    async function submitted(p: Person, buildingId: string, unitId: string, withDocument = true) {
+      const listing = (await api().post('/v1/listings').set(bearer(p.token)).send(draft(unitId)).expect(201)).body;
+      await fillChecklist(unitId, buildingId, p.id);
+      if (withDocument) await ownershipDocument(p, buildingId);
+      return (await api().post(`/v1/listings/${listing.id}/submit`).set(bearer(p.token)).expect(200)).body;
+    }
+    const band = async (id: string) => (await prisma.listing.findUniqueOrThrow({ where: { id } })).riskBand;
+
+    it('sends amber to a desk review, lets green go live at once and sends a duplicate for a site visit', async () => {
+      const landlord = await person(['LANDLORD']);
+      const verifier = await person(['TENANT'], ['VERIFIER']);
+      const first = await buildingWithFlat(landlord);
+
+      // First listing of a building: the team has not matched the ownership documents yet, so amber.
+      const amber = await submitted(landlord, first.buildingId, first.unitId);
+      expect(amber.status).toBe('IN_REVIEW');
+      expect(await band(amber.id)).toBe('AMBER');
+      const checks = await prisma.verificationCheck.findMany({ where: { listingId: amber.id } });
+      expect(checks.find((c) => c.type === 'NAME_MATCH')).toMatchObject({ result: 'WARN', riskPoints: 30 });
+      expect(checks.find((c) => c.type === 'DUPLICATE_LOCATION')!.result).toBe('PASS');
+      const task = await openTask(amber.id);
+      const shown = (await api().get('/v1/admin/review-tasks?type=LISTING_REVIEW').set(bearer(verifier.token)).expect(200)).body;
+      expect(shown.items.find((t: { id: string }) => t.id === task.id).details).toMatchObject({ riskBand: 'AMBER', riskScore: 30 });
+      await decide(verifier, task.id, 'APPROVE').expect(200);
+
+      // A second flat in the same building: documents passed, nothing against it, so it goes live with no review.
+      const flat2 = (await api().post(`/v1/buildings/${first.buildingId}/units`).set(bearer(landlord.token)).send({ label: 'Flat 2', propertyTypeId: flatTypeId, bedrooms: 1, bathrooms: 1, toilets: 1 }).expect(201)).body;
+      const green = await submitted(landlord, first.buildingId, flat2.id, false);
+      expect(green.status).toBe('LIVE');
+      expect(await band(green.id)).toBe('GREEN');
+      expect(green.expiresAt).toBeTruthy();
+
+      // Another landlord registers a building on the same spot: a possible duplicate, so a site visit.
+      const other = await person(['LANDLORD']);
+      const second = await buildingWithFlat(other, { location: first.at });
+      const red = await submitted(other, second.buildingId, second.unitId);
+      expect(red.status).toBe('IN_REVIEW');
+      expect(await band(red.id)).toBe('RED');
+      const visit = await openTask(red.id);
+      expect(visit.type).toBe('SITE_VISIT');
+      expect((await decide(verifier, visit.id, 'NEEDS_SITE_VISIT').expect(400)).body.code).toBe('OUTCOME_NOT_SUPPORTED');
+      await decide(verifier, visit.id, 'APPROVE').expect(200);
+      expect((await prisma.listing.findUniqueOrThrow({ where: { id: red.id } })).status).toBe('LIVE');
+
+      // The building flagged as a duplicate when it was registered: the team confirms it, and its listings come down.
+      const dup = await prisma.reviewTask.findFirstOrThrow({ where: { entityId: second.buildingId, type: 'DUPLICATE_RESOLUTION' } });
+      await decide(verifier, dup.id, 'REJECT').expect(200);
+      expect((await prisma.listing.findUniqueOrThrow({ where: { id: red.id } })).status).toBe('REJECTED');
+    });
+
+    it('lets the desk reviewer ask for a site visit', async () => {
+      const landlord = await person(['LANDLORD']);
+      const verifier = await person(['TENANT'], ['VERIFIER']);
+      const b = await buildingWithFlat(landlord);
+      const listing = await submitted(landlord, b.buildingId, b.unitId);
+      const desk = await openTask(listing.id);
+      expect((await decide(verifier, desk.id, 'BAN_USER').expect(400)).body.code).toBe('OUTCOME_NOT_SUPPORTED');
+      await decide(verifier, desk.id, 'NEEDS_SITE_VISIT').expect(200);
+      expect((await prisma.listing.findUniqueOrThrow({ where: { id: listing.id } })).status).toBe('IN_REVIEW');
+      const visit = await openTask(listing.id);
+      expect(visit.type).toBe('SITE_VISIT');
+      await decide(verifier, visit.id, 'REJECT').expect(200);
+      expect((await prisma.listing.findUniqueOrThrow({ where: { id: listing.id } })).status).toBe('REJECTED');
+    });
+
+    it('finds a photo already used on another building, and ignores photos with no shape in them', async () => {
+      const one = await person(['LANDLORD']);
+      const two = await person(['LANDLORD']);
+      const a = await buildingWithFlat(one);
+      const b = await buildingWithFlat(two);
+      const picture = await shapedPhoto();
+      await uploadPhoto(one, a.unitId, a.at, 'living_room', picture);
+      const copied = await uploadPhoto(two, b.unitId, b.at, 'living_room', picture);
+      await uploadPhoto(two, b.unitId, b.at, 'kitchen');
+      const settings = await app.get(ControlsService).getCountrySettings('NG');
+      const result = await app.get(ListingChecksService).assess({ id: uuidv7(), unitId: b.unitId }, b.buildingId, settings);
+      const check = result.checks.find((c) => c.type === 'DUPLICATE_PHOTO')!;
+      expect(check).toMatchObject({ result: 'FAIL', riskPoints: 40 });
+      expect((check.details as { matches: { mediaId: string }[] }).matches.map((m) => m.mediaId)).toEqual([copied]);
+    });
+
+    it('shows and accepts only the fee types of the country (decision 55)', async () => {
+      const landlord = await person(['LANDLORD']);
+      const { unitId } = await buildingWithFlat(landlord);
+      const ng = await prisma.country.findUniqueOrThrow({ where: { code: 'NG' } });
+      const settings = ng.settings as { listings?: object };
+      await prisma.country.update({ where: { code: 'NG' }, data: { settings: { ...settings, listings: { ...settings.listings, feeTypes: ['AGENCY_FEE', 'CAUTION_DEPOSIT'] } } } });
+      app.get(ControlsService).invalidate();
+      try {
+        expect((await api().post('/v1/listings').set(bearer(landlord.token)).send(draft(unitId)).expect(400)).body.code).toBe('FEE_NOT_ALLOWED');
+        const created = (await api().post('/v1/listings').set(bearer(landlord.token)).send(draft(unitId, { legalFee: undefined, serviceCharge: undefined })).expect(201)).body;
+        expect(created.moveInCost.total.amountMinor).toBe('71000000');
+      } finally {
+        await prisma.country.update({ where: { code: 'NG' }, data: { settings: ng.settings as object } });
+        app.get(ControlsService).invalidate();
+      }
     });
   });
 });
