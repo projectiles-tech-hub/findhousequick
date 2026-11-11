@@ -17,6 +17,7 @@ class CountryInfo {
     required this.languages,
     required this.defaultLanguage,
     required this.settings,
+    this.dialCode,
   });
 
   final String code;
@@ -26,6 +27,16 @@ class CountryInfo {
   final String defaultLanguage;
   final Map<String, dynamic> settings;
 
+  /// The country's dialling code, e.g. "+234".
+  final String? dialCode;
+
+  /// The country's flag as an emoji, worked out from its two-letter code (each letter has a matching flag letter).
+  String get flag => String.fromCharCodes(code.toUpperCase().codeUnits.map((c) => 0x1F1E6 + c - 0x41));
+
+  /// The versions of the terms of use and privacy policy a new user agrees to.
+  String get termsVersion => ((settings['legal'] as Map?)?['termsVersion'] as String?) ?? '';
+  String get privacyVersion => ((settings['legal'] as Map?)?['privacyVersion'] as String?) ?? '';
+
   factory CountryInfo.fromJson(Map<String, dynamic> j) => CountryInfo(
         code: j['code'] as String,
         name: j['name'] as String,
@@ -33,6 +44,7 @@ class CountryInfo {
         languages: (j['languages'] as List).cast<String>(),
         defaultLanguage: j['defaultLanguage'] as String,
         settings: (j['settings'] as Map).cast<String, dynamic>(),
+        dialCode: j['dialCode'] as String?,
       );
 }
 

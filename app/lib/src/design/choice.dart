@@ -34,11 +34,12 @@ class AppRadio<T> extends StatelessWidget {
   }
 }
 
-/// A tick box with its words. [label] may hold links, so it is a widget.
+/// A tick box with its words. [rich] shows the same words with links in them; [label] is still what is read out.
 class AppCheckbox extends StatelessWidget {
-  const AppCheckbox({super.key, required this.label, required this.value, required this.onChanged});
+  const AppCheckbox({super.key, required this.label, required this.value, required this.onChanged, this.rich});
 
   final String label;
+  final InlineSpan? rich;
   final bool value;
   final ValueChanged<bool>? onChanged;
 
@@ -46,6 +47,7 @@ class AppCheckbox extends StatelessWidget {
   Widget build(BuildContext context) {
     return _ChoiceRow(
       label: label,
+      rich: rich,
       onTap: onChanged == null ? null : () => onChanged!(!value),
       semantics: (child) => Semantics(checked: value, child: child),
       mark: Container(
@@ -64,9 +66,10 @@ class AppCheckbox extends StatelessWidget {
 }
 
 class _ChoiceRow extends StatelessWidget {
-  const _ChoiceRow({required this.label, required this.mark, required this.onTap, required this.semantics});
+  const _ChoiceRow({required this.label, required this.mark, required this.onTap, required this.semantics, this.rich});
 
   final String label;
+  final InlineSpan? rich;
   final Widget mark;
   final VoidCallback? onTap;
   final Widget Function(Widget child) semantics;
@@ -80,10 +83,11 @@ class _ChoiceRow extends StatelessWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: AppSpace.touch),
           child: Row(
+            crossAxisAlignment: rich == null ? CrossAxisAlignment.center : CrossAxisAlignment.start,
             children: [
-              mark,
+              rich == null ? mark : Padding(padding: const EdgeInsets.only(top: 12), child: mark),
               const SizedBox(width: 12),
-              Expanded(child: Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(label, style: AppText.body))),
+              Expanded(child: Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: rich == null ? Text(label, style: AppText.body) : Text.rich(rich!, semanticsLabel: label))),
             ],
           ),
         ),

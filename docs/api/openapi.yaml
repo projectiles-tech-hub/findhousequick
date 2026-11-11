@@ -2761,6 +2761,7 @@ components:
             code: { $ref: "#/components/schemas/CountryCode" }
             name: { type: string }
             currency: { type: string }
+            dialCode: { type: [string, "null"], description: "The country's dialling code for the phone number field, e.g. +234" }
             languages: { type: array, items: { type: string } }
             defaultLanguage: { type: string }
             timezone: { type: string }

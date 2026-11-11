@@ -71,6 +71,7 @@ into the app at build time; they are not secrets).
 | --- | --- | --- |
 | `API_BASE_URL` | Where the API is, ending in `/v1` | `https://api.findhousequick.com/v1` |
 | `DEFAULT_COUNTRY` | The country used until the user's account or location says otherwise | `NG` |
+| `PUBLIC_WEB_URL` | Where the public website is, for the links to the terms of use and the privacy policy on the sign-up screen | `https://findhousequick.com` |
 | `PARTS_GALLERY` | `true` adds a page of the shared parts at `/parts`, for checking against the designs. Never set in a build given to users. | not set |
 
 ### Settings changed in the admin panel (not server settings)
@@ -98,6 +99,13 @@ The country settings used by identity checks (ADR 0007):
 | `retention.identityImagesDays` | Not set | Days identity document photos are kept after their check is closed (decision 55) | **Must be set after legal advice before identity checks go live** (open point 15) |
 
 The feature switch `verification.identity_check` (critical) turns identity checks on or off, like any other switch.
+
+The country settings used at sign-up (ADR 0014):
+
+| Setting | Default | What it is | Notes |
+| --- | --- | --- | --- |
+| `legal.termsVersion` | `2026-11-10` | The version of the terms of use a new user agrees to; recorded on the account | **Manual step:** change it whenever the terms page changes. It is the date shown on the page (`web/src/content/ng/terms.ts`) |
+| `legal.privacyVersion` | `2026-11-10` | The same, for the privacy policy | Change it whenever the privacy page changes |
 
 The country settings used by photo and video upload (ADR 0009):
 
