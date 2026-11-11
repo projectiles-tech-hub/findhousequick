@@ -185,8 +185,7 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
     approved Penpot designs, with the terms and policy written in standard terms for Nigeria.
   - The icons are the app's own set, exported from the design file; the header and footer are the approved ones.
   - Still to do from this part: pages 106 and 109; the map and the "power and water" and "more filters" filters;
-    the lawyer's review of the terms and the privacy policy; the real support numbers and contact emails;
-    adding the four new icons (money, image, people, lock) to the icon set in the Penpot design file.
+    the lawyer's review of the terms and the privacy policy; the real support numbers and contact emails.
 
 ## Small follow-ups
 

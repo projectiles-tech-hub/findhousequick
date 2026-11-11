@@ -1,6 +1,6 @@
 // Turns the app's icon set (scripts/penpot-icons.txt, one icon per line, on a 24 by 24 grid) into
 // src/components/icons.data.ts. The set was read out of the Penpot design file; Money, Image, People and Lock were
-// drawn afterwards in the same style (11 November 2026) and are to be added to the design file's icon set. Run again whenever the set changes in the design file: node scripts/make-icons.mjs
+// drawn afterwards in the same style and added to the design file's icon set (11 November 2026). Run again whenever the set changes in the design file: node scripts/make-icons.mjs
 import { readFileSync, writeFileSync } from 'node:fs';
 
 const lines = readFileSync(new URL('./penpot-icons.txt', import.meta.url), 'utf8').trim().split('\n');
