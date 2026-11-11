@@ -56,6 +56,17 @@ each page is made when it is asked for. `web/.env.example` shows the format.
 The website and the API must sit behind the same proxies, and `TRUST_PROXY_HOPS` on the API counts those proxies
 only. The API's port must not be open to the internet except through them.
 
+### App build settings (`app/`)
+
+The Flutter app takes its settings when it is built, with `--dart-define=NAME=value` (side note: these are fixed
+into the app at build time; they are not secrets).
+
+| Setting | What it is | Example |
+| --- | --- | --- |
+| `API_BASE_URL` | Where the API is, ending in `/v1` | `https://api.findhousequick.com/v1` |
+| `DEFAULT_COUNTRY` | The country used until the user's account or location says otherwise | `NG` |
+| `PARTS_GALLERY` | `true` adds a page of the shared parts at `/parts`, for checking against the designs. Never set in a build given to users. | not set |
+
 ### Settings changed in the admin panel (not server settings)
 
 These live in the database and are changed by super admins through the admin endpoints, with a reason; every

@@ -1,0 +1,16 @@
+{
+  "@@locale": "en",
+  "appName": "FindHouseQuick",
+  "tabSearch": "Search",
+  "tabSaved": "Saved",
+  "tabProperties": "Properties",
+  "tabMessages": "Messages",
+  "tabInspections": "Inspections",
+  "tabMe": "Me",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "noConnectionTitle": "No internet connection",
+  "noConnectionMessage": "Check your data or Wi-Fi. We will try again when you are back online.",
+  "somethingWentWrong": "Something went wrong. Please try again.",
+  "tryAgain": "Try again"
+}

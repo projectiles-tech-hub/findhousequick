@@ -229,6 +229,8 @@ img {
   border-radius: 10px;
   background: var(--green-700);
   color: #fff;
+  /* In the approved header the home icon is all one colour: its door is not cut out. */
+  --icon-cut: #fff;
 }
 .logo--light {
   color: #fff;
@@ -236,6 +238,7 @@ img {
 .logo--light .logo__mark {
   background: #fff;
   color: var(--green-700);
+  --icon-cut: var(--green-700);
 }
 .searchbox {
   display: flex;
