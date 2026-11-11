@@ -1,5 +1,6 @@
 // Made by scripts/make-icons.mjs from the app's own icon set in the design file (decision 68). Do not edit by hand.
-// Icons on a 24 by 24 grid, drawn with a stroke of 2; the filled ones also fill their shape.
+// Icons on a 24 by 24 grid, drawn with a stroke of 2; the filled ones also fill their shape,
+// and cut details out of it in the colour behind the icon (--icon-cut, white unless set).
 export const ICONS = {
   search: '<ellipse cx="10.75" cy="10.75" rx="6.25" ry="6.25"/><path d="M15.4 15.4L20 20"/>',
   map: '<path d="M3.5 6.6L9 4.5L15 6.9L20.5 4.8L20.5 17.4L15 19.5L9 17.1L3.5 19.2L3.5 6.6"/><path d="M9 4.5L9 17.1M15 6.9L15 19.5"/>',
@@ -30,9 +31,17 @@ export const ICONS = {
   mail: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.75 7L12 13.25L20.25 7"/>',
   power: '<path d="M13.25 3L5.75 13.25L11.5 13.25L10.75 21L18.25 10.75L12.5 10.75L13.25 3"/>',
   water: '<path d="M12 3.5C12 3.5 5.75 10.4 5.75 14.5C5.75 17.952 8.548 20.75 12 20.75C15.452 20.75 18.25 17.952 18.25 14.5C18.25 10.4 12 3.5 12 3.5L12 3.5"/><path d="M9.25 15C9.25 16.519 10.481 17.75 12 17.75"/>',
-  homeFilled: '<path d="M5.5 9L12 3.9L18.5 9L18.5 18.5C18.5 19.328 17.828 20 17 20L7 20C6.172 20 5.5 19.328 5.5 18.5Z" fill="currentColor"/><path d="M3.5 10.5L12 3.75L20.5 10.5"/>',
   money: '<rect x="3" y="6" width="18" height="12" rx="2.5"/><ellipse cx="12" cy="12" rx="2.75" ry="2.75"/><path d="M6.75 12L6.76 12M17.24 12L17.25 12"/>',
   image: '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><ellipse cx="8.75" cy="9.5" rx="1.75" ry="1.75"/><path d="M3.75 16.75L8.5 12.5L12 15.5L15 12.75L20.25 17.5"/>',
   people: '<ellipse cx="9" cy="8.5" rx="3.25" ry="3.25"/><path d="M3 19.75C3 16.436 5.686 13.75 9 13.75C12.314 13.75 15 16.436 15 19.75"/><path d="M15.25 5.35C16.99 5.35 18.4 6.76 18.4 8.5C18.4 10.24 16.99 11.65 15.25 11.65M17.5 14.25C19.6 15.15 21 17.25 21 19.75"/>',
   lock: '<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5L8 7.75C8 5.541 9.791 3.75 12 3.75C14.209 3.75 16 5.541 16 7.75L16 10.5"/><path d="M12 14.75L12 16.25"/>',
+  homeFilled: '<path d="M5.5 9L12 3.9L18.5 9L18.5 18.5C18.5 19.328 17.828 20 17 20L7 20C6.172 20 5.5 19.328 5.5 18.5Z" fill="currentColor"/><path d="M3.5 10.5L12 3.75L20.5 10.5"/><path d="M10 20L10 15.5C10 14.396 10.895 13.5 12 13.5C13.105 13.5 14 14.396 14 15.5L14 20Z" fill="var(--icon-cut, #fff)" stroke="none"/>',
+  mapFilled: '<path d="M3.5 6.6L9 4.5L15 6.9L20.5 4.8L20.5 17.4L15 19.5L9 17.1L3.5 19.2Z" fill="currentColor"/><path d="M9 6.5L9 15.6M15 8.9L15 17.5" stroke="var(--icon-cut, #fff)" stroke-width="1.5"/>',
+  heartFilled: '<path d="M12 19.75C12 19.75 3.5 14.9 3.5 9.1C3.5 6.5 5.4 4.5 7.9 4.5C9.7 4.5 11.2 5.5 12 7.1C12.8 5.5 14.3 4.5 16.1 4.5C18.6 4.5 20.5 6.5 20.5 9.1C20.5 14.9 12 19.75 12 19.75Z" fill="currentColor"/>',
+  chatFilled: '<path d="M8 18.25L6.25 18.25C4.731 18.25 3.5 17.019 3.5 15.5L3.5 7.25C3.5 5.731 4.731 4.5 6.25 4.5L17.75 4.5C19.269 4.5 20.5 5.731 20.5 7.25L20.5 15.5C20.5 17.019 19.269 18.25 17.75 18.25L12.5 18.25L8 21.25Z" fill="currentColor"/><path d="M8 9.5L16 9.5M8 13.25L13 13.25" stroke="var(--icon-cut, #fff)" stroke-width="2"/>',
+  bellFilled: '<path d="M6 15.75L6 10.5C6 7.186 8.686 4.5 12 4.5C15.314 4.5 18 7.186 18 10.5L18 15.75L19.75 17.75L4.25 17.75Z" fill="currentColor"/><path d="M10 20.25C10.386 20.999 11.158 21.469 12 21.469C12.842 21.469 13.614 20.999 14 20.25"/>',
+  personFilled: '<ellipse cx="12" cy="8" rx="3.75" ry="3.75" fill="currentColor"/><path d="M4.75 20C4.75 15.996 7.996 12.75 12 12.75C16.004 12.75 19.25 15.996 19.25 20Z" fill="currentColor"/>',
+  locationFilled: '<path d="M12 20.75C12 20.75 5.25 15 5.25 9.75C5.25 6.022 8.272 3 12 3C15.728 3 18.75 6.022 18.75 9.75C18.75 15 12 20.75 12 20.75Z" fill="currentColor"/><ellipse cx="12" cy="9.75" rx="2.5" ry="2.5" fill="var(--icon-cut, #fff)" stroke="none"/>',
+  calendarFilled: '<rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="currentColor"/><path d="M8 3L8 6.75M16 3L16 6.75"/><path d="M3.5 10L20.5 10" stroke="var(--icon-cut, #fff)" stroke-width="1.5"/><path d="M8 14.25L8.01 14.25M12 14.25L12.01 14.25M16 14.25L16.01 14.25M8 17.25L8.01 17.25M12 17.25L12.01 17.25" stroke="var(--icon-cut, #fff)" stroke-width="2"/>',
+  shieldCheckFilled: '<path d="M12 3.25L19 5.9L19 11.1C19 15.4 16.1 18.9 12 20.75C7.9 18.9 5 15.4 5 11.1L5 5.9Z" fill="currentColor"/><path d="M9 12L11.1 14.1L15.25 9.9" stroke="var(--icon-cut, #fff)" stroke-width="2"/>',
 } as const;

@@ -199,6 +199,18 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
     account has confirmed, for the conflict checks; the invitation link leading to sign-up with the code.
   - Still to do from this step: the scout screens (step 6); switching `growth.scouts` on when the screens exist.
 
+- **Release 1 step 6 (app screens), part 1, the foundation**: in pull request #55. Built on pull request #54. The
+  plan for the whole step, in seven parts, is `docs/adr/0014-app-screens.md`.
+  - The design values (colours, text styles, spacing, corners) and Source Sans 3, read from the design system page.
+  - The app's own icons, made from the same list as the website's; the nine filled icons were added to the list.
+  - The shared parts: buttons, icon buttons, filter chips, tags, the text, phone, password, code, picker and
+    search fields, radio and tick choices, notices, and the bottom bar with both sets of tabs.
+  - The words in a file per language (English filled; Pidgin empty until its wording is written and checked).
+  - The sign-in session: keys in the phone's protected storage, a new access token shortly before the old one
+    runs out, sign-out when the server ends the session.
+  - No screen for users is built in this part; the app still opens on the start screen.
+  - Still to do from this step: parts 2 to 7.
+
 ## Small follow-ups
 
 - Technical points from the specification check (finding 21): move rate limits to Redis (they are still counted in
@@ -214,6 +226,11 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
 - Before the website goes live: the lawyer's review of the terms of use and the privacy policy; the real support
   WhatsApp and phone numbers; the support and privacy emails; the name of the Data Protection Officer.
 - Which maps provider to use (Google Maps or Mapbox), for the map, place search, nearby amenities and travel times.
+  The map screens of step 6 part 3 wait for this.
+- The Pidgin wording for the app: who writes and checks it (decision 40). Until then the app shows English when
+  Pidgin is chosen.
+- Whether a scout's invitation link should open a page of its own before sign-up (pull request #54); that would be
+  a new screen, to be designed and approved first.
 - Before identity checks go live: how long identity images are kept after verification, after legal advice
   (Decisions Log open point 15). Step 3 is built with this as a country setting (decision 55) that is not yet set.
 - A company dollar card, so the hosting account (and the test system) can be opened (decision 42).
@@ -286,7 +303,10 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
     come with the completed rental fee in Release 2.
 6. **App screens** (Flutter), built only from approved designs (step 2c), for the phone app, the website and the
    desktop software (staff screens only): every screen listed in `docs/designs.md` (decision 73), including the scout screens and the
-   staff screens with switch messages, return times and dependency warnings (decision 53).
+   staff screens with switch messages, return times and dependency warnings (decision 53). In seven parts
+   (`docs/adr/0014-app-screens.md`). Part 1, the foundation: in pull request #55. Next: part 2, sign-up, sign-in
+   and verification (screens 1 to 21); then part 3, search, the map, the property page and saved items; part 4,
+   messages, calls and inspections; part 5, listing a property; part 6, me, settings and scouts; part 7, staff.
 
 ## Later releases (decided)
 
