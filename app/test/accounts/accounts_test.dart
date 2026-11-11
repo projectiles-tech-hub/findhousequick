@@ -70,9 +70,9 @@ Map<String, dynamic> _session({bool emailConfirmed = false}) => {
       },
     };
 
-Future<_FakeServer> _open(WidgetTester tester, String location, (int, Object?) Function(RequestOptions) handler) async {
+Future<_FakeServer> _open(WidgetTester tester, String location, (int, Object?) Function(RequestOptions) handler, {Size size = const Size(360, 1400)}) async {
   SharedPreferences.setMockInitialValues({});
-  tester.view.physicalSize = const Size(360, 1400);
+  tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   final server = _FakeServer(handler);
@@ -246,6 +246,59 @@ void main() {
     await tester.pumpAndSettle();
     expect(server.body('/auth/login'), {'email': 'osaro@example.com', 'password': 'correct horse 9'});
     expect(find.text('Sign out'), findsOneWidget);
+  });
+
+  group('website layouts (768 and over)', () {
+    final listings = {
+      'total': 312,
+      'items': [
+        {'id': 'l1', 'title': '2 bedroom flat', 'area': 'Ugbowo', 'rent': {'amountMinor': '120000000', 'currency': 'NGN'}, 'rentPeriod': 'YEAR', 'badges': ['OWNER_VERIFIED'], 'coverImage': null, 'publishedAt': DateTime.now().subtract(const Duration(minutes: 12)).toUtc().toIso8601String()},
+        {'id': 'l2', 'title': '3 bedroom bungalow', 'area': 'GRA', 'rent': {'amountMinor': '250000000', 'currency': 'NGN'}, 'rentPeriod': 'YEAR', 'badges': <String>[], 'coverImage': null, 'publishedAt': null},
+      ],
+    };
+
+    testWidgets('sign-up is a card with the header, the step name and real listings beside it', (tester) async {
+      await _open(tester, '/sign-up', (r) => r.path == '/search/listings' ? (200, listings) : (404, null), size: const Size(1366, 768));
+      expect(find.text('Back to properties'), findsOneWidget);
+      expect(find.text('About you'), findsOneWidget);
+      expect(find.text('Choose all that apply. You can add more later.'), findsOneWidget);
+      expect(find.text('Already have an account?'), findsOneWidget);
+      expect(find.text('312 properties available now'), findsOneWidget);
+      expect(find.text('₦1,200,000'), findsOneWidget);
+      expect(find.text('Listed 12 min ago'), findsOneWidget);
+      expect(find.text('Verified'), findsOneWidget);
+      // Phone-only parts are not shown.
+      expect(find.text('Create an account'), findsNothing);
+    });
+
+    testWidgets('at tablet width the card stands alone, without the listings', (tester) async {
+      await _open(tester, '/sign-up', (r) => r.path == '/search/listings' ? (200, listings) : (404, null), size: const Size(768, 1024));
+      expect(find.text('About you'), findsOneWidget);
+      expect(find.text('312 properties available now'), findsNothing);
+    });
+
+    testWidgets('sign-in is a panel with the two halves of one bar in place of chips', (tester) async {
+      final server = await _open(tester, '/sign-in', (r) => r.path == '/auth/login' ? (200, _session(emailConfirmed: true)) : (200, <String, dynamic>{}), size: const Size(1366, 768));
+      expect(find.text('Sign in to save homes, message listers and book inspections.'), findsOneWidget);
+      expect(find.text('New here?'), findsOneWidget);
+      await tester.tap(find.text('Email'));
+      await tester.pumpAndSettle();
+      await _type(tester, 'Email address', 'osaro@example.com');
+      await _type(tester, 'Password', 'correct horse 9');
+      await tester.tap(find.widgetWithText(TextButton, 'Sign in'));
+      await tester.pumpAndSettle();
+      expect(server.body('/auth/login'), {'email': 'osaro@example.com', 'password': 'correct horse 9'});
+    });
+
+    testWidgets('every sign-up and sign-in screen fits at 768 and at 1366 without spilling over', (tester) async {
+      for (final size in const [Size(768, 1024), Size(1366, 768)]) {
+        for (final path in ['/sign-up', '/sign-up/details', '/sign-up/code', '/sign-in', '/forgot-password']) {
+          await _open(tester, path, (r) => r.path == '/search/listings' ? (200, listings) : (404, null), size: size);
+          expect(tester.takeException(), isNull, reason: '$path at $size');
+          await tester.pumpWidget(const SizedBox());
+        }
+      }
+    });
   });
 
   testWidgets('a forgotten password: code asked for, then code and new password sent together', (tester) async {

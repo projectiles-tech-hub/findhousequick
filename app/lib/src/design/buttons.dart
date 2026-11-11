@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'app_icon.dart';
 import 'tokens.dart';
+import 'wide.dart';
 
 enum AppButtonKind { main, outline, text, danger }
 
 /// A button as designed: 52 high, corners of 12. There is only one main button on a screen.
 /// The words wrap onto a second line rather than being cut off, so longer wording still fits.
 class AppButton extends StatelessWidget {
-  const AppButton({super.key, required this.label, required this.onPressed, this.kind = AppButtonKind.main, this.expand = true});
+  const AppButton({super.key, required this.label, required this.onPressed, this.kind = AppButtonKind.main, this.expand = true, this.icon, this.iconFirst = false});
 
   final String label;
 
@@ -18,6 +19,12 @@ class AppButton extends StatelessWidget {
 
   /// Fill the width it is given. Set to false for a button that is only as wide as its words.
   final bool expand;
+
+  /// An icon beside the words. The website layouts use one on their main buttons; the phone layouts do not show it.
+  final AppIcons? icon;
+
+  /// Puts the icon before the words rather than after them.
+  final bool iconFirst;
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +59,8 @@ class AppButton extends StatelessWidget {
         ),
     };
 
+    final wide = AppWide.of(context);
+    final words = Text(label, textAlign: TextAlign.center, maxLines: 2);
     final button = TextButton(
       onPressed: onPressed,
       style: ButtonStyle(
@@ -61,11 +70,21 @@ class AppButton extends StatelessWidget {
         overlayColor: const WidgetStatePropertyAll(Colors.transparent),
         minimumSize: const WidgetStatePropertyAll(Size(64, 52)),
         padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 16, vertical: 16)),
-        shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.medium))),
-        textStyle: WidgetStatePropertyAll(AppText.button),
+        shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(wide ? 14 : AppRadius.medium))),
+        textStyle: WidgetStatePropertyAll(wide ? AppText.button.copyWith(fontWeight: FontWeight.w600, fontVariations: const [FontVariation('wght', 600)]) : AppText.button),
         tapTargetSize: MaterialTapTargetSize.padded,
       ),
-      child: Text(label, textAlign: TextAlign.center, maxLines: 2),
+      child: !wide || icon == null
+          ? words
+          : Builder(builder: (context) {
+              // The icon takes the colour of the words, whatever state the button is in.
+              final ink = DefaultTextStyle.of(context).style.color ?? AppColors.surface;
+              final picture = AppIcon(icon!, color: ink, cut: Colors.transparent);
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: iconFirst ? [picture, const SizedBox(width: 8), Flexible(child: words)] : [Flexible(child: words), const SizedBox(width: 8), picture],
+              );
+            }),
     );
     return expand ? SizedBox(width: double.infinity, child: button) : button;
   }

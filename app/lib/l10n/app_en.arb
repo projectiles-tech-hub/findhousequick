@@ -167,5 +167,71 @@
   "passwordChangedText": "Sign in with your new password.",
   "signOut": "Sign out",
   "pausedTextPhone": "This keeps your account safe. You can still sign in now with a code sent to your phone, or set a new password.",
-  "pausedTextEmail": "This keeps your account safe. You can still sign in now with a code sent to your email, or set a new password."
+  "pausedTextEmail": "This keeps your account safe. You can still sign in now with a code sent to your email, or set a new password.",
+  "backToProperties": "Back to properties",
+  "alreadyHaveAccount": "Already have an account?",
+  "whoHintWide": "Choose all that apply. You can add more later.",
+  "stepAboutYou": "About you",
+  "stepYourDetails": "Your details",
+  "stepConfirmPhone": "Confirm your phone",
+  "stepConfirmEmail": "Confirm your email",
+  "sendByEmailInsteadShort": "Send by email instead",
+  "sendBySmsInsteadShort": "Send by SMS instead",
+  "accountCreated": "Account created",
+  "nextTitle": "What you can do next",
+  "nextConfirmEmail": "Confirm your email",
+  "nextConfirmPhone": "Confirm your phone number",
+  "nextYouAreHere": "You are here: takes a minute",
+  "nextSave": "Save homes you like",
+  "nextSaveText": "Find them again on any device",
+  "nextAlerts": "Set alerts for an area",
+  "nextAlertsText": "Hear first when something is listed",
+  "nextVerify": "Verify your identity",
+  "nextVerifyTextEmail": "The next step once your email is confirmed",
+  "nextVerifyTextPhone": "The next step once your phone number is confirmed",
+  "signInIntroWide": "Sign in to save homes, message listers and book inspections.",
+  "close": "Close",
+  "newHereShort": "New here?",
+  "rememberedIt": "Remembered it?",
+  "backToSignIn": "Back to sign in",
+  "phoneCodeHelper": "We send a 6-digit code to this number",
+  "everyListerChecked": "Every lister identity-checked",
+  "propertiesAvailable": "{count, plural, =1{1 property available now} other{{count} properties available now}}",
+  "@propertiesAvailable": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "verified": "Verified",
+  "listedMinutesAgo": "Listed {count} min ago",
+  "@listedMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listedHoursAgo": "{count, plural, =1{Listed 1 hour ago} other{Listed {count} hours ago}}",
+  "@listedHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listedDaysAgo": "{count, plural, =1{Listed 1 day ago} other{Listed {count} days ago}}",
+  "@listedDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "perYear": "a year",
+  "perMonth": "a month",
+  "perWeek": "a week",
+  "perNight": "a night",
+  "asOnYourId": "As written on your ID"
 }

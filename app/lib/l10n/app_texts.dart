@@ -834,6 +834,234 @@ abstract class AppTexts {
   /// In en, this message translates to:
   /// **'This keeps your account safe. You can still sign in now with a code sent to your email, or set a new password.'**
   String get pausedTextEmail;
+
+  /// No description provided for @backToProperties.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to properties'**
+  String get backToProperties;
+
+  /// No description provided for @alreadyHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get alreadyHaveAccount;
+
+  /// No description provided for @whoHintWide.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose all that apply. You can add more later.'**
+  String get whoHintWide;
+
+  /// No description provided for @stepAboutYou.
+  ///
+  /// In en, this message translates to:
+  /// **'About you'**
+  String get stepAboutYou;
+
+  /// No description provided for @stepYourDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Your details'**
+  String get stepYourDetails;
+
+  /// No description provided for @stepConfirmPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your phone'**
+  String get stepConfirmPhone;
+
+  /// No description provided for @stepConfirmEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your email'**
+  String get stepConfirmEmail;
+
+  /// No description provided for @sendByEmailInsteadShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Send by email instead'**
+  String get sendByEmailInsteadShort;
+
+  /// No description provided for @sendBySmsInsteadShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Send by SMS instead'**
+  String get sendBySmsInsteadShort;
+
+  /// No description provided for @accountCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Account created'**
+  String get accountCreated;
+
+  /// No description provided for @nextTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What you can do next'**
+  String get nextTitle;
+
+  /// No description provided for @nextConfirmEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your email'**
+  String get nextConfirmEmail;
+
+  /// No description provided for @nextConfirmPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your phone number'**
+  String get nextConfirmPhone;
+
+  /// No description provided for @nextYouAreHere.
+  ///
+  /// In en, this message translates to:
+  /// **'You are here: takes a minute'**
+  String get nextYouAreHere;
+
+  /// No description provided for @nextSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save homes you like'**
+  String get nextSave;
+
+  /// No description provided for @nextSaveText.
+  ///
+  /// In en, this message translates to:
+  /// **'Find them again on any device'**
+  String get nextSaveText;
+
+  /// No description provided for @nextAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Set alerts for an area'**
+  String get nextAlerts;
+
+  /// No description provided for @nextAlertsText.
+  ///
+  /// In en, this message translates to:
+  /// **'Hear first when something is listed'**
+  String get nextAlertsText;
+
+  /// No description provided for @nextVerify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity'**
+  String get nextVerify;
+
+  /// No description provided for @nextVerifyTextEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'The next step once your email is confirmed'**
+  String get nextVerifyTextEmail;
+
+  /// No description provided for @nextVerifyTextPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'The next step once your phone number is confirmed'**
+  String get nextVerifyTextPhone;
+
+  /// No description provided for @signInIntroWide.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to save homes, message listers and book inspections.'**
+  String get signInIntroWide;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @newHereShort.
+  ///
+  /// In en, this message translates to:
+  /// **'New here?'**
+  String get newHereShort;
+
+  /// No description provided for @rememberedIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Remembered it?'**
+  String get rememberedIt;
+
+  /// No description provided for @backToSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to sign in'**
+  String get backToSignIn;
+
+  /// No description provided for @phoneCodeHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'We send a 6-digit code to this number'**
+  String get phoneCodeHelper;
+
+  /// No description provided for @everyListerChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'Every lister identity-checked'**
+  String get everyListerChecked;
+
+  /// No description provided for @propertiesAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 property available now} other{{count} properties available now}}'**
+  String propertiesAvailable(int count);
+
+  /// No description provided for @verified.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get verified;
+
+  /// No description provided for @listedMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Listed {count} min ago'**
+  String listedMinutesAgo(int count);
+
+  /// No description provided for @listedHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Listed 1 hour ago} other{Listed {count} hours ago}}'**
+  String listedHoursAgo(int count);
+
+  /// No description provided for @listedDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Listed 1 day ago} other{Listed {count} days ago}}'**
+  String listedDaysAgo(int count);
+
+  /// No description provided for @perYear.
+  ///
+  /// In en, this message translates to:
+  /// **'a year'**
+  String get perYear;
+
+  /// No description provided for @perMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'a month'**
+  String get perMonth;
+
+  /// No description provided for @perWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'a week'**
+  String get perWeek;
+
+  /// No description provided for @perNight.
+  ///
+  /// In en, this message translates to:
+  /// **'a night'**
+  String get perNight;
+
+  /// No description provided for @asOnYourId.
+  ///
+  /// In en, this message translates to:
+  /// **'As written on your ID'**
+  String get asOnYourId;
 }
 
 class _AppTextsDelegate extends LocalizationsDelegate<AppTexts> {

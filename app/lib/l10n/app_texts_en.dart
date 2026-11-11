@@ -414,4 +414,147 @@ class AppTextsEn extends AppTexts {
   @override
   String get pausedTextEmail =>
       'This keeps your account safe. You can still sign in now with a code sent to your email, or set a new password.';
+
+  @override
+  String get backToProperties => 'Back to properties';
+
+  @override
+  String get alreadyHaveAccount => 'Already have an account?';
+
+  @override
+  String get whoHintWide => 'Choose all that apply. You can add more later.';
+
+  @override
+  String get stepAboutYou => 'About you';
+
+  @override
+  String get stepYourDetails => 'Your details';
+
+  @override
+  String get stepConfirmPhone => 'Confirm your phone';
+
+  @override
+  String get stepConfirmEmail => 'Confirm your email';
+
+  @override
+  String get sendByEmailInsteadShort => 'Send by email instead';
+
+  @override
+  String get sendBySmsInsteadShort => 'Send by SMS instead';
+
+  @override
+  String get accountCreated => 'Account created';
+
+  @override
+  String get nextTitle => 'What you can do next';
+
+  @override
+  String get nextConfirmEmail => 'Confirm your email';
+
+  @override
+  String get nextConfirmPhone => 'Confirm your phone number';
+
+  @override
+  String get nextYouAreHere => 'You are here: takes a minute';
+
+  @override
+  String get nextSave => 'Save homes you like';
+
+  @override
+  String get nextSaveText => 'Find them again on any device';
+
+  @override
+  String get nextAlerts => 'Set alerts for an area';
+
+  @override
+  String get nextAlertsText => 'Hear first when something is listed';
+
+  @override
+  String get nextVerify => 'Verify your identity';
+
+  @override
+  String get nextVerifyTextEmail =>
+      'The next step once your email is confirmed';
+
+  @override
+  String get nextVerifyTextPhone =>
+      'The next step once your phone number is confirmed';
+
+  @override
+  String get signInIntroWide =>
+      'Sign in to save homes, message listers and book inspections.';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get newHereShort => 'New here?';
+
+  @override
+  String get rememberedIt => 'Remembered it?';
+
+  @override
+  String get backToSignIn => 'Back to sign in';
+
+  @override
+  String get phoneCodeHelper => 'We send a 6-digit code to this number';
+
+  @override
+  String get everyListerChecked => 'Every lister identity-checked';
+
+  @override
+  String propertiesAvailable(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count properties available now',
+      one: '1 property available now',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get verified => 'Verified';
+
+  @override
+  String listedMinutesAgo(int count) {
+    return 'Listed $count min ago';
+  }
+
+  @override
+  String listedHoursAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Listed $count hours ago',
+      one: 'Listed 1 hour ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String listedDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Listed $count days ago',
+      one: 'Listed 1 day ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get perYear => 'a year';
+
+  @override
+  String get perMonth => 'a month';
+
+  @override
+  String get perWeek => 'a week';
+
+  @override
+  String get perNight => 'a night';
+
+  @override
+  String get asOnYourId => 'As written on your ID';
 }

@@ -10,6 +10,7 @@ abstract final class AppColors {
   static const amber100 = Color(0xFFFDF0CC);
   static const ink900 = Color(0xFF111827); // text
   static const ink600 = Color(0xFF4B5563); // secondary text
+  static const ink500 = Color(0xFF6B7280); // small grey notes in the website layouts
   static const ink400 = Color(0xFF9CA3AF); // disabled only
   static const border = Color(0xFFB8BEC7);
   static const divider = Color(0xFFE5E7EB);

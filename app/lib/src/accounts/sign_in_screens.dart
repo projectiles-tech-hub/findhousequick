@@ -4,16 +4,18 @@ import 'package:go_router/go_router.dart';
 
 import '../api/api_client.dart';
 import '../controls/controls.dart';
+import '../design/app_icon.dart';
 import '../design/buttons.dart';
 import '../design/chips.dart';
 import '../design/fields.dart';
 import '../design/notice.dart';
 import '../design/screen.dart';
+import '../design/wide.dart';
 import '../l10n/languages.dart';
 import '../session/session.dart';
 import 'account_errors.dart';
 import 'accounts_api.dart';
-import 'sign_up_screens.dart' show ResendCountdown;
+import 'sign_up_screens.dart' show ResendCountdown, backToProperties;
 
 /// The phone number or email address being used to sign in or reset a password, carried from one screen to the next.
 class SignInContact {
@@ -36,6 +38,7 @@ class _ContactPicker extends StatelessWidget {
     this.error,
     this.phoneHelper,
     this.emailHelper,
+    this.between,
   });
 
   final bool byEmail;
@@ -47,21 +50,29 @@ class _ContactPicker extends StatelessWidget {
   final String? phoneHelper;
   final String? emailHelper;
 
+  /// Shown between the choice and the field, such as the notice that sign-in is paused in the website layout.
+  final Widget? between;
+
   @override
   Widget build(BuildContext context) {
     final t = context.texts;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            AppFilterChip(label: t.chipPhone, selected: !byEmail, onChanged: (_) => onByEmail(false)),
-            AppFilterChip(label: t.chipEmail, selected: byEmail, onChanged: (_) => onByEmail(true)),
-          ],
-        ),
+        // Chips on the phone; one bar with two halves on the website.
+        if (AppWide.of(context))
+          AppSegmented(labels: [t.chipPhone, t.chipEmail], selected: byEmail ? 1 : 0, onChanged: (i) => onByEmail(i == 1))
+        else
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              AppFilterChip(label: t.chipPhone, selected: !byEmail, onChanged: (_) => onByEmail(false)),
+              AppFilterChip(label: t.chipEmail, selected: byEmail, onChanged: (_) => onByEmail(true)),
+            ],
+          ),
         const SizedBox(height: 16),
+        if (between != null) ...[between!, const SizedBox(height: 16)],
         if (byEmail)
           AppTextField(
             label: t.emailAddress,
@@ -169,65 +180,89 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
     final t = context.texts;
     final country = ref.watch(controlsProvider).value?.country;
     final ready = !_busy && country != null;
+    final wide = AppWide.of(context);
+    void close() => context.canPop() ? context.pop() : context.go('/');
+    final paused = AppNotice(kind: AppNoticeKind.error, title: t.pausedTitle, message: _byEmail ? t.pausedTextEmail : t.pausedTextPhone);
+    final changed = AppNotice(kind: AppNoticeKind.success, title: t.passwordChangedTitle, message: t.passwordChangedText);
+    final form = AutofillGroup(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _ContactPicker(
+            byEmail: _byEmail,
+            onByEmail: (v) => setState(() {
+              _byEmail = v;
+              _contactError = null;
+            }),
+            phone: _phone,
+            email: _email,
+            country: country,
+            error: _contactError,
+            phoneHelper: wide ? t.phoneCodeHelper : null,
+            between: wide && _paused ? paused : null,
+          ),
+          const SizedBox(height: 16),
+          AppPasswordField(
+            label: t.password,
+            controller: _password,
+            showLabel: t.showPassword,
+            hideLabel: t.hidePassword,
+            helper: wide ? t.passwordHelper : null,
+            error: _passwordError,
+            onChanged: (_) {
+              if (_passwordError != null && !_paused) setState(() => _passwordError = null);
+            },
+            onSubmitted: (_) => ready && !_paused ? _signIn(country) : null,
+          ),
+        ],
+      ),
+    );
+    final forgot = AppLinkButton(
+      label: t.forgotPasswordLink,
+      alignment: wide ? Alignment.centerRight : Alignment.centerLeft,
+      onPressed: () => context.push('/forgot-password', extra: _who),
+    );
+    final failure = _failure == null ? const <Widget>[] : [AppNotice(kind: AppNoticeKind.error, title: _failure!), const SizedBox(height: 16)];
+    final buttons = _paused
+        ? [
+            AppButton(label: t.getSignInCode, onPressed: ready ? () => _codeInstead(country) : null),
+            AppButton(label: t.setNewPassword, kind: AppButtonKind.outline, onPressed: () => context.push('/forgot-password', extra: _who)),
+          ]
+        : [
+            AppButton(label: t.signIn, onPressed: ready ? () => _signIn(country) : null),
+            AppButton(label: t.getCodeInstead, kind: AppButtonKind.outline, icon: AppIcons.phone, iconFirst: true, onPressed: ready ? () => _codeInstead(country) : null),
+            if (!wide) AppButton(label: t.newHere, kind: AppButtonKind.text, onPressed: () => context.push('/sign-up')),
+          ];
+    if (wide) {
+      // On the website, sign-in is a panel over the dimmed page.
+      return AppScreen(
+        panel: true,
+        onClose: close,
+        bottom: buttons,
+        footer: _paused ? null : AppFooterLink(words: t.newHereShort, link: t.createAnAccount, onPressed: () => context.push('/sign-up')),
+        children: [
+          AppPanelHeading(title: t.welcomeBack, intro: t.signInIntroWide, onClose: close),
+          const SizedBox(height: 16),
+          if (widget.passwordChanged && !_paused && _failure == null) ...[changed, const SizedBox(height: 16)],
+          ...failure,
+          form,
+          if (!_paused) forgot,
+          const SizedBox(height: 12),
+        ],
+      );
+    }
     return AppScreen(
       title: t.signIn,
-      onBack: () => context.canPop() ? context.pop() : context.go('/'),
-      bottom: _paused
-          ? [
-              AppButton(label: t.getSignInCode, onPressed: ready ? () => _codeInstead(country) : null),
-              AppButton(label: t.setNewPassword, kind: AppButtonKind.outline, onPressed: () => context.push('/forgot-password', extra: _who)),
-            ]
-          : [
-              AppButton(label: t.signIn, onPressed: ready ? () => _signIn(country) : null),
-              AppButton(label: t.getCodeInstead, kind: AppButtonKind.outline, onPressed: ready ? () => _codeInstead(country) : null),
-              AppButton(label: t.newHere, kind: AppButtonKind.text, onPressed: () => context.push('/sign-up')),
-            ],
+      onBack: close,
+      bottom: buttons,
       children: [
         const SizedBox(height: 8),
         AppHeading(t.welcomeBack, intro: _paused ? null : t.signInIntro),
         const SizedBox(height: 16),
-        if (_paused) ...[
-          AppNotice(kind: AppNoticeKind.error, title: t.pausedTitle, message: _byEmail ? t.pausedTextEmail : t.pausedTextPhone),
-          const SizedBox(height: 16),
-        ] else if (widget.passwordChanged && _failure == null) ...[
-          AppNotice(kind: AppNoticeKind.success, title: t.passwordChangedTitle, message: t.passwordChangedText),
-          const SizedBox(height: 16),
-        ],
-        if (_failure != null) ...[AppNotice(kind: AppNoticeKind.error, title: _failure!), const SizedBox(height: 16)],
-        AutofillGroup(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _ContactPicker(
-                byEmail: _byEmail,
-                onByEmail: (v) => setState(() {
-                  _byEmail = v;
-                  _contactError = null;
-                }),
-                phone: _phone,
-                email: _email,
-                country: country,
-                error: _contactError,
-              ),
-              const SizedBox(height: 16),
-              AppPasswordField(
-                label: t.password,
-                controller: _password,
-                showLabel: t.showPassword,
-                hideLabel: t.hidePassword,
-                error: _passwordError,
-                onChanged: (_) {
-                  if (_passwordError != null && !_paused) setState(() => _passwordError = null);
-                },
-                onSubmitted: (_) => ready && !_paused ? _signIn(country) : null,
-              ),
-            ],
-          ),
-        ),
-        if (!_paused) ...[
-          const SizedBox(height: 16),
-          AppLinkButton(label: t.forgotPasswordLink, onPressed: () => context.push('/forgot-password', extra: _who)),
-        ],
+        if (_paused) ...[paused, const SizedBox(height: 16)] else if (widget.passwordChanged && _failure == null) ...[changed, const SizedBox(height: 16)],
+        ...failure,
+        form,
+        if (!_paused) ...[const SizedBox(height: 16), forgot],
         const SizedBox(height: 8),
       ],
     );
@@ -302,13 +337,18 @@ class _SignInCodeScreenState extends ConsumerState<SignInCodeScreen> with Resend
     final t = context.texts;
     final country = ref.watch(controlsProvider).value?.country;
     final shown = widget.who.shown(country?.dialCode ?? '');
+    final wide = AppWide.of(context);
+    void back() => context.canPop() ? context.pop() : context.go('/sign-in');
+    final sent = widget.who.byEmail ? t.codeSentEmail(shown) : t.codeSentSms(shown);
     return AppScreen(
       title: t.signIn,
-      onBack: () => context.canPop() ? context.pop() : context.go('/sign-in'),
+      onBack: back,
+      panel: true,
+      onClose: back,
       bottom: [AppButton(label: t.signIn, onPressed: _busy || country == null ? null : () => _signIn(country))],
       children: [
-        const SizedBox(height: 8),
-        AppHeading(t.enterTheCode, intro: widget.who.byEmail ? t.codeSentEmail(shown) : t.codeSentSms(shown)),
+        if (!wide) const SizedBox(height: 8),
+        if (wide) AppPanelHeading(title: t.enterTheCode, intro: sent, onClose: back) else AppHeading(t.enterTheCode, intro: sent),
         const SizedBox(height: 16),
         if (_failure != null) ...[AppNotice(kind: AppNoticeKind.error, title: _failure!), const SizedBox(height: 16)],
         AppCodeField(
@@ -380,9 +420,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     return AppScreen(
       title: t.resetPassword,
       onBack: () => context.canPop() ? context.pop() : context.go('/sign-in'),
+      onBackToProperties: backToProperties(ref),
+      footer: AppFooterLink(words: t.rememberedIt, link: t.backToSignIn, onPressed: () => context.canPop() ? context.pop() : context.go('/sign-in')),
       bottom: [AppButton(label: t.sendCode, onPressed: _busy || country == null ? null : () => _send(country))],
       children: [
-        const SizedBox(height: 8),
+        if (!AppWide.of(context)) const SizedBox(height: 8),
         AppHeading(t.forgotTitle, intro: t.forgotIntro),
         const SizedBox(height: 16),
         if (_failure != null) ...[AppNotice(kind: AppNoticeKind.error, title: _failure!), const SizedBox(height: 16)],
@@ -483,9 +525,10 @@ class _NewPasswordScreenState extends ConsumerState<NewPasswordScreen> with Rese
     return AppScreen(
       title: t.resetPassword,
       onBack: () => context.canPop() ? context.pop() : context.go('/forgot-password'),
+      onBackToProperties: backToProperties(ref),
       bottom: [AppButton(label: t.saveNewPassword, onPressed: _busy || country == null ? null : () => _save(country))],
       children: [
-        const SizedBox(height: 8),
+        if (!AppWide.of(context)) const SizedBox(height: 8),
         AppHeading(t.setNewPassword, intro: t.newPasswordIntro(widget.who.shown(country?.dialCode ?? ''))),
         const SizedBox(height: 16),
         if (_failure != null) ...[AppNotice(kind: AppNoticeKind.error, title: _failure!), const SizedBox(height: 16)],
