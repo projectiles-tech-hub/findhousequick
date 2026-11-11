@@ -51,7 +51,7 @@ export class AuthController {
   @ApiCreatedResponse({ description: 'Registered and signed in' })
   @ApiResponse({ status: 409, description: 'Phone or email already registered' })
   register(@Body() dto: RegisterDto, @Req() req: Request) {
-    return this.accounts.register(dto, contextFromRequest(req));
+    return this.accounts.register(dto, contextFromRequest(req), deviceIdOf(req));
   }
 
   @Public()
@@ -63,8 +63,8 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Wrong credentials' })
   @ApiResponse({ status: 403, description: 'Account suspended (code ACCOUNT_SUSPENDED)' })
   @ApiResponse({ status: 429, description: 'Too many attempts (code PASSWORD_LOCKED or TOO_MANY_REQUESTS)' })
-  login(@Body() dto: LoginDto) {
-    return this.accounts.login(dto);
+  login(@Body() dto: LoginDto, @Req() req: Request) {
+    return this.accounts.login(dto, deviceIdOf(req));
   }
 
   @Public()
@@ -106,4 +106,11 @@ export class AuthController {
   async logout(@CurrentUser() user: RequestUser): Promise<void> {
     await this.accounts.logout(user.sessionId);
   }
+}
+
+/** The app installation's own identifier, sent as X-Device-Id; kept for the scout conflict checks (ADR 0008). */
+function deviceIdOf(req: Request): string | undefined {
+  const value = req.headers['x-device-id'];
+  const id = (Array.isArray(value) ? value[0] : value)?.trim();
+  return id && /^[\w.:-]{8,100}$/.test(id) ? id : undefined;
 }

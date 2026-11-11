@@ -80,6 +80,22 @@ export const countrySettingsSchema = z.object({
     })
     .prefault({}),
 
+  scouts: z
+    .object({
+      /**
+       * The fixed referral reward for the first rental of a unit, in whole minor units (kobo). Not set until
+       * Emmanuel decides the amount (Decisions Log open point 16); while it is not set, no reward becomes eligible.
+       */
+      rewardMinor: z
+        .string()
+        .regex(/^[1-9]\d{0,14}$/)
+        .nullable()
+        .default(null),
+      /** How near the landlord's building must be to the scout's pin to count as the reported property. */
+      matchRadiusMetres: z.number().int().min(20).max(2000).default(150),
+    })
+    .prefault({}),
+
   inspections: z
     .object({
       /** A slot can be booked only this many minutes or more before it starts, so the lister has notice. */

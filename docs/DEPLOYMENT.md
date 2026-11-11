@@ -24,6 +24,7 @@ GitHub repository secrets, **never in the code**. `server/.env.example` shows th
 | `RUN_BACKGROUND_JOBS` | No (default `true`) | Whether this server runs background jobs, such as deleting identity photos whose retention period has ended | `true` or `false` | Leave `true` on at least one server. With several servers each job still runs once |
 | `STORAGE_PROVIDER` | Yes | Where private documents (identity photos, later ownership documents) are kept | `local` for development only | `local` keeps files in a folder and is refused in production. A real provider (Cloudflare R2) is added before any pilot (ADR 0007) |
 | `STORAGE_LOCAL_DIR` | No (default `.private-storage`) | Folder used by the `local` storage provider | A folder path | Development only |
+| `PUBLIC_WEB_URL` | Yes on servers | The public website's address, used in the invitation links scouts share with landlords (ADR 0008) | e.g. `https://findhousequick.com` | Defaults to `http://localhost:3100` for development |
 | `API_PUBLIC_URL` | Yes on servers | The API's own address as the apps reach it, used in upload links | e.g. `https://api.findhousequick.com` | Defaults to `http://localhost:3000` for development |
 | `CORS_ORIGINS` | Yes | Web addresses allowed to call the API from a browser | e.g. `https://app.findhousequick.com` (comma-separated) | Must include the web app's address |
 | `JWT_SECRET` | Yes | Signs sign-in passes | `openssl rand -hex 32` | **Secret.** At least 32 characters. Changing it signs every user out |
@@ -94,6 +95,8 @@ The country settings used by photo and video upload (ADR 0009):
 | `inspections.maxSafetyShares` | 3 | How many times one inspection's details can be sent to a trusted contact by SMS | 1 to 10. Each SMS costs money |
 | `verification.riskPoints.*` | 30, 40, 40, 60, 20 | Points added to a listing's risk score by: `nameMatchPending`, `duplicateLocation`, `duplicatePhoto`, `duplicateDocument`, `tenantMismatch` (ADR 0012) | 0 to 100 each. With `verification.riskBands` (amber from 30, red from 60) they decide whether a listing goes live at once, to a desk review or to a site visit |
 | `verification.photoMatchBits` | 6 | How different two photo fingerprints may be and still count as the same photo | 0 to 16. Lower means stricter matching |
+| `scouts.rewardMinor` | not set | The fixed referral reward for the first rental of a unit, in kobo (decision 70; Decisions Log open point 16) | Whole minor units as text, e.g. `"500000"` for 5,000 naira. While it is not set, no reward becomes eligible |
+| `scouts.matchRadiusMetres` | 150 | How near the landlord's building must be to the scout's pin to count as the reported property (ADR 0008) | 20 to 2,000 |
 | `listings.confirmAvailabilityDays` | 14 | A live listing expires unless the lister confirms it is still available within this many days | 7 to 14 (Specification 6.6) |
 
 ## 2. Outside accounts

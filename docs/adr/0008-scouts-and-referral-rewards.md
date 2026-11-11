@@ -1,7 +1,8 @@
 # ADR 0008: Scouts and the referral reward (build plan)
 
-- Status: Proposed. Scheduled for Release 1, step 5a (decision 72): sections 1 to 6 and 8 to 11 are built in Release 1;
-  reward payouts (section 7) come with the completed rental fee in Release 2.
+- Status: Sections 1 to 6, 8, 9 and 11 are built on the server in Release 1, step 5a (decision 72; see "As built"
+  at the end). The screens (section 10) come with step 6. Reward payouts (section 7) come with the completed rental
+  fee in Release 2.
 - Context: decisions 70 to 72 (scouts and the referral reward); decisions 7 (agent authority), 14 and 15 (completed rental
   fee), 43 (landlords register their own properties), 58 (duplicate checks) and 64 (actions need level 1); Product
   Specification 1.6, Section 3.6; ADR 0002 (feature controls), ADR 0003 (money and ledger), ADR 0007 (verification).
@@ -142,3 +143,40 @@ is approved by staff. Still open: Decisions Log open points 16 (amount), and 18 
 ## Settled by decision 72 (24 October 2026)
 
 Scouts are built in Release 1 (step 5a); reward payouts come with the completed rental fee in Release 2.
+
+## As built (step 5a, 11 November 2026)
+
+What the server now does, and where it differs from the plan above:
+
+- **Routes.** As in section 9, with three differences:
+  - the invited landlord confirms his building through `GET /me/scout-invitation` and
+    `POST /me/scout-invitation/link` (section 3 did not name routes for this);
+  - staff suspend a scout through `POST /admin/scouts/{userId}/status` (section 1);
+  - the two payout routes are left for Release 2, with section 7.
+- **The invitation code** is ten letters and digits that are hard to mix up, shown as `XXXXX-XXXXX`. Only its hash
+  is stored. It is shown once; asking again before it is used replaces it. The link is the public website address
+  (`PUBLIC_WEB_URL`) followed by `/invite/` and the code.
+- **"Already on the app"** is decided when the scout reports: a building within `listings.duplicateRadiusMetres`
+  of the pin marks the report, and no invitation can be made for it.
+- **"The same property"** is decided when the landlord links: his building must be within
+  `scouts.matchRadiusMetres` (default 150) of the scout's pin. A building can belong to one referral only, and a
+  landlord's account to one invitation only, so the first to link wins.
+- **Conflict checks** run when the building is linked, when a unit is added, and when the first rental is recorded
+  (then also against the tenant). They compare who the people are, their current phone numbers and email
+  addresses, and their devices. A failed check voids the rewards and opens a `SCOUT_CONFLICT` task; staff approve
+  to put a mistaken match right, or reject to leave the rewards void.
+- **The device check** uses the identifier each app installation sends as `X-Device-Id`, recorded when an account
+  registers or signs in.
+- **Rewards.** Each unit gets a line that waits for a rental. The two steps that move it on, the first rental being
+  recorded and the fee being received, are built and tested, but nothing calls them yet: rentals and the completed
+  rental fee are Release 2. While `scouts.rewardMinor` is not set (open point 16), no line becomes eligible.
+
+Not built yet, from sections 1 to 6:
+
+- **Photos on a scout's report** (section 2). The report takes the pin, a description and the landlord's name.
+- **Phone numbers and email addresses "ever confirmed"** (section 6). Only the current ones are compared, because
+  the platform does not yet keep a history of an account's earlier contacts.
+- **The bank account check** (section 6): with bank accounts, in Release 2.
+- **The landlord's invitation page** on the public website, at `/invite/{code}`: with the screens, in step 6. Until
+  then the link has nowhere to land.
+

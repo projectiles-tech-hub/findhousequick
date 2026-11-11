@@ -109,6 +109,10 @@ export class ReviewService {
           only('APPROVE', 'REJECT');
           await this.decideAuthority(tx, task, actor.id, approve, now);
           break;
+        case 'SCOUT_CONFLICT':
+          only('APPROVE', 'REJECT');
+          await this.decideScoutConflict(tx, task, actor.id, approve);
+          break;
         case 'REPORT':
           only('NO_ACTION', 'WARN_USER', 'REMOVE_BADGE', 'SUSPEND_USER', 'BAN_USER', 'NEEDS_SITE_VISIT');
           await this.decideReport(tx, task, actor.id, dto, now);
@@ -147,6 +151,22 @@ export class ReviewService {
     }
     if (result.type === 'REPORT') await this.afterReport(result.entityId, dto);
     return result;
+  }
+
+  /**
+   * A scout referral that failed a conflict check (ADR 0008, section 6). Approve: the match was a mistake, so the
+   * rewards voided for it wait for a rental again. Reject: the conflict is real and the rewards stay void.
+   */
+  private async decideScoutConflict(tx: Prisma.TransactionClient, task: ReviewTask, staffId: string, approve: boolean) {
+    const referral = await tx.scoutReferral.findUnique({ where: { id: task.entityId } });
+    if (!referral) throw apiError(404, 'NOT_FOUND', 'The referral no longer exists.');
+    if (referral.scoutId === staffId || referral.landlordId === staffId) throw apiError(403, 'OWN_CASE', 'You cannot decide your own case.');
+    if (approve) {
+      await tx.scoutRewardLine.updateMany({
+        where: { referralId: referral.id, status: 'VOID', voidReason: 'CONFLICT_OF_INTEREST' },
+        data: { status: 'WAITING_FOR_RENTAL', voidReason: null, voidNote: 'Put right by staff after review' },
+      });
+    }
   }
 
   /** A desk reviewer asks for a visit: the listing keeps waiting and a site visit task is opened. */

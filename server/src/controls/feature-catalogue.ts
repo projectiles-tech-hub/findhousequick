@@ -97,6 +97,9 @@ export const FEATURES = [
   f('language.ig', 'Igbo'),
   f('language.ha', 'Hausa'),
   f('language.fr', 'French'),
+
+  // Growth
+  f('growth.scouts', 'Scouts and referral rewards'),
 ] as const satisfies readonly FeatureDefinition[];
 
 export type FeatureKey = (typeof FEATURES)[number]['key'];
