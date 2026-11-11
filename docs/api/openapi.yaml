@@ -77,6 +77,8 @@ tags:
   - name: Notifications
   - name: Reports
   - name: Staff two-step login
+  - name: Scouts
+    description: Scouts report vacant properties and invite their landlords (decisions 70 to 72; ADR 0008)
   - name: Admin
 
 security:
@@ -150,6 +152,12 @@ paths:
                   minItems: 1
                   items: { $ref: "#/components/schemas/UserType" }
                 language: { type: string, example: en }
+                invitationCode:
+                  type: string
+                  description: |
+                    A scout's invitation code, when the landlord was invited (decision 70). Single use, and
+                    only a new account can use one. A wrong or used code, or scouts switched off, answers
+                    400 INVALID_INVITATION; the user can still register without it.
                 consent:
                   type: object
                   description: Required. The versions of the terms of use and privacy policy the user agreed to.
@@ -1982,6 +1990,211 @@ paths:
   # ------------------------------------------------------------------
   # Admin (staff only; every action is recorded)
   # ------------------------------------------------------------------
+  /me/scout:
+    post:
+      tags: [Scouts]
+      summary: Join as a scout (decision 70) (built)
+      description: Any user at level 1 can join. Being a scout gives no rights over any property.
+      x-verification-level: 1
+      x-feature: growth.scouts
+      responses:
+        "200": { description: "The scout profile: status (ACTIVE or SUSPENDED), optedInAt, suspendedReason." }
+    get:
+      tags: [Scouts]
+      summary: The user's scout profile (built)
+      x-feature: growth.scouts
+      responses:
+        "200": { description: The scout profile. }
+        "404": { description: "NOT_A_SCOUT: the user has not joined." }
+
+  /scout/reports:
+    post:
+      tags: [Scouts]
+      summary: Report a vacant property (built)
+      description: |
+        Checked at once against buildings already on the platform, with the duplicate location check of
+        decision 58. A match is recorded with `alreadyOnPlatform: true` and can earn no reward. At most
+        20 reports a day (429 TOO_MANY_REPORTS). Refused for those who have not joined (403 NOT_A_SCOUT)
+        or are suspended (403 SCOUT_SUSPENDED).
+      x-verification-level: 1
+      x-feature: growth.scouts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [location, description]
+              properties:
+                location: { $ref: "#/components/schemas/LatLng" }
+                description: { type: string, minLength: 5, maxLength: 500 }
+                landlordName: { type: string, maxLength: 120 }
+      responses:
+        "201":
+          description: The report.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ScoutReport" }
+    get:
+      tags: [Scouts]
+      summary: The scout's reports, newest first (built)
+      x-feature: growth.scouts
+      parameters:
+        - { name: cursor, in: query, schema: { type: string } }
+      responses:
+        "200": { description: "A page of reports (`items`, `nextCursor`)." }
+
+  /scout/reports/{reportId}/invitations:
+    post:
+      tags: [Scouts]
+      summary: Make the invitation for the landlord of a reported property (built)
+      description: |
+        Returns a single-use code and a link to share, or to show as a QR code on the landlord's own
+        phone. Only a hash of the code is stored, so it is shown only now; asking again before it is used
+        replaces it. Invitations do not expire (decision 71). Refused with 409 ALREADY_ON_PLATFORM for a
+        property already on the platform, and 409 INVITATION_USED once the landlord has joined.
+      x-verification-level: 1
+      x-feature: growth.scouts
+      parameters:
+        - { name: reportId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+      responses:
+        "201":
+          description: The invitation.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { $ref: "#/components/schemas/Id" }
+                  code: { type: string, example: "K7M4P-9QXD2" }
+                  link: { type: string, format: uri }
+                  status: { type: string, enum: [PENDING, ACCEPTED] }
+
+  /invitations/{code}:
+    get:
+      tags: [Scouts]
+      summary: Who invited you (public; nothing private) (built)
+      description: Shown on the landlord's invitation page before he registers. Says nothing about the property.
+      security: []
+      x-feature: growth.scouts
+      parameters:
+        - { name: code, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: "`valid: true` and `invitedBy`, the scout's first name." }
+        "404": { description: "INVALID_INVITATION: wrong or already used." }
+
+  /me/scout-invitation:
+    get:
+      tags: [Scouts]
+      summary: The invitation the user registered with (built)
+      description: |
+        For the invited landlord: who invited him, the place the scout described and its pin, and the
+        building linked to it, if any. `invitation` is null for users who did not join through a scout.
+      x-feature: growth.scouts
+      responses:
+        "200": { description: "The invitation, or null." }
+
+  /me/scout-invitation/link:
+    post:
+      tags: [Scouts]
+      summary: The invited landlord confirms that his building is the property the scout reported (built)
+      description: |
+        The building must be his own and within the country setting `scouts.matchRadiusMetres` of the
+        reported pin (409 NOT_THE_REPORTED_PROPERTY otherwise). One referral per invitation (409
+        ALREADY_LINKED) and per building (409 PROPERTY_ALREADY_REFERRED). Each unit of the building, now
+        or added later, then carries one reward for its first rental (decision 71). The conflict checks
+        run here: a failed check voids the rewards and opens a SCOUT_CONFLICT task for the team.
+      x-verification-level: 2
+      x-feature: growth.scouts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [buildingId]
+              properties:
+                buildingId: { $ref: "#/components/schemas/Id" }
+      responses:
+        "200": { description: "`referralId` and `buildingId`." }
+
+  /me/scout/referrals:
+    get:
+      tags: [Scouts]
+      summary: The scout's referrals and the state of each reward (built)
+      description: Shows the area and city of each property, never its address or the landlord.
+      x-feature: growth.scouts
+      responses:
+        "200":
+          description: Referrals.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/ScoutReferral" }
+
+  /admin/scout-referrals:
+    get:
+      tags: [Admin]
+      summary: All scout referrals in the staff member's countries (built)
+      description: Also shows the scout, the landlord, the street and the note on each voided reward.
+      x-staff-roles: [VERIFIER, COUNTRY_MANAGER, SUPER_ADMIN]
+      x-feature: growth.scouts
+      parameters:
+        - name: status
+          in: query
+          description: Referrals with a reward in this state.
+          schema: { type: string, enum: [WAITING_FOR_RENTAL, ELIGIBLE, APPROVED, PAID, VOID] }
+        - { name: cursor, in: query, schema: { type: string } }
+      responses:
+        "200": { description: "A page of referrals (`items`, `nextCursor`)." }
+
+  /admin/scout-referrals/{referralId}/void:
+    post:
+      tags: [Admin]
+      summary: Void the open rewards of a referral, with a reason (built)
+      x-staff-roles: [COUNTRY_MANAGER, SUPER_ADMIN]
+      x-feature: growth.scouts
+      parameters:
+        - { name: referralId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, minLength: 5, maxLength: 500 }
+      responses:
+        "200": { description: The referral. }
+        "403": { description: "OWN_CASE." }
+
+  /admin/scouts/{userId}/status:
+    post:
+      tags: [Admin]
+      summary: Suspend a scout, or lift the suspension (built)
+      description: A suspended scout cannot report or invite.
+      x-staff-roles: [COUNTRY_MANAGER, SUPER_ADMIN]
+      x-feature: growth.scouts
+      parameters:
+        - { name: userId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status, reason]
+              properties:
+                status: { type: string, enum: [ACTIVE, SUSPENDED] }
+                reason: { type: string, minLength: 5, maxLength: 500 }
+      responses:
+        "200": { description: The scout's new status. }
+
   /admin/review-tasks:
     get:
       tags: [Admin]
@@ -2738,6 +2951,47 @@ components:
       example:
         NEW_MESSAGE: [PUSH]
         SAVED_SEARCH_ALERT: [PUSH, EMAIL]
+
+    ScoutReport:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        location: { $ref: "#/components/schemas/LatLng" }
+        description: { type: string }
+        landlordName: { type: [string, "null"] }
+        alreadyOnPlatform: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        stage:
+          type: string
+          enum: [REPORTED, INVITED, LANDLORD_JOINED, PROPERTY_ADDED, ALREADY_ON_PLATFORM]
+
+    ScoutReferral:
+      type: object
+      properties:
+        id: { $ref: "#/components/schemas/Id" }
+        createdAt: { type: string, format: date-time }
+        property:
+          type: object
+          properties:
+            area: { type: string }
+            city: { type: string }
+        rewards:
+          type: array
+          description: One per unit of the building, for its first rental only (decision 71).
+          items:
+            type: object
+            properties:
+              id: { $ref: "#/components/schemas/Id" }
+              unitLabel: { type: string }
+              status: { type: string, enum: [WAITING_FOR_RENTAL, ELIGIBLE, APPROVED, PAID, VOID] }
+              voidReason: { type: [string, "null"], enum: [RENTED_THROUGH_ESCROW, CONFLICT_OF_INTEREST, VOIDED_BY_STAFF, null] }
+              amount:
+                description: Saved when the reward becomes eligible; null before.
+                oneOf:
+                  - $ref: "#/components/schemas/Money"
+                  - type: "null"
+              rentedAt: { type: [string, "null"], format: date-time }
+              eligibleAt: { type: [string, "null"], format: date-time }
 
     ListingCard:
       type: object

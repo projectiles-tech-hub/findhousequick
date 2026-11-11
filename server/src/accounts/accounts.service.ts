@@ -3,6 +3,7 @@ import { apiError } from '../common/api-error.js';
 import { ControlsService } from '../controls/controls.service.js';
 import type { EvaluationContext } from '../controls/feature-evaluator.js';
 import { Prisma, type SignInMethod } from '../generated/prisma/client.js';
+import { hashInvitationCode } from '../scouts/rules.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { contactOf, oneContact, type Channel, type Contact } from './contact.js';
 import type { ContactCodeDto, ContactConfirmDto, LoginDto, RegisterDto, RequestOtpDto, ResetPasswordDto, UpdateMeDto } from './dto.js';
@@ -98,7 +99,7 @@ export class AccountsService {
    * that account, so nobody can block a phone number or email address by typing it first. A contact another
    * account has confirmed cannot be taken. The other, unconfirmed contact must not be held by anyone.
    */
-  async register(dto: RegisterDto, ctx: EvaluationContext): Promise<Session> {
+  async register(dto: RegisterDto, ctx: EvaluationContext, deviceId?: string): Promise<Session> {
     await this.assertRegistrationsOpen({ ...ctx, countryCode: dto.countryCode });
 
     const country = await this.controls.findCountry(dto.countryCode);
@@ -114,6 +115,9 @@ export class AccountsService {
     if (!(await this.otp.consume(confirmed, 'REGISTER', dto.otp))) {
       throw apiError(400, 'INVALID_CODE', 'The code is wrong or has expired. Please request a new one.');
     }
+
+    // A scout's invitation (decision 70): single use, and only for a new account, which registering always is.
+    const invitation = dto.invitationCode ? await this.pendingInvitation(dto.invitationCode, { ...ctx, countryCode: dto.countryCode }) : null;
 
     const now = new Date();
     const passwordHash = await hashPassword(dto.password);
@@ -144,12 +148,32 @@ export class AccountsService {
     } catch (err) {
       throw this.duplicateError(err) ?? err;
     }
+    if (invitation) {
+      // Taken only if still unused: two people registering with one code at the same moment cannot both have it.
+      await this.prisma.scoutInvitation.updateMany({ where: { id: invitation.id, status: 'PENDING' }, data: { status: 'ACCEPTED', acceptedById: user.id, acceptedAt: now } });
+    }
+    await this.deviceSeen(user.id, deviceId);
     // Registering uses a code, so the new device counts as signed in by that channel (decision 36).
     return this.session(user, await this.sessions.start(user.id, null, signInMethodFor(confirmed)));
   }
 
+  /** The unused invitation a code belongs to; refused when the code is wrong, used, or scouts are switched off. */
+  private async pendingInvitation(code: string, ctx: EvaluationContext) {
+    const invalid = () => apiError(400, 'INVALID_INVITATION', 'This invitation code is not valid or has already been used. You can still register without it.');
+    if (!(await this.controls.isEnabled('growth.scouts', ctx))) throw invalid();
+    const invitation = await this.prisma.scoutInvitation.findUnique({ where: { codeHash: hashInvitationCode(code) }, select: { id: true, status: true } });
+    if (!invitation || invitation.status !== 'PENDING') throw invalid();
+    return invitation;
+  }
+
+  /** Remembers which app installation an account signed in from, for the scout conflict checks (ADR 0008). */
+  private async deviceSeen(userId: string, deviceId?: string): Promise<void> {
+    if (!deviceId) return;
+    await this.prisma.userDevice.upsert({ where: { userId_deviceId: { userId, deviceId } }, create: { userId, deviceId }, update: { lastSeenAt: new Date() } });
+  }
+
   /** Signs in with a phone number or email address, and a password or a code sent to it (decision 35). */
-  async login(dto: LoginDto): Promise<Session> {
+  async login(dto: LoginDto, deviceId?: string): Promise<Session> {
     const contact = oneContact(dto);
     if (!!dto.password === !!dto.otp) {
       throw apiError(400, 'BAD_REQUEST', 'Give either a password or a code.');
@@ -180,6 +204,7 @@ export class AccountsService {
       throw apiError(403, 'ACCOUNT_SUSPENDED', 'This account has been suspended. Please contact support.');
     }
     const method: SignInMethod = dto.otp ? signInMethodFor(contact) : 'PASSWORD';
+    await this.deviceSeen(user.id, deviceId);
     return this.session(user, await this.sessions.start(user.id, dto.device ?? null, method));
   }
 

@@ -7,6 +7,7 @@ import type { CountrySettings } from '../controls/country-settings.schema.js';
 import type { RequestUser } from '../controls/request-context.js';
 import { Prisma, type Unit, type UnitPart } from '../generated/prisma/client.js';
 import { generateParts } from '../listings/parts.js';
+import { ScoutsService } from '../scouts/scouts.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { addressKey } from './address.js';
 import type { CreateBuildingDto, CreateUnitDto, UpdateUnitDto } from './dto.js';
@@ -31,6 +32,7 @@ export class PropertiesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly controls: ControlsService,
+    private readonly scouts: ScoutsService,
   ) {}
 
   // -------------------------------------------------------------------
@@ -126,6 +128,8 @@ export class PropertiesService {
           parts: { create: parts },
         },
       });
+      // A building a scout referred earns one reward line for each of its units (decision 71).
+      await this.scouts.onUnitAdded(building.id, unit.id);
       return this.unitView(unit.id, settings);
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {

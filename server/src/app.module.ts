@@ -28,6 +28,7 @@ import { NotificationsModule } from './notifications/notifications.module.js';
 import { MessagingModule } from './messaging/messaging.module.js';
 import { InspectionsModule } from './inspections/inspections.module.js';
 import { ReportsModule } from './reports/reports.module.js';
+import { ScoutsModule } from './scouts/scouts.module.js';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { ReportsModule } from './reports/reports.module.js';
     ReviewModule,
     MessagingModule,
     ReportsModule,
+    ScoutsModule,
     InspectionsModule,
     JobsModule,
   ],

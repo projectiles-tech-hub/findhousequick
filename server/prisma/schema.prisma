@@ -264,6 +264,8 @@ model User {
   savedListings       SavedListing[]
   savedPlaces         SavedPlace[]
   enforcementActions  EnforcementAction[]
+  scoutProfile        ScoutProfile?
+  devices             UserDevice[]
   pushDevices         PushDevice[]
   sentMessages        Message[]
   inspectionsAsTenant Inspection[]           @relation("InspectionTenant")
@@ -790,6 +792,8 @@ enum ReviewTaskType {
   SITE_VISIT
   RANDOM_AUDIT
   REPORT
+  /// A scout referral that failed a conflict check, for a person to confirm or put right (decision 70).
+  SCOUT_CONFLICT
 }
 
 enum ReviewTaskStatus {
@@ -1225,4 +1229,132 @@ model Payment {
   updatedAt         DateTime         @updatedAt
 
   escrow EscrowTransaction? @relation(fields: [escrowId], references: [id])
+}
+
+/// An app installation (or browser) a user has signed in from, by the identifier the app sends as X-Device-Id.
+/// Used only for the scout conflict check "shares a device" (decision 70, ADR 0008).
+model UserDevice {
+  userId      String   @db.Uuid
+  deviceId    String
+  firstSeenAt DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, deviceId])
+  @@index([deviceId])
+}
+
+enum ScoutStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+/// A user who opted in as a scout (decision 70). Being a scout gives no rights over any property.
+model ScoutProfile {
+  userId          String      @id @db.Uuid
+  status          ScoutStatus @default(ACTIVE)
+  optedInAt       DateTime    @default(now())
+  suspendedAt     DateTime?
+  suspendedReason String?
+  suspendedById   String?     @db.Uuid
+
+  user    User          @relation(fields: [userId], references: [id])
+  reports ScoutReport[]
+}
+
+/// A vacant property a scout spotted. The pin is the scout's own; nothing here creates a building or a listing.
+model ScoutReport {
+  id                String                                @id @default(uuid(7)) @db.Uuid
+  scoutId           String                                @db.Uuid
+  countryCode       String                                @db.Char(2)
+  location          Unsupported("geography(Point, 4326)")
+  description       String
+  landlordName      String?
+  /// Set when the place was already on the platform when reported: no reward is possible.
+  alreadyOnPlatform Boolean                               @default(false)
+  createdAt         DateTime                              @default(now())
+
+  scout      ScoutProfile     @relation(fields: [scoutId], references: [userId])
+  invitation ScoutInvitation?
+
+  @@index([scoutId])
+  @@index([location], type: Gist)
+}
+
+enum ScoutInvitationStatus {
+  PENDING
+  ACCEPTED
+}
+
+/// The scout's invitation to the landlord of a reported property. Single use; only a hash of its code is kept.
+/// Invitations do not expire (decision 71).
+model ScoutInvitation {
+  id           String                @id @default(uuid(7)) @db.Uuid
+  reportId     String                @unique @db.Uuid
+  scoutId      String                @db.Uuid
+  codeHash     String                @unique
+  status       ScoutInvitationStatus @default(PENDING)
+  /// The new account that registered with the code.
+  acceptedById String?               @unique @db.Uuid
+  acceptedAt   DateTime?
+  createdAt    DateTime              @default(now())
+
+  report   ScoutReport    @relation(fields: [reportId], references: [id])
+  referral ScoutReferral?
+
+  @@index([scoutId])
+}
+
+/// One scout, one invitation, one landlord, one building (ADR 0008, section 4).
+model ScoutReferral {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  scoutId      String   @db.Uuid
+  invitationId String   @unique @db.Uuid
+  landlordId   String   @db.Uuid
+  buildingId   String   @unique @db.Uuid
+  createdAt    DateTime @default(now())
+
+  invitation ScoutInvitation   @relation(fields: [invitationId], references: [id])
+  lines      ScoutRewardLine[]
+
+  @@index([scoutId])
+  @@index([landlordId])
+}
+
+enum ScoutRewardStatus {
+  WAITING_FOR_RENTAL
+  ELIGIBLE
+  APPROVED
+  PAID
+  VOID
+}
+
+enum ScoutVoidReason {
+  RENTED_THROUGH_ESCROW
+  CONFLICT_OF_INTEREST
+  VOIDED_BY_STAFF
+}
+
+/// One reward per unit, for its first rental only (decision 71). A unit belongs to one referral only.
+model ScoutRewardLine {
+  id          String            @id @default(uuid(7)) @db.Uuid
+  referralId  String            @db.Uuid
+  unitId      String            @unique @db.Uuid
+  status      ScoutRewardStatus @default(WAITING_FOR_RENTAL)
+  voidReason  ScoutVoidReason?
+  voidNote    String?
+  /// The reward, saved when the line becomes eligible, so a later change of the setting does not alter it.
+  amountMinor BigInt?
+  currency    String?           @db.Char(3)
+  /// When the first rental of the unit was recorded.
+  rentedAt    DateTime?
+  eligibleAt  DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  referral ScoutReferral @relation(fields: [referralId], references: [id])
+
+  @@index([referralId])
+  @@index([status])
 }

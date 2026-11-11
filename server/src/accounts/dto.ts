@@ -139,6 +139,12 @@ export class RegisterDto {
   language?: string;
 
   @ApiProperty({ type: ConsentDto, description: 'Required: the user must agree to the terms and privacy policy' })
+  @ApiPropertyOptional({ description: "A scout's invitation code, when the landlord was invited (decision 70). Only a new account can use one." })
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  invitationCode?: string;
+
   @IsDefined({ message: 'consent is required: the user must agree to the terms and privacy policy' })
   @IsObject()
   @ValidateNested()

@@ -187,6 +187,18 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
   - Still to do from this part: pages 106 and 109; the map and the "power and water" and "more filters" filters;
     the lawyer's review of the terms and the privacy policy; the real support numbers and contact emails.
 
+- **Release 1 step 5a (scouts)**: in pull request #53. Built on pull request #52. How it was built is at the end
+  of `docs/adr/0008-scouts-and-referral-rewards.md` ("As built").
+  - Joining as a scout, reporting a vacant property, making the invitation code and link, the landlord
+    registering with the code and confirming his building, one reward line per unit, the conflict checks with a
+    task for the team, staff voiding a referral and suspending a scout; all behind the switch `growth.scouts`,
+    which is off.
+  - Rewards only wait for a rental; the steps for the first rental and the fee are built and tested, and are
+    connected when rentals and the completed rental fee exist (Release 2).
+  - Still to do from this step: photos on a scout's report; comparing phone numbers and emails an account used
+    before; the landlord's invitation page on the website and the scout screens (step 6); switching
+    `growth.scouts` on when the screens exist.
+
 ## Small follow-ups
 
 - Technical points from the specification check (finding 21): move rate limits to Redis (they are still counted in
@@ -267,7 +279,7 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
    Release 1 automatic checks and risk score (decision 58), and fee types shown on listings as a country setting
    (decision 55): complete (pull request #50). Part 5, the public website code structure with the public search and listing
    pages (decisions 75 and 77): complete (pull request #51).
-5a. **Scouts** (decisions 70 to 72; plan in `docs/adr/0008-scouts-and-referral-rewards.md`), after buildings and
+5a. **Scouts, server side: in pull request #53.** (decisions 70 to 72; plan in `docs/adr/0008-scouts-and-referral-rewards.md`), after buildings and
     listings (steps 4 and 5): opting in, reporting vacant properties, inviting landlords, the referral record, the
     conflict checks and the staff referral screens, behind the switch `growth.scouts`. The scout routes are added
     to `docs/api/openapi.yaml` at the start of this step. Rewards are recorded as waiting for a rental; payouts

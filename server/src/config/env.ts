@@ -51,6 +51,8 @@ const envSchema = z.object({
   STORAGE_LOCAL_DIR: z.string().default('.private-storage'),
   /** The API's own address as the apps reach it, used in upload links, e.g. https://api.findhousequick.com. */
   API_PUBLIC_URL: z.string().url().default('http://localhost:3000'),
+  /** The public website's address, used in the links scouts share with landlords, e.g. https://findhousequick.com. */
+  PUBLIC_WEB_URL: z.string().url().default('http://localhost:3100'),
   /**
    * Whether this server runs background jobs (such as deleting identity photos whose retention period has ended).
    * Needs Redis. Off in the API tests, which call the jobs directly.
