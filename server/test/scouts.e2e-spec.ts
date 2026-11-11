@@ -1,11 +1,13 @@
 import type { INestApplication } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
+import sharp from 'sharp';
 import request from 'supertest';
 import { hashPassword } from '../src/accounts/secrets.js';
 import { ControlsService } from '../src/controls/controls.service.js';
 import type { StaffRole, UserType } from '../src/generated/prisma/client.js';
 import type { LogSmsAdapter } from '../src/integrations/sms/log-sms.adapter.js';
 import { SMS_SENDER } from '../src/integrations/sms/sms-sender.js';
+import { PRIVATE_STORAGE, type PrivateStorage } from '../src/integrations/storage/private-storage.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 import { ScoutsService } from '../src/scouts/scouts.service.js';
 import { createTestApp } from './helpers.js';
@@ -275,5 +277,63 @@ describe('Scouts and the referral record (API, step 5a)', () => {
     await api().post(`/v1/admin/scouts/${scout.id}/status`).set(bearer(manager.token)).send({ status: 'SUSPENDED', reason: 'Confirmed abuse of the scheme' }).expect(200);
     expect((await api().post('/v1/scout/reports').set(bearer(scout.token)).send({ location: place(), description: 'Another vacant place' }).expect(403)).body.code).toBe('SCOUT_SUSPENDED');
     expect((await api().get('/v1/me/scout').set(bearer(scout.token)).expect(200)).body).toMatchObject({ status: 'SUSPENDED', suspendedReason: 'Confirmed abuse of the scheme' });
+  });
+  it('takes up to five photos for a report, saved without location details, seen only by the scout and by staff', async () => {
+    const { scout, report } = await scoutWithInvitation();
+    const png = await sharp({ create: { width: 800, height: 600, channels: 3, background: '#7a9' } }).png().toBuffer();
+    const describe = (b: Buffer, contentType = 'image/png') => ({ contentType, sizeBytes: b.length, sha256: createHash('sha256').update(b).digest('hex') });
+    const send = async (b: Buffer, as = describe(b)) => {
+      const start = (await api().post(`/v1/scout/reports/${report.id}/photos`).set(bearer(scout.token)).send(as).expect(201)).body;
+      await api().put(new URL(start.upload.url).pathname).set(start.upload.headers).send(b).expect(200);
+      return start.photoId as string;
+    };
+
+    const first = await send(png);
+    await api().post(`/v1/scout/reports/${report.id}/photos/${first}/complete`).set(bearer(scout.token)).expect(200);
+    await api().post(`/v1/scout/reports/${report.id}/photos/${first}/complete`).set(bearer(scout.token)).expect(200);
+    // Saved again as a JPEG, which drops whatever the camera wrote into the file.
+    const row = await prisma.scoutReportPhoto.findUniqueOrThrow({ where: { id: first } });
+    expect(row.contentType).toBe('image/jpeg');
+    const stored = await app.get<PrivateStorage>(PRIVATE_STORAGE).read(row.storageKey);
+    expect(stored.subarray(0, 2).toString('hex')).toBe('ffd8');
+    expect((await sharp(stored).metadata()).exif).toBeUndefined();
+
+    // A file that is not a photo is refused and removed.
+    const text = Buffer.from('this is not a photo at all');
+    const bad = await send(text, describe(text, 'image/jpeg'));
+    expect((await api().post(`/v1/scout/reports/${report.id}/photos/${bad}/complete`).set(bearer(scout.token)).expect(400)).body.code).toBe('NOT_A_PHOTO');
+    expect(await prisma.scoutReportPhoto.count({ where: { id: bad } })).toBe(0);
+    await api().post(`/v1/scout/reports/${report.id}/photos`).set(bearer(scout.token)).send({ ...describe(png), sizeBytes: 11 * 1024 * 1024 }).expect(400);
+
+    expect((await api().get('/v1/scout/reports').set(bearer(scout.token)).expect(200)).body.items[0].photoCount).toBe(1);
+    const mine = (await api().get(`/v1/scout/reports/${report.id}/photos`).set(bearer(scout.token)).expect(200)).body;
+    expect(mine.items).toHaveLength(1);
+    const other = await person();
+    await api().post('/v1/me/scout').set(bearer(other.token)).expect(200);
+    await api().get(`/v1/scout/reports/${report.id}/photos`).set(bearer(other.token)).expect(403);
+    await api().post(`/v1/scout/reports/${report.id}/photos`).set(bearer(other.token)).send(describe(png)).expect(403);
+    const verifier = await person(['TENANT'], ['VERIFIER']);
+    expect((await api().get(`/v1/admin/scout-reports/${report.id}/photos`).set(bearer(verifier.token)).expect(200)).body.items).toHaveLength(1);
+    expect(await prisma.auditLog.count({ where: { action: 'scout.report_photos_viewed', entityId: report.id, actorId: verifier.id } })).toBe(1);
+
+    // Five photos at most.
+    for (let i = 0; i < 4; i++) await send(png);
+    expect((await api().post(`/v1/scout/reports/${report.id}/photos`).set(bearer(scout.token)).send(describe(png)).expect(409)).body.code).toBe('TOO_MANY_PHOTOS');
+  });
+
+  it('remembers confirmed contacts as hashes, and finds a number the scout and the landlord both once confirmed', async () => {
+    const { scout, at, code } = await scoutWithInvitation();
+    const landlord = await invitedLandlord(code);
+    // Registering confirmed the landlord's phone number: remembered as a hash, never as the number.
+    const remembered = await prisma.confirmedContact.findMany({ where: { userId: landlord.id } });
+    expect(remembered).toHaveLength(1);
+    expect(remembered[0]).toMatchObject({ channel: 'SMS' });
+    expect(remembered[0]!.valueHash).not.toContain(landlord.phone.slice(-6));
+    // The scout once confirmed that same number on his own account, before changing to another.
+    await prisma.confirmedContact.create({ data: { userId: scout.id, channel: 'SMS', valueHash: remembered[0]!.valueHash } });
+    const b = await building(landlord, at);
+    await api().post('/v1/me/scout-invitation/link').set(bearer(landlord.token)).send({ buildingId: b.id }).expect(200);
+    const line = await prisma.scoutRewardLine.findUniqueOrThrow({ where: { unitId: b.unitIds[0]! } });
+    expect(line).toMatchObject({ status: 'VOID', voidReason: 'CONFLICT_OF_INTEREST', voidNote: 'SHARED_PHONE' });
   });
 });

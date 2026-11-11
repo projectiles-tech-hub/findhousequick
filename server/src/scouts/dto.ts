@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsIn, IsOptional, IsString, IsUUID, MaxLength, MinLength, ValidateNested } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, IsUUID, Matches, Max, MaxLength, Min, MinLength, ValidateNested } from 'class-validator';
 import { LatLngDto } from '../properties/dto.js';
 
 export class ScoutReportDto {
@@ -20,6 +20,22 @@ export class ScoutReportDto {
   @IsString()
   @MaxLength(120)
   landlordName?: string;
+}
+
+export class ScoutPhotoDto {
+  @ApiProperty({ enum: ['image/jpeg', 'image/png'] })
+  @IsIn(['image/jpeg', 'image/png'])
+  contentType!: 'image/jpeg' | 'image/png';
+
+  @ApiProperty({ maximum: 10 * 1024 * 1024, description: 'At most 10 MB' })
+  @IsInt()
+  @Min(1)
+  @Max(10 * 1024 * 1024)
+  sizeBytes!: number;
+
+  @ApiProperty({ description: 'SHA-256 of the file in lower-case hex; checked when the upload is complete' })
+  @Matches(/^[a-f0-9]{64}$/, { message: 'sha256 must be 64 lower-case hex characters' })
+  sha256!: string;
 }
 
 export class ScoutCursorQuery {

@@ -1,4 +1,5 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { ConfigService } from '@nestjs/config';
 import { apiError } from '../common/api-error.js';
 import { geographyPoint, type LatLng } from '../common/geo.js';
@@ -8,12 +9,18 @@ import { ControlsService } from '../controls/controls.service.js';
 import type { RequestUser } from '../controls/request-context.js';
 import { Prisma, type ScoutRewardLine } from '../generated/prisma/client.js';
 import { ACTIVE_AUTHORITY } from '../listings/authorities.service.js';
+import { PRIVATE_STORAGE, type PrivateStorage } from '../integrations/storage/private-storage.js';
+import { cleanPhoto } from '../media/photo.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { conflictsOf, hashInvitationCode, newInvitationCode, onFeeReceived, onFirstRental, type Conflict, type Party } from './rules.js';
 
 const PAGE_SIZE = 20;
 /** One scout may send this many reports in 24 hours. */
 const MAX_REPORTS_PER_DAY = 20;
+/** Photos a scout may add to one report, and the largest each may be (10 MB). */
+export const MAX_PHOTOS_PER_REPORT = 5;
+export const MAX_SCOUT_PHOTO_BYTES = 10 * 1024 * 1024;
+const LINK_MINUTES = 15;
 
 interface ReportRow {
   id: string;
@@ -37,6 +44,7 @@ export class ScoutsService {
     private readonly prisma: PrismaService,
     private readonly controls: ControlsService,
     private readonly config: ConfigService<Env, true>,
+    @Inject(PRIVATE_STORAGE) private readonly storage: PrivateStorage,
   ) {}
 
   // Becoming a scout ---------------------------------------------------------------------------------
@@ -108,9 +116,86 @@ export class ScoutsService {
       landlordName: r.landlordName,
       alreadyOnPlatform: r.alreadyOnPlatform,
       createdAt: r.createdAt,
+      photoCount: await this.prisma.scoutReportPhoto.count({ where: { reportId: r.id, uploadedAt: { not: null } } }),
       /** Where the report stands, for "my referrals". */
       stage: r.alreadyOnPlatform ? 'ALREADY_ON_PLATFORM' : !invitation ? 'REPORTED' : invitation.referral ? 'PROPERTY_ADDED' : invitation.status === 'ACCEPTED' ? 'LANDLORD_JOINED' : 'INVITED',
     };
+  }
+
+  // Photos of the reported property (optional) ------------------------------------------------------
+
+  private async ownReport(user: RequestUser, reportId: string) {
+    const report = await this.prisma.scoutReport.findUnique({ where: { id: reportId }, select: { id: true, scoutId: true } });
+    if (!report) throw new NotFoundException('Report not found.');
+    if (report.scoutId !== user.id) throw new ForbiddenException('This report is not yours.');
+    return report;
+  }
+
+  /** Starts the upload of one photo for a report: returns a short-lived link the app sends the file to. */
+  async startPhoto(user: RequestUser, reportId: string, file: { contentType: string; sizeBytes: number; sha256: string }) {
+    await this.activeScout(user);
+    await this.ownReport(user, reportId);
+    // Uploads that were started but never arrived do not use up the allowance for long.
+    const stale = new Date(Date.now() - LINK_MINUTES * 60_000);
+    const used = await this.prisma.scoutReportPhoto.count({ where: { reportId, OR: [{ uploadedAt: { not: null } }, { createdAt: { gt: stale } }] } });
+    if (used >= MAX_PHOTOS_PER_REPORT) throw apiError(409, 'TOO_MANY_PHOTOS', `A report can have up to ${MAX_PHOTOS_PER_REPORT} photos.`);
+    const photo = await this.prisma.scoutReportPhoto.create({
+      data: { reportId, storageKey: `scout-reports/${reportId}/${randomUUID()}`, contentType: file.contentType, sizeBytes: file.sizeBytes, sha256: file.sha256 },
+    });
+    const expiresAt = new Date(Date.now() + LINK_MINUTES * 60_000);
+    const upload = await this.storage.createUploadLink(photo.storageKey, file, expiresAt);
+    return { photoId: photo.id, upload, expiresAt };
+  }
+
+  /**
+   * Confirms a photo's upload. The file must be the one described; it is then saved again without the location and
+   * device details a camera writes into a photo. Confirming twice is harmless.
+   */
+  async completePhoto(user: RequestUser, reportId: string, photoId: string) {
+    await this.ownReport(user, reportId);
+    const photo = await this.prisma.scoutReportPhoto.findFirst({ where: { id: photoId, reportId } });
+    if (!photo) throw new NotFoundException('Photo not found.');
+    if (photo.uploadedAt) return { photoId: photo.id, uploaded: true };
+    const stored = await this.storage.inspect(photo.storageKey);
+    if (!stored) throw apiError(409, 'UPLOAD_NOT_FOUND', 'The photo has not arrived yet. Please upload it, then try again.');
+    const refuse = async (code: string, message: string) => {
+      await this.storage.delete(photo.storageKey);
+      await this.prisma.scoutReportPhoto.delete({ where: { id: photo.id } });
+      return apiError(400, code, message);
+    };
+    if (stored.sizeBytes !== photo.sizeBytes || stored.sha256 !== photo.sha256) throw await refuse('UPLOAD_MISMATCH', 'The file received is not the one described. Please start the upload again.');
+    let clean: Buffer;
+    try {
+      clean = await cleanPhoto(await this.storage.read(photo.storageKey));
+    } catch {
+      throw await refuse('NOT_A_PHOTO', 'This file is not a photo we can read. Please try another.');
+    }
+    await this.storage.write(photo.storageKey, clean, 'image/jpeg');
+    await this.prisma.scoutReportPhoto.update({ where: { id: photo.id }, data: { uploadedAt: new Date(), contentType: 'image/jpeg', sizeBytes: clean.length } });
+    return { photoId: photo.id, uploaded: true };
+  }
+
+  /** Short-lived links to a report's photos, for the scout who took them. */
+  async myPhotos(user: RequestUser, reportId: string) {
+    await this.ownReport(user, reportId);
+    return this.photoLinks(reportId);
+  }
+
+  /** The same for staff looking into a referral; each look is recorded. */
+  async photosForStaff(actor: RequestUser, reportId: string) {
+    const report = await this.prisma.scoutReport.findUnique({ where: { id: reportId }, select: { countryCode: true } });
+    if (!report) throw new NotFoundException('Report not found.');
+    if (!actor.staff!.roles.includes('SUPER_ADMIN') && !actor.staff!.countryScopes.includes(report.countryCode)) throw new ForbiddenException('This report is outside your countries.');
+    await this.prisma.auditLog.create({ data: { actorId: actor.id, action: 'scout.report_photos_viewed', entityType: 'ScoutReport', entityId: reportId } });
+    return this.photoLinks(reportId);
+  }
+
+  private async photoLinks(reportId: string) {
+    const photos = await this.prisma.scoutReportPhoto.findMany({ where: { reportId, uploadedAt: { not: null } }, orderBy: { createdAt: 'asc' } });
+    const expiresAt = new Date(Date.now() + LINK_MINUTES * 60_000);
+    const items = [];
+    for (const p of photos) items.push({ id: p.id, url: await this.storage.createViewLink(p.storageKey, expiresAt) });
+    return { items, expiresAt };
   }
 
   // Inviting the landlord ----------------------------------------------------------------------------
@@ -237,11 +322,12 @@ export class ScoutsService {
     if (building.ownerId) roles.set(building.ownerId, 'LANDLORD');
     const users = await this.prisma.user.findMany({
       where: { id: { in: [scoutId, ...roles.keys()] } },
-      select: { id: true, phone: true, email: true, devices: { select: { deviceId: true } } },
+      select: { id: true, phone: true, email: true, devices: { select: { deviceId: true } }, confirmedContacts: { select: { channel: true, valueHash: true } } },
     });
     const party = (id: string) => {
       const u = users.find((x) => x.id === id)!;
-      return { id, phone: u.phone, email: u.email, deviceIds: u.devices.map((d) => d.deviceId) };
+      const past = (channel: string) => u.confirmedContacts.filter((c) => c.channel === channel).map((c) => c.valueHash);
+      return { id, phone: u.phone, email: u.email, deviceIds: u.devices.map((d) => d.deviceId), pastPhones: past('SMS'), pastEmails: past('EMAIL') };
     };
     return conflictsOf(party(scoutId), [...roles].map(([id, role]) => ({ ...party(id), role })));
   }
@@ -299,7 +385,7 @@ export class ScoutsService {
       id: r.id,
       createdAt: r.createdAt,
       property: { area: building.area, city: building.city.name, ...(staff ? { street: building.street, buildingId: r.buildingId } : {}) },
-      ...(staff ? { scoutId: r.scoutId, landlordId: r.landlordId } : {}),
+      ...(staff ? { scoutId: r.scoutId, landlordId: r.landlordId, reportId: (await this.prisma.scoutInvitation.findUniqueOrThrow({ where: { id: r.invitationId }, select: { reportId: true } })).reportId } : {}),
       rewards: r.lines.map((l) => ({
         id: l.id,
         unitLabel: units.find((u) => u.id === l.unitId)?.label ?? '',

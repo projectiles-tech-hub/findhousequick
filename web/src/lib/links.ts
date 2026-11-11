@@ -17,6 +17,7 @@ export const links = {
   listProperty: () => app('/sign-up?as=landlord'),
   forAgents: () => app('/sign-up?as=agent'),
   becomeScout: () => app('/sign-up?as=scout'),
+  acceptInvitation: (code: string) => app(`/sign-up?as=landlord&invitation=${encodeURIComponent(code)}`),
   playStore: process.env.NEXT_PUBLIC_PLAY_STORE_URL || null,
   appStore: process.env.NEXT_PUBLIC_APP_STORE_URL || null,
 };

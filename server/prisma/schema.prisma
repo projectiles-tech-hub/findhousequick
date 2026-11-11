@@ -265,6 +265,7 @@ model User {
   savedPlaces         SavedPlace[]
   enforcementActions  EnforcementAction[]
   scoutProfile        ScoutProfile?
+  confirmedContacts   ConfirmedContact[]
   devices             UserDevice[]
   pushDevices         PushDevice[]
   sentMessages        Message[]
@@ -1275,8 +1276,9 @@ model ScoutReport {
   alreadyOnPlatform Boolean                               @default(false)
   createdAt         DateTime                              @default(now())
 
-  scout      ScoutProfile     @relation(fields: [scoutId], references: [userId])
+  scout      ScoutProfile       @relation(fields: [scoutId], references: [userId])
   invitation ScoutInvitation?
+  photos     ScoutReportPhoto[]
 
   @@index([scoutId])
   @@index([location], type: Gist)
@@ -1357,4 +1359,35 @@ model ScoutRewardLine {
 
   @@index([referralId])
   @@index([status])
+}
+
+/// Every phone number and email address an account has ever confirmed, kept only as a keyed hash. Used for the scout
+/// conflict check "shares a phone number or email address ever confirmed on either account" (decision 70).
+model ConfirmedContact {
+  userId           String   @db.Uuid
+  /// SMS or EMAIL.
+  channel          String
+  valueHash        String
+  firstConfirmedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, channel, valueHash])
+  @@index([valueHash])
+}
+
+/// An optional photo a scout adds to a report (ADR 0008, section 2). Kept in private storage, with location data removed.
+model ScoutReportPhoto {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  reportId    String    @db.Uuid
+  storageKey  String    @unique
+  contentType String
+  sizeBytes   Int
+  sha256      String
+  uploadedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  report ScoutReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
 }

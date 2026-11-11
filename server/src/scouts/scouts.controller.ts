@@ -5,7 +5,7 @@ import { RequireLevel } from '../accounts/verification.guard.js';
 import type { RequestUser } from '../controls/request-context.js';
 import { RequireFeature } from '../controls/require-feature.guard.js';
 import { StaffOnly } from '../staff/staff.guard.js';
-import { LinkBuildingDto, ScoutCursorQuery, ScoutReferralsQuery, ScoutReportDto, ScoutStatusDto, StaffReasonDto } from './dto.js';
+import { LinkBuildingDto, ScoutCursorQuery, ScoutPhotoDto, ScoutReferralsQuery, ScoutReportDto, ScoutStatusDto, StaffReasonDto } from './dto.js';
 import { ScoutsService } from './scouts.service.js';
 
 /** Scouts (decisions 70 to 72). Every route is refused while the switch growth.scouts is off. */
@@ -49,6 +49,33 @@ export class ScoutsController {
   @ApiOperation({ summary: "The scout's reports, newest first, each with its stage" })
   myReports(@CurrentUser() user: RequestUser, @Query() q: ScoutCursorQuery) {
     return this.scouts.myReports(user, q.cursor);
+  }
+
+  @Post('scout/reports/:reportId/photos')
+  @RequireLevel(1)
+  @ApiOperation({
+    summary: 'Start uploading a photo of the reported property (optional, up to 5 per report)',
+    description: 'Returns a short-lived link; the app sends the file to it with an HTTP PUT, then calls complete. JPEG or PNG, at most 10 MB.',
+  })
+  @ApiCreatedResponse({ description: 'photoId, the upload link and when it expires' })
+  @ApiResponse({ status: 409, description: 'TOO_MANY_PHOTOS' })
+  startPhoto(@CurrentUser() user: RequestUser, @Param('reportId', ParseUUIDPipe) reportId: string, @Body() dto: ScoutPhotoDto) {
+    return this.scouts.startPhoto(user, reportId, dto);
+  }
+
+  @Post('scout/reports/:reportId/photos/:photoId/complete')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Confirm a photo upload', description: 'The photo is saved without the location and device details a camera writes into it.' })
+  @ApiResponse({ status: 400, description: 'UPLOAD_MISMATCH or NOT_A_PHOTO' })
+  @ApiResponse({ status: 409, description: 'UPLOAD_NOT_FOUND' })
+  completePhoto(@CurrentUser() user: RequestUser, @Param('reportId', ParseUUIDPipe) reportId: string, @Param('photoId', ParseUUIDPipe) photoId: string) {
+    return this.scouts.completePhoto(user, reportId, photoId);
+  }
+
+  @Get('scout/reports/:reportId/photos')
+  @ApiOperation({ summary: "Short-lived links to the scout's own photos of a report" })
+  myPhotos(@CurrentUser() user: RequestUser, @Param('reportId', ParseUUIDPipe) reportId: string) {
+    return this.scouts.myPhotos(user, reportId);
   }
 
   @Post('scout/reports/:reportId/invitations')
@@ -103,6 +130,13 @@ export class ScoutsController {
   @ApiOperation({ summary: 'All scout referrals in the staff member\'s countries' })
   list(@CurrentUser() user: RequestUser, @Query() q: ScoutReferralsQuery) {
     return this.scouts.listReferrals(user, q);
+  }
+
+  @Get('admin/scout-reports/:reportId/photos')
+  @StaffOnly('VERIFIER', 'COUNTRY_MANAGER', 'SUPER_ADMIN')
+  @ApiOperation({ summary: "Short-lived links to the photos of a scout's report (each look is recorded)" })
+  photos(@CurrentUser() user: RequestUser, @Param('reportId', ParseUUIDPipe) reportId: string) {
+    return this.scouts.photosForStaff(user, reportId);
   }
 
   @Post('admin/scout-referrals/:referralId/void')

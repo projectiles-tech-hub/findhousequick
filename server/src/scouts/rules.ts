@@ -1,4 +1,4 @@
-import { createHash, randomInt } from 'node:crypto';
+import { createHash, createHmac, randomInt } from 'node:crypto';
 
 /** Letters and digits that are hard to mix up when read aloud or typed (no 0, O, 1, I, L). */
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
@@ -29,12 +29,23 @@ export interface Party {
   phone: string | null;
   email: string | null;
   deviceIds: string[];
+  /** Hashes of every phone number and of every email address the account has ever confirmed. */
+  pastPhones?: string[];
+  pastEmails?: string[];
+}
+
+/**
+ * The keyed hash under which a confirmed phone number or email address is remembered. The contact itself is not kept
+ * once the account moves to another, only this hash, which cannot be turned back into the number or address.
+ */
+export function contactHash(secret: string, channel: 'SMS' | 'EMAIL', value: string): string {
+  return createHmac('sha256', secret).update(`contact|${channel}|${value.trim().toLowerCase()}`).digest('base64url');
 }
 
 /**
  * The conflict of interest checks (decision 70; ADR 0008, section 6): the scout must not be the landlord, an agent on
- * the property or the tenant of the first rental, nor share a phone number, an email address or a device with any of
- * them. The bank account check joins these when bank accounts exist (Release 2).
+ * the property or the tenant of the first rental, nor share a phone number or an email address ever confirmed on
+ * either account, or a device, with any of them. The bank account check joins these when bank accounts exist (Release 2).
  */
 export function conflictsOf(scout: Omit<Party, 'role'>, others: Party[]): Conflict[] {
   const found = new Set<Conflict>();
@@ -43,8 +54,9 @@ export function conflictsOf(scout: Omit<Party, 'role'>, others: Party[]): Confli
       found.add(o.role === 'LANDLORD' ? 'SCOUT_IS_LANDLORD' : o.role === 'AGENT' ? 'SCOUT_IS_AGENT' : 'SCOUT_IS_TENANT');
       continue;
     }
-    if (scout.phone && o.phone && scout.phone === o.phone) found.add('SHARED_PHONE');
-    if (scout.email && o.email && scout.email.toLowerCase() === o.email.toLowerCase()) found.add('SHARED_EMAIL');
+    const overlap = (a: string[] | undefined, b: string[] | undefined) => !!a && !!b && a.some((x) => b.includes(x));
+    if ((scout.phone && o.phone && scout.phone === o.phone) || overlap(scout.pastPhones, o.pastPhones)) found.add('SHARED_PHONE');
+    if ((scout.email && o.email && scout.email.toLowerCase() === o.email.toLowerCase()) || overlap(scout.pastEmails, o.pastEmails)) found.add('SHARED_EMAIL');
     if (o.deviceIds.some((d) => scout.deviceIds.includes(d))) found.add('SHARED_DEVICE');
   }
   return [...found];

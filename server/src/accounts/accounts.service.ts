@@ -1,9 +1,11 @@
+import { ConfigService } from '@nestjs/config';
+import type { Env } from '../config/env.js';
 import { Injectable } from '@nestjs/common';
 import { apiError } from '../common/api-error.js';
 import { ControlsService } from '../controls/controls.service.js';
 import type { EvaluationContext } from '../controls/feature-evaluator.js';
 import { Prisma, type SignInMethod } from '../generated/prisma/client.js';
-import { hashInvitationCode } from '../scouts/rules.js';
+import { contactHash, hashInvitationCode } from '../scouts/rules.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { contactOf, oneContact, type Channel, type Contact } from './contact.js';
 import type { ContactCodeDto, ContactConfirmDto, LoginDto, RegisterDto, RequestOtpDto, ResetPasswordDto, UpdateMeDto } from './dto.js';
@@ -75,6 +77,7 @@ export class AccountsService {
     private readonly otp: OtpService,
     private readonly sessions: SessionsService,
     private readonly controls: ControlsService,
+    private readonly config: ConfigService<Env, true>,
   ) {}
 
   /**
@@ -126,7 +129,7 @@ export class AccountsService {
       user = await this.prisma.$transaction(async (tx) => {
         await this.claimConfirmed(tx, confirmed, null);
         if (await this.holderOf(other, tx)) throw this.takenError(other);
-        return tx.user.create({
+        const created = await tx.user.create({
           data: {
             phone: dto.phone,
             phoneVerifiedAt: confirmed.channel === 'SMS' ? now : null,
@@ -144,6 +147,8 @@ export class AccountsService {
           },
           select: meSelect,
         });
+        await this.rememberConfirmed(tx, created.id, confirmed);
+        return created;
       });
     } catch (err) {
       throw this.duplicateError(err) ?? err;
@@ -164,6 +169,19 @@ export class AccountsService {
     const invitation = await this.prisma.scoutInvitation.findUnique({ where: { codeHash: hashInvitationCode(code) }, select: { id: true, status: true } });
     if (!invitation || invitation.status !== 'PENDING') throw invalid();
     return invitation;
+  }
+
+  /**
+   * Remembers, as a keyed hash only, that an account confirmed a phone number or email address, so the scout
+   * conflict checks can compare contacts an account used in the past (decision 70; ADR 0008, section 6).
+   */
+  private async rememberConfirmed(tx: Prisma.TransactionClient, userId: string, contact: Contact): Promise<void> {
+    const valueHash = contactHash(this.config.get('LOOKUP_HASH_SECRET', { infer: true }), contact.channel, contact.destination);
+    await tx.confirmedContact.upsert({
+      where: { userId_channel_valueHash: { userId, channel: contact.channel, valueHash } },
+      create: { userId, channel: contact.channel, valueHash },
+      update: {},
+    });
   }
 
   /** Remembers which app installation an account signed in from, for the scout conflict checks (ADR 0008). */
@@ -310,6 +328,7 @@ export class AccountsService {
     try {
       updated = await this.prisma.$transaction(async (tx) => {
         await this.claimConfirmed(tx, contact, userId);
+        await this.rememberConfirmed(tx, userId, contact);
         const now = new Date();
         const data: Prisma.UserUpdateInput =
           contact.channel === 'SMS' ? { phone: contact.destination, phoneVerifiedAt: now } : { email: contact.destination, emailVerifiedAt: now };

@@ -2044,6 +2044,54 @@ paths:
       responses:
         "200": { description: "A page of reports (`items`, `nextCursor`)." }
 
+  /scout/reports/{reportId}/photos:
+    post:
+      tags: [Scouts]
+      summary: Start uploading a photo of the reported property (built)
+      description: |
+        Optional, up to 5 photos per report (409 TOO_MANY_PHOTOS), JPEG or PNG, at most 10 MB each. Returns
+        a short-lived link; the app sends the file to it with an HTTP PUT, then calls `complete`.
+      x-verification-level: 1
+      x-feature: growth.scouts
+      parameters:
+        - { name: reportId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contentType, sizeBytes, sha256]
+              properties:
+                contentType: { type: string, enum: [image/jpeg, image/png] }
+                sizeBytes: { type: integer, maximum: 10485760 }
+                sha256: { type: string, description: SHA-256 of the file in lower-case hex }
+      responses:
+        "201": { description: "`photoId`, `upload` (the link and its headers) and `expiresAt`." }
+    get:
+      tags: [Scouts]
+      summary: Short-lived links to the scout's own photos of a report (built)
+      x-feature: growth.scouts
+      parameters:
+        - { name: reportId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+      responses:
+        "200": { description: "`items` (id and url) and `expiresAt`." }
+
+  /scout/reports/{reportId}/photos/{photoId}/complete:
+    post:
+      tags: [Scouts]
+      summary: Confirm a photo upload (built)
+      description: |
+        The file must be the one described (400 UPLOAD_MISMATCH) and a photo (400 NOT_A_PHOTO). It is saved
+        again without the location and device details a camera writes into it. Confirming twice is harmless.
+      x-feature: growth.scouts
+      parameters:
+        - { name: reportId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+        - { name: photoId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+      responses:
+        "200": { description: Uploaded. }
+        "409": { description: "UPLOAD_NOT_FOUND: the file has not arrived yet." }
+
   /scout/reports/{reportId}/invitations:
     post:
       tags: [Scouts]
@@ -2151,6 +2199,18 @@ paths:
         - { name: cursor, in: query, schema: { type: string } }
       responses:
         "200": { description: "A page of referrals (`items`, `nextCursor`)." }
+
+  /admin/scout-reports/{reportId}/photos:
+    get:
+      tags: [Admin]
+      summary: Short-lived links to the photos of a scout's report (built)
+      description: Each look is recorded in the audit log.
+      x-staff-roles: [VERIFIER, COUNTRY_MANAGER, SUPER_ADMIN]
+      x-feature: growth.scouts
+      parameters:
+        - { name: reportId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+      responses:
+        "200": { description: "`items` (id and url) and `expiresAt`." }
 
   /admin/scout-referrals/{referralId}/void:
     post:
@@ -2961,6 +3021,7 @@ components:
         landlordName: { type: [string, "null"] }
         alreadyOnPlatform: { type: boolean }
         createdAt: { type: string, format: date-time }
+        photoCount: { type: integer }
         stage:
           type: string
           enum: [REPORTED, INVITED, LANDLORD_JOINED, PROPERTY_ADDED, ALREADY_ON_PLATFORM]

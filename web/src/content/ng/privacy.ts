@@ -19,6 +19,7 @@ export const privacy: LegalDocument = {
         {
           list: [
             'Account details: your name, phone number, email address, a protected form of your password, your country and language, and whether you are a tenant, landlord, agent or scout.',
+            'A scrambled record of each phone number and email address you have confirmed on your account. It cannot be read back as the number or address; it is used only to notice when two accounts have used the same one.',
             'Identity details, when you are verified: your identity number, a selfie and the result of the liveness check, and a photo of an identity document if the first check does not succeed.',
             'For landlords and agents: ownership documents, letters of authority, company details, and the address and position of each property.',
             'Property photos and videos, with the time and place they were taken.',
