@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:go_router/go_router.dart';
+
 import '../controls/controls.dart';
+import '../l10n/languages.dart';
+import '../session/session.dart';
 
 /// Release 0 start screen: confirms the app can reach the server and shows the switches in force.
 /// Replaced by the search screen in Release 1.
@@ -12,7 +16,22 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controls = ref.watch(controlsProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('FindHouseQuick')),
+      appBar: AppBar(
+        title: const Text('FindHouseQuick'),
+        // Until the Me screen is built (step 6 part 6), signing out lives here.
+        actions: [
+          if (ref.watch(sessionProvider).value?.signedIn == true)
+            TextButton(
+              onPressed: () async {
+                await ref.read(sessionProvider.notifier).signOut();
+                if (context.mounted) context.go('/');
+              },
+              child: Text(context.texts.signOut),
+            )
+          else
+            TextButton(onPressed: () => context.go('/'), child: Text(context.texts.signIn)),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(controlsProvider.notifier).refresh(),
         child: controls.when(

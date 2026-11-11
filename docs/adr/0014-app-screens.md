@@ -18,8 +18,8 @@ decides a verification level, a fee, a limit or a switch itself.
 | Part | What it holds | Designs |
 | --- | --- | --- |
 | 1 | The foundation: design values, the icon set, the shared parts, the words, and the sign-in session | 00 Design system |
-| 2 | Sign-up, sign-in and verification | Screens 1 to 21 |
-| 3 | Search, the map, the property page and saved items | Screens 22 to 36 and the saved group |
+| 2 | Sign-up, sign-in and verification, in three pull requests: (a) the phone layouts of screens 1 to 9; (b) the wide layouts of screens 1 to 9; (c) verification, screens 12 to 21 | Screens 1 to 9 and 12 to 21 |
+| 3 | Search, the map, the property page and saved items; with screens 10 (location permission) and 11 (not signed in), which belong to search | Screens 10, 11, 22 to 36 and the saved group |
 | 4 | Messages, calls and inspections | The messages, calls and inspections groups |
 | 5 | Listing a property, agents and authority | Screens 50 to 65 and the agents group |
 | 6 | Me and settings, and the scout screens | The me and settings group; screens 81 to 87 |
@@ -86,10 +86,29 @@ State is held with Riverpod and pages are reached with go_router, as the start s
 the app gets a folder under `app/lib/src/`. Each part comes with widget tests for its screens and unit tests for
 anything it works out; the shared parts are also checked by eye against the design file at 360 wide.
 
+### 8. Sign-up and sign-in (part 2a, as built)
+
+- The addresses are `/` (welcome, or the start screen when signed in), `/sign-up`, `/sign-up/details`,
+  `/sign-up/code`, `/confirm/email` and `/confirm/phone` (each with `/code`), `/sign-in`, `/sign-in/code`,
+  `/forgot-password` and `/reset-password`. The website's links to `/sign-up?as=landlord&invitation=CODE`
+  (decision 82) choose Landlord and carry the scout's code into the account.
+- What the user types during sign-up is kept in memory only, and cleared once the account exists.
+- The country's dialling code and flag, and the versions of the terms and privacy policy being agreed to, come
+  from `GET /controls`; none is written in the app. The server gained `dialCode` there and the country settings
+  `legal.termsVersion` and `legal.privacyVersion`.
+- Refusals from the server are shown in the app's own words for the reasons it knows, so they can be translated;
+  any other reason is shown as the server wrote it.
+- Three code screens have no design of their own: signing in with a code, and confirming the email address or
+  phone number. They reuse the approved layout of screen 4 (Enter the code) without the sign-up steps.
+- When the sign-up code went by email, screen 5 asks for the phone number to be confirmed, with the same layout.
+- The language button on the welcome screen opens a short list of the country's languages.
+- Until the wide layouts are built (part 2b), a wide screen shows the phone layout in a column 480 wide.
+- Until the Me screen is built (part 6), signing out is a button on the temporary start screen.
+
 ## Consequences
 
-- The app now needs the font file and four more packages (`flutter_svg`, `flutter_secure_storage`, `intl`,
-  `flutter_localizations`).
+- The app now needs the font file and five more packages (`flutter_svg`, `flutter_secure_storage`, `intl`,
+  `flutter_localizations`, and `url_launcher` to open the terms and privacy pages).
 - On the web, a browser has no protected storage like a phone's; the package encrypts the keys in the browser's
   own storage. This is the usual arrangement for a web app and is looked at again with the security review.
 - Pidgin shows English in the app until Projectiles Tech Hub supplies the Pidgin wording (decision 83).

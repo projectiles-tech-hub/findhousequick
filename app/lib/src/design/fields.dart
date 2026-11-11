@@ -22,14 +22,14 @@ class AppFieldFrame extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(label, style: AppText.label.copyWith(color: enabled ? AppColors.ink900 : AppColors.ink400)),
+        Text(label, style: AppText.label.copyWith(color: enabled ? AppColors.ink900 : AppColors.ink400, height: 17 / 14)),
         const SizedBox(height: 6),
         child,
         if (under != null) ...[
           const SizedBox(height: 6),
           Semantics(
             liveRegion: error != null,
-            child: Text(under, style: AppText.bodySmall.copyWith(color: error != null ? AppColors.error : AppColors.ink600)),
+            child: Text(under, style: AppText.bodySmall.copyWith(color: error != null ? AppColors.error : AppColors.ink600, height: 17 / 14)),
           ),
         ],
       ],

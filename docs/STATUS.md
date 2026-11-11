@@ -211,6 +211,18 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
   - No screen for users is built in this part; the app still opens on the start screen.
   - Still to do from this step: parts 2 to 7.
 
+- **Release 1 step 6 part 2a, sign-up and sign-in on the phone (screens 1 to 9)**: in pull request #57. Built on
+  pull request #56.
+  - Welcome, Who are you, Your details, Enter the code, Confirm your email, Sign in, Sign in paused, Forgot
+    password and Set a new password, built from the Penpot designs and working against the API: an account can be
+    created, its email confirmed, signed in to by password or by code, and its password reset.
+  - Tried end to end in a browser against the real API, and compared by eye with the designs at 360 wide.
+  - The server now gives the apps the country's dialling code, and has country settings for the versions of the
+    terms and privacy policy a new user agrees to.
+  - Still to do from part 2: the wide layouts of screens 1 to 9 (part 2b), which are their own designs with a
+    card and a collage of live listings; verification, screens 12 to 21 (part 2c). Until 2b, a wide screen shows
+    the phone layout in a narrow column.
+
 - **Maps providers (decision 81)**: in pull request #56. Built on pull request #55. How it is built is in
   `docs/adr/0015-maps-providers.md`.
   - The server has an adapter for Google Maps and one for OpenStreetMap, for place search, nearby amenities and
@@ -313,8 +325,9 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
 6. **App screens** (Flutter), built only from approved designs (step 2c), for the phone app, the website and the
    desktop software (staff screens only): every screen listed in `docs/designs.md` (decision 73), including the scout screens and the
    staff screens with switch messages, return times and dependency warnings (decision 53). In seven parts
-   (`docs/adr/0014-app-screens.md`). Part 1, the foundation: in pull request #55. Next: part 2, sign-up, sign-in
-   and verification (screens 1 to 21); then part 3, search, the map, the property page and saved items; part 4,
+   (`docs/adr/0014-app-screens.md`). Part 1, the foundation: in pull request #55. Part 2a, sign-up and sign-in on the phone
+   (screens 1 to 9): in pull request #57. Next: part 2b, the wide layouts of screens 1 to 9; part 2c, verification
+   (screens 12 to 21); then part 3, search, the map, the property page and saved items; part 4,
    messages, calls and inspections; part 5, listing a property; part 6, me, settings and scouts; part 7, staff.
 
 ## Later releases (decided)

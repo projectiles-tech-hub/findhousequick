@@ -12,5 +12,160 @@
   "noConnectionTitle": "No internet connection",
   "noConnectionMessage": "Check your data or Wi-Fi. We will try again when you are back online.",
   "somethingWentWrong": "Something went wrong. Please try again.",
-  "tryAgain": "Try again"
+  "tryAgain": "Try again",
+  "back": "Back",
+  "language": "Language",
+  "languageEn": "English",
+  "languagePcm": "Pidgin",
+  "welcomeHeadline": "Find your next home, quick.",
+  "welcomeIntro": "Houses, flats and shops to rent, from landlords and agents whose identity we have checked.",
+  "welcomeReason1Title": "Checked landlords and agents",
+  "welcomeReason1Text": "Every lister proves who they are before they can list.",
+  "welcomeReason2Title": "Search around you",
+  "welcomeReason2Text": "See what is available near your office, school or street.",
+  "welcomeReason3Title": "Talk and call inside the app",
+  "welcomeReason3Text": "Your phone number stays private until you choose to share it.",
+  "createAnAccount": "Create an account",
+  "signIn": "Sign in",
+  "lookAroundFirst": "Look around first",
+  "stepOf": "Step {step} of {total}",
+  "@stepOf": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "whoTitle": "How will you use FindHouseQuick?",
+  "whoHint": "Choose all that apply.",
+  "typeTenant": "Tenant",
+  "typeTenantText": "I want to rent a home, shop or short let.",
+  "typeLandlord": "Landlord",
+  "typeLandlordText": "I own property I want to let.",
+  "typeAgent": "Agent",
+  "typeAgentText": "A landlord has authorised me to let their property.",
+  "continueLabel": "Continue",
+  "detailsTitle": "Your details",
+  "detailsIntro": "Use your real name, as it is on your ID. You will need it when you verify your identity.",
+  "firstName": "First name",
+  "surname": "Surname",
+  "phoneNumber": "Phone number",
+  "phoneHelper": "We send codes here by SMS",
+  "emailAddress": "Email address",
+  "emailHelper": "We send receipts and codes here",
+  "password": "Password",
+  "passwordHelper": "At least 8 characters",
+  "sendCodeBy": "Send my sign-up code by",
+  "sendBySms": "SMS to my phone",
+  "sendByEmail": "Email",
+  "confirmOtherAfter": "We will ask you to confirm the other one straight after.",
+  "consentBefore": "I agree to the ",
+  "consentTerms": "terms of use",
+  "consentBetween": " and the ",
+  "consentPrivacy": "privacy policy",
+  "consentAfter": ", including how my identity documents are stored.",
+  "sendCode": "Send code",
+  "errorFirstName": "Please enter your first name",
+  "errorSurname": "Please enter your surname",
+  "errorPhone": "Please enter your phone number",
+  "errorEmail": "Please enter a valid email address",
+  "errorPassword": "Use at least 8 characters",
+  "errorConsent": "Please agree to the terms of use and the privacy policy to continue",
+  "errorChooseOne": "Please choose at least one",
+  "enterTheCode": "Enter the code",
+  "codeSentSms": "We sent a 6-digit code by SMS to {phone}. It expires in 10 minutes.",
+  "@codeSentSms": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "codeSentEmail": "We sent a 6-digit code by email to {email}. It expires in 10 minutes.",
+  "@codeSentEmail": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "code": "Code",
+  "sendAgainIn": "Send the code again in {time}",
+  "@sendAgainIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "sendCodeAgain": "Send the code again",
+  "wrongNumberChange": "Wrong number? Change it",
+  "wrongEmailChange": "Wrong email? Change it",
+  "sendByEmailInstead": "Send the code by email instead",
+  "sendBySmsInstead": "Send the code by SMS instead",
+  "createMyAccount": "Create my account",
+  "errorCode": "Please enter the 6-digit code",
+  "errorInvalidCode": "The code is wrong or has expired. Please ask for a new one.",
+  "errorPhoneTaken": "This phone number is already used by another account.",
+  "errorEmailTaken": "This email address is already used by another account.",
+  "errorTooManyCodes": "Too many codes requested. Please wait and try again.",
+  "errorWrongCredentials": "The phone number or email address, password or code is not correct.",
+  "errorSuspended": "This account has been suspended. Please contact support.",
+  "errorRegistrationsPaused": "New registrations are paused at the moment. Please try again later.",
+  "errorInvitation": "This invitation link is not valid or has already been used. You can still create your account: press the button again.",
+  "welcomeReady": "Welcome, {name}. Your account is ready.",
+  "@welcomeReady": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmEmailIntro": "One more step: confirm your email address. Then you can save homes, set alerts for areas you like, and move on to verifying your identity.",
+  "confirmPhoneIntro": "One more step: confirm your phone number. Then you can save homes, set alerts for areas you like, and move on to verifying your identity.",
+  "untilThenTitle": "Until then, you can only look around",
+  "untilThenText": "Listings, the map and prices are open to you now.",
+  "sendCodeToEmail": "Send code to my email",
+  "sendCodeToPhone": "Send code to my phone",
+  "doItLater": "Do it later",
+  "confirmYourEmail": "Confirm your email",
+  "confirmYourPhone": "Confirm your phone number",
+  "confirm": "Confirm",
+  "welcomeBack": "Welcome back",
+  "signInIntro": "Sign in with your phone number or email address.",
+  "chipPhone": "Phone number",
+  "chipEmail": "Email",
+  "forgotPasswordLink": "Forgot your password?",
+  "getCodeInstead": "Get a sign-in code instead",
+  "newHere": "New here? Create an account",
+  "pausedTitle": "Password sign-in is paused for 15 minutes",
+  "pausedHelper": "5 wrong passwords in a row",
+  "getSignInCode": "Get a sign-in code",
+  "setNewPassword": "Set a new password",
+  "errorPasswordEmpty": "Please enter your password",
+  "resetPassword": "Reset password",
+  "forgotTitle": "Forgot your password?",
+  "forgotIntro": "Choose where to get a code: your phone or your email. If an account uses it, we will send a 6-digit code there.",
+  "codeComesBySms": "The code comes by SMS",
+  "codeComesByEmail": "The code comes by email",
+  "newPasswordIntro": "Enter the code we sent to {contact}, then choose a new password.",
+  "@newPasswordIntro": {
+    "placeholders": {
+      "contact": {
+        "type": "String"
+      }
+    }
+  },
+  "newPassword": "New password",
+  "signedOutEverywhereTitle": "You will be signed out everywhere",
+  "signedOutEverywhereText": "For your safety, every phone and computer signed in to your account is signed out. Then sign in with your new password.",
+  "saveNewPassword": "Save new password",
+  "passwordChangedTitle": "Your password has been changed",
+  "passwordChangedText": "Sign in with your new password.",
+  "signOut": "Sign out",
+  "pausedTextPhone": "This keeps your account safe. You can still sign in now with a code sent to your phone, or set a new password.",
+  "pausedTextEmail": "This keeps your account safe. You can still sign in now with a code sent to your email, or set a new password."
 }

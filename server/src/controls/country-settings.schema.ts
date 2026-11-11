@@ -187,6 +187,17 @@ export const countrySettingsSchema = z.object({
       dateFormat: z.string().default('dd/MM/yyyy'),
     })
     .prefault({}),
+
+  /**
+   * Which version of the terms of use and the privacy policy a new user agrees to in this country. They are the
+   * dates shown on those pages; change them here whenever the pages change, so each account records what it agreed to.
+   */
+  legal: z
+    .object({
+      termsVersion: z.string().min(1).max(40).default('2026-11-10'),
+      privacyVersion: z.string().min(1).max(40).default('2026-11-10'),
+    })
+    .prefault({}),
 });
 
 export type CountrySettings = z.infer<typeof countrySettingsSchema>;
@@ -210,6 +221,7 @@ export function publicCountrySettings(s: CountrySettings) {
     // The choices offered in forms and search filters.
     unitDetails: s.unitDetails,
     formats: s.formats,
+    legal: s.legal,
   };
 }
 

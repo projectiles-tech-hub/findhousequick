@@ -1,3 +1,4 @@
+import { getCountryCallingCode, type CountryCode } from 'libphonenumber-js/max';
 import { Controller, Get, Req } from '@nestjs/common';
 import { ApiHeader, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
@@ -5,6 +6,15 @@ import { ControlsService } from './controls.service.js';
 import { publicCountrySettings } from './country-settings.schema.js';
 import { Public } from '../accounts/auth.js';
 import { contextFromRequest } from './request-context.js';
+
+/** The dialling code of a country, from the phone number library, or null if the library does not know the country. */
+function dialCodeOf(countryCode: string): string | null {
+  try {
+    return `+${getCountryCallingCode(countryCode as CountryCode)}`;
+  } catch {
+    return null;
+  }
+}
 
 @ApiTags('Controls')
 @Public()
@@ -34,6 +44,8 @@ export class ControlsController {
           code: c.code,
           name: c.name,
           currency: c.currency,
+          // The country's dialling code, for the phone number field, e.g. "+234".
+          dialCode: dialCodeOf(c.code),
           languages: c.languages.filter((l) => features[`language.${l}`] !== false),
           defaultLanguage: c.defaultLanguage,
           timezone: c.timezone,
