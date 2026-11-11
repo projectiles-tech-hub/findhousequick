@@ -26,8 +26,8 @@ Part 2 of step 5 (ADR 0009) lets tenants and visitors find listings and see them
   never at a listing's own position.
 - **Pages** of 20 results, with a cursor.
 - **Landmark search for now.** It finds the area names and landmarks that listers typed in. Proper place search,
-  nearby amenities and travel times need a maps provider (Google Maps or Mapbox), which comes when its account is
-  opened. Until then, nearby amenities are empty and travel distance to saved places is a straight line.
+  nearby amenities and travel times need a maps provider (Google Maps or OpenStreetMap, decision 81; `docs/adr/0015-maps-providers.md`), which is
+  connected when its account is opened. Until then, nearby amenities are empty and travel distance to saved places is a straight line.
 
 ### The property page
 

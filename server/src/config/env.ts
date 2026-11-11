@@ -77,6 +77,24 @@ const envSchema = z.object({
    * carries no voice; it is for development and tests only and is refused in production.
    */
   CALL_PROVIDER: z.enum(['test']).default('test'),
+  /**
+   * Which maps service answers place search, nearby amenities and travel times (decision 81): "google", "openstreetmap",
+   * or "none" (those features stay empty). The three settings after it send one use to a different provider.
+   */
+  MAPS_PROVIDER: z.enum(['none', 'google', 'openstreetmap']).default('none'),
+  MAPS_PLACES_PROVIDER: z.enum(['none', 'google', 'openstreetmap']).optional(),
+  MAPS_AMENITIES_PROVIDER: z.enum(['none', 'google', 'openstreetmap']).optional(),
+  MAPS_TRAVEL_PROVIDER: z.enum(['none', 'google', 'openstreetmap']).optional(),
+  /** How long to wait for a maps service before carrying on without it, in milliseconds. */
+  MAPS_TIMEOUT_MS: z.coerce.number().int().min(500).max(20_000).default(4000),
+  /** The Google Maps Platform key (Places API (New) and Routes API). Needed when any use goes to "google". */
+  GOOGLE_MAPS_API_KEY: z.string().min(10).optional(),
+  /** Where the OpenStreetMap services are: Nominatim (place search), Overpass (amenities) and OSRM (travel times). */
+  OSM_SEARCH_URL: z.string().url().optional(),
+  OSM_AMENITIES_URL: z.string().url().optional(),
+  OSM_ROUTES_URL: z.string().url().optional(),
+  /** Sent to the OpenStreetMap services so their operator knows who is calling. */
+  OSM_USER_AGENT: z.string().min(3).default('FindHouseQuick (support@findhousequick.com)'),
   /** The sender shown on emails, e.g. "FindHouseQuick <no-reply@findhousequick.com>". */
   EMAIL_FROM: z.string().min(3).default('FindHouseQuick <no-reply@findhousequick.com>'),
 }).superRefine((env, ctx) => {
@@ -97,6 +115,19 @@ const envSchema = z.object({
   }
   if (env.NODE_ENV === 'production' && env.CALL_PROVIDER === 'test') {
     ctx.addIssue({ code: 'custom', path: ['CALL_PROVIDER'], message: 'The "test" calling service cannot be used in production' });
+  }
+  const mapsUses = [
+    ['MAPS_PLACES_PROVIDER', env.MAPS_PLACES_PROVIDER ?? env.MAPS_PROVIDER, 'OSM_SEARCH_URL', env.OSM_SEARCH_URL],
+    ['MAPS_AMENITIES_PROVIDER', env.MAPS_AMENITIES_PROVIDER ?? env.MAPS_PROVIDER, 'OSM_AMENITIES_URL', env.OSM_AMENITIES_URL],
+    ['MAPS_TRAVEL_PROVIDER', env.MAPS_TRAVEL_PROVIDER ?? env.MAPS_PROVIDER, 'OSM_ROUTES_URL', env.OSM_ROUTES_URL],
+  ] as const;
+  if (mapsUses.some(([, provider]) => provider === 'google') && !env.GOOGLE_MAPS_API_KEY) {
+    ctx.addIssue({ code: 'custom', path: ['GOOGLE_MAPS_API_KEY'], message: 'GOOGLE_MAPS_API_KEY is needed when a maps use is set to "google"' });
+  }
+  for (const [use, provider, urlName, url] of mapsUses) {
+    if (provider === 'openstreetmap' && !url) {
+      ctx.addIssue({ code: 'custom', path: [urlName], message: `${urlName} is needed when ${use} (or MAPS_PROVIDER) is "openstreetmap"` });
+    }
   }
   if (env.NODE_ENV === 'production' && env.EMAIL_PROVIDER === 'log') {
     ctx.addIssue({ code: 'custom', path: ['EMAIL_PROVIDER'], message: 'The "log" email provider cannot be used in production' });

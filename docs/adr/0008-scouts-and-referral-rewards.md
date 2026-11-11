@@ -184,7 +184,7 @@ Added afterwards (pull request #54):
   change; no real user existed before it.
 - **Where the invitation link lands.** The 112 designed screens (decision 73) do not include an invitation page, so
   the website's `/invite/{code}` sends the landlord straight to sign-up in the app, as a landlord, with the code
-  carried along. A page of its own, saying who invited him, would be a new screen and needs a decision.
+  carried along. This is settled by decision 82: the link does not open a page of its own.
 
 Not built yet, from sections 1 to 6:
 
