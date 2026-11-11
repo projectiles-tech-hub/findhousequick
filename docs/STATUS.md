@@ -195,9 +195,9 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
     which is off.
   - Rewards only wait for a rental; the steps for the first rental and the fee are built and tested, and are
     connected when rentals and the completed rental fee exist (Release 2).
-  - Still to do from this step: photos on a scout's report; comparing phone numbers and emails an account used
-    before; the landlord's invitation page on the website and the scout screens (step 6); switching
-    `growth.scouts` on when the screens exist.
+  - Added in pull request #54: photos on a scout's report; remembering, as hashes, the phone numbers and emails an
+    account has confirmed, for the conflict checks; the invitation link leading to sign-up with the code.
+  - Still to do from this step: the scout screens (step 6); switching `growth.scouts` on when the screens exist.
 
 ## Small follow-ups
 

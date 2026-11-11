@@ -152,7 +152,9 @@ What the server now does, and where it differs from the plan above:
   - the invited landlord confirms his building through `GET /me/scout-invitation` and
     `POST /me/scout-invitation/link` (section 3 did not name routes for this);
   - staff suspend a scout through `POST /admin/scouts/{userId}/status` (section 1);
-  - the two payout routes are left for Release 2, with section 7.
+  - the two payout routes are left for Release 2, with section 7 (decision 72);
+  - photos are added through `/scout/reports/{reportId}/photos`, and staff see them through
+    `/admin/scout-reports/{reportId}/photos`.
 - **The invitation code** is ten letters and digits that are hard to mix up, shown as `XXXXX-XXXXX`. Only its hash
   is stored. It is shown once; asking again before it is used replaces it. The link is the public website address
   (`PUBLIC_WEB_URL`) followed by `/invite/` and the code.
@@ -171,12 +173,20 @@ What the server now does, and where it differs from the plan above:
   recorded and the fee being received, are built and tested, but nothing calls them yet: rentals and the completed
   rental fee are Release 2. While `scouts.rewardMinor` is not set (open point 16), no line becomes eligible.
 
+Added afterwards (pull request #54):
+
+- **Photos on a scout's report** (section 2): up to five, JPEG or PNG, 10 MB each, through
+  `/scout/reports/{reportId}/photos`. They go to private storage and are saved again without the location and
+  device details a camera writes into a photo. Only the scout and staff can see them; each look by staff is recorded.
+- **Phone numbers and email addresses "ever confirmed"** (section 6). Each time an account confirms a phone number
+  or email address, a keyed hash of it is remembered (`ConfirmedContact`); the number or address itself is not
+  kept. The conflict checks compare these hashes as well as the current contacts. Recording starts with this
+  change; no real user existed before it.
+- **Where the invitation link lands.** The 112 designed screens (decision 73) do not include an invitation page, so
+  the website's `/invite/{code}` sends the landlord straight to sign-up in the app, as a landlord, with the code
+  carried along. A page of its own, saying who invited him, would be a new screen and needs a decision.
+
 Not built yet, from sections 1 to 6:
 
-- **Photos on a scout's report** (section 2). The report takes the pin, a description and the landlord's name.
-- **Phone numbers and email addresses "ever confirmed"** (section 6). Only the current ones are compared, because
-  the platform does not yet keep a history of an account's earlier contacts.
 - **The bank account check** (section 6): with bank accounts, in Release 2.
-- **The landlord's invitation page** on the public website, at `/invite/{code}`: with the screens, in step 6. Until
-  then the link has nowhere to land.
 

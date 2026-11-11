@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { conflictsOf, hashInvitationCode, newInvitationCode, onFeeReceived, onFirstRental, type Party } from './rules.js';
+import { conflictsOf, contactHash, hashInvitationCode, newInvitationCode, onFeeReceived, onFirstRental, type Party } from './rules.js';
 
 const scout = { id: 's', phone: '+2348030000001', email: 'scout@example.com', deviceIds: ['d1'] };
 const landlord: Party = { id: 'l', role: 'LANDLORD', phone: '+2348030000002', email: 'landlord@example.com', deviceIds: ['d2'] };
@@ -21,6 +21,13 @@ describe('scout rules', () => {
     expect(conflictsOf(scout, [{ ...landlord, phone: scout.phone }])).toEqual(['SHARED_PHONE']);
     expect(conflictsOf(scout, [{ ...landlord, email: 'SCOUT@example.com' }])).toEqual(['SHARED_EMAIL']);
     expect(conflictsOf(scout, [{ ...landlord, deviceIds: ['d9', 'd1'] }])).toEqual(['SHARED_DEVICE']);
+    // A number or address either account confirmed in the past counts too.
+    const old = contactHash('secret', 'SMS', '+2348030000009');
+    expect(conflictsOf({ ...scout, pastPhones: [old] }, [{ ...landlord, pastPhones: ['other', old] }])).toEqual(['SHARED_PHONE']);
+    expect(conflictsOf({ ...scout, pastEmails: ['x'] }, [{ ...landlord, pastEmails: ['x'] }])).toEqual(['SHARED_EMAIL']);
+    expect(conflictsOf({ ...scout, pastPhones: ['a'] }, [{ ...landlord, pastPhones: ['b'] }])).toEqual([]);
+    expect(contactHash('secret', 'EMAIL', ' Ada@Example.com ')).toBe(contactHash('secret', 'EMAIL', 'ada@example.com'));
+    expect(contactHash('secret', 'EMAIL', 'ada@example.com')).not.toBe(contactHash('other', 'EMAIL', 'ada@example.com'));
   });
 
   it('counts only the first rental, and a rental through escrow voids only that line', () => {
