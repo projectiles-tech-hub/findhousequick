@@ -286,7 +286,7 @@ export default async function ListingPageView({ params }: { params: Promise<{ id
               Chat with the lister
             </a>
             <p className="note note--locked">
-              <Icon name="person" />
+              <Icon name="lock" />
               <span>
                 <strong>{verified ? 'Verified lister' : 'Lister'}</strong>
                 Sign in or create a free account to see who is letting this home and to contact them.
