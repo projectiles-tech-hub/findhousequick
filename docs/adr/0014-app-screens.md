@@ -26,7 +26,7 @@ decides a verification level, a fee, a limit or a switch itself.
 | 7 | The staff screens (website and desktop) | Screens 88 to 105 |
 
 Parts 2 to 7 each build the phone layout and the wide layouts of their screens together, from the same parts.
-The map in part 3 waits for the choice of maps provider.
+The map in part 3 is built for both maps providers, Google Maps and OpenStreetMap (decision 81, ADR 0015).
 
 ### 2. One set of design values, taken from the design file
 
@@ -65,8 +65,8 @@ missing from a language is shown in English. Which languages a user may choose c
 (decision 40). Flutter's own words, such as "Copy" and "Paste", do not come in Pidgin, so Pidgin borrows the
 English ones.
 
-The Pidgin file starts empty. Pidgin wording is added only once it has been written and checked (decision 40);
-it is not made up during the build.
+The Pidgin file starts empty. Projectiles Tech Hub writes the Pidgin wording itself, later (decision 83); it is
+not made up during the build. Until it is supplied, the app shows English when Pidgin is chosen.
 
 ### 6. The sign-in session
 
@@ -92,4 +92,4 @@ anything it works out; the shared parts are also checked by eye against the desi
   `flutter_localizations`).
 - On the web, a browser has no protected storage like a phone's; the package encrypts the keys in the browser's
   own storage. This is the usual arrangement for a web app and is looked at again with the security review.
-- The Pidgin words need a person to write and check them before Pidgin shows anything but English in the app.
+- Pidgin shows English in the app until Projectiles Tech Hub supplies the Pidgin wording (decision 83).

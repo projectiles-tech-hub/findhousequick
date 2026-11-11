@@ -43,6 +43,7 @@ How particular parts are built, and why. Read the one for the area you are worki
 | `0012-inspections-reports-and-automatic-checks.md` | Step 5, part 4: inspection time slots, the exact position after confirmation, safety sharing and follow-up, reports, sanctions recorded against the verified identity, the automatic checks with the risk score, and fee types per country. |
 | `0013-public-website.md` | Step 5, part 5: the public website in `web/` (Next.js): how it is structured, how it reads the API, pages 107 and 108, what search engines see, and what is not built yet. |
 | `0014-app-screens.md` | Step 6: how the app screens are built in `app/` (Flutter): the seven parts, the design values, the icon set, the shared parts, the words in each language and the sign-in session. |
+| `0015-maps-providers.md` | Decision 81: Google Maps and OpenStreetMap, each behind its own adapter and chosen per use by a setting; what is built and what is not yet connected. |
 
 ## Reviews (`docs/reviews/`)
 

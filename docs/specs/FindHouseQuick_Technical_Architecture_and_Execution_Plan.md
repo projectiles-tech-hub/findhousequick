@@ -6,7 +6,7 @@ Projectiles Tech Hub Limited
 
 Emmanuel Chukwuka Oraegbu, Managing Director
 
-Version 1.2 \| 27 October 2026
+Version 1.3 \| 11 November 2026
 
 # Contents
 
@@ -174,24 +174,24 @@ The server is built as a modular monolith: one program divided into clearly sepa
 
 # 8. Technology Choices
 
-| **Part**                              | **Recommended technology**                          | **Reason**                                                                       |
-|---------------------------------------|-----------------------------------------------------|----------------------------------------------------------------------------------|
-| Mobile, desktop and logged-in web app | Flutter                                             | One codebase for Android, iPhone, web, Windows and Mac                           |
-| Public website                        | Next.js                                             | Lets search engines find and show listing summaries; Flutter web is weak at this |
-| Central server and API                | Node.js with NestJS, written in TypeScript          | Well structured for large systems; developers widely available in Nigeria        |
-| Main database                         | PostgreSQL with PostGIS                             | Reliable; fast location searches                                                 |
-| Fast temporary memory                 | Redis                                               | Speed, rate limits and job queue                                                 |
-| Background jobs                       | BullMQ                                              | Runs processing and scheduled tasks reliably                                     |
-| File storage and delivery             | Private cloud storage with a CDN and expiring links | Fast delivery worldwide while protecting media                                   |
-| Media processing                      | FFmpeg and image processing libraries               | Watermarks, location data removal, blurring, thumbnails, photo fingerprints      |
-| Live updates and chat                 | WebSockets                                          | Instant messages and status updates                                              |
-| Push notifications                    | Firebase Cloud Messaging                            | Works on Android and iPhone                                                      |
-| Feature controls                      | Unleash (open source) or a custom module            | Switching, gradual release, scheduling                                           |
-| Document reading                      | Google Document AI or AWS Textract                  | Reads title documents and survey plans                                           |
-| Maps                                  | Google Maps, or Mapbox to reduce cost               | Maps, distances, satellite images, directions                                    |
-| Hosting                               | AWS or Google Cloud, using containers               | Scales with growth; region chosen to meet each country's data laws               |
-| Code, testing and release             | GitHub with automated testing and deployment        | Nothing reaches users without passing tests                                      |
-| Monitoring                            | Sentry and Grafana                                  | Alerts the team to problems before users notice                                  |
+| **Part**                              | **Recommended technology**                                            | **Reason**                                                                       |
+|---------------------------------------|-----------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| Mobile, desktop and logged-in web app | Flutter                                                               | One codebase for Android, iPhone, web, Windows and Mac                           |
+| Public website                        | Next.js                                                               | Lets search engines find and show listing summaries; Flutter web is weak at this |
+| Central server and API                | Node.js with NestJS, written in TypeScript                            | Well structured for large systems; developers widely available in Nigeria        |
+| Main database                         | PostgreSQL with PostGIS                                               | Reliable; fast location searches                                                 |
+| Fast temporary memory                 | Redis                                                                 | Speed, rate limits and job queue                                                 |
+| Background jobs                       | BullMQ                                                                | Runs processing and scheduled tasks reliably                                     |
+| File storage and delivery             | Private cloud storage with a CDN and expiring links                   | Fast delivery worldwide while protecting media                                   |
+| Media processing                      | FFmpeg and image processing libraries                                 | Watermarks, location data removal, blurring, thumbnails, photo fingerprints      |
+| Live updates and chat                 | WebSockets                                                            | Instant messages and status updates                                              |
+| Push notifications                    | Firebase Cloud Messaging                                              | Works on Android and iPhone                                                      |
+| Feature controls                      | Unleash (open source) or a custom module                              | Switching, gradual release, scheduling                                           |
+| Document reading                      | Google Document AI or AWS Textract                                    | Reads title documents and survey plans                                           |
+| Maps                                  | Google Maps and OpenStreetMap, each chosen by a setting (decision 81) | Maps, distances, satellite images, directions                                    |
+| Hosting                               | AWS or Google Cloud, using containers                                 | Scales with growth; region chosen to meet each country's data laws               |
+| Code, testing and release             | GitHub with automated testing and deployment                          | Nothing reaches users without passing tests                                      |
+| Monitoring                            | Sentry and Grafana                                                    | Alerts the team to problems before users notice                                  |
 
 # 9. API Design
 
@@ -234,7 +234,7 @@ Every app does everything through the FindHouseQuick API. The verification ladde
 | Identity providers (for example Smile ID, Dojah or Prembly) | NIN, selfie and liveness checks                              |
 | Paystack or Flutterwave                                     | Collecting payments and making payouts                       |
 | Bank APIs                                                   | Escrow account statements for daily reconciliation           |
-| Google Maps or Mapbox                                       | Maps, distances, satellite images, directions                |
+| Google Maps and OpenStreetMap (decision 81)                 | Maps, distances, satellite images, directions                |
 | Google Document AI or AWS Textract                          | Reading title documents and survey plans                     |
 | Reverse image search                                        | Stolen photo checks and monitoring of platform images online |
 | Termii or Twilio                                            | SMS codes                                                    |

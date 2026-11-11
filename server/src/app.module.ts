@@ -21,6 +21,7 @@ import { ReferenceModule } from './reference/reference.module.js';
 import { SmsModule } from './integrations/sms/sms.module.js';
 import { StaffModule } from './staff/staff.module.js';
 import { PrismaModule } from './prisma/prisma.module.js';
+import { MapsModule } from './integrations/maps/maps.module.js';
 import { PushModule } from './integrations/push/push.module.js';
 import { CallsProviderModule } from './integrations/calls/calls.module.js';
 import { LiveModule } from './live/live.module.js';
@@ -46,6 +47,7 @@ import { ScoutsModule } from './scouts/scouts.module.js';
     EmailModule,
     IdentityProviderModule,
     StorageModule,
+    MapsModule,
     PushModule,
     CallsProviderModule,
     AccountsModule,

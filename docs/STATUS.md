@@ -211,6 +211,17 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
   - No screen for users is built in this part; the app still opens on the start screen.
   - Still to do from this step: parts 2 to 7.
 
+- **Maps providers (decision 81)**: in pull request #56. Built on pull request #55. How it is built is in
+  `docs/adr/0015-maps-providers.md`.
+  - The server has an adapter for Google Maps and one for OpenStreetMap, for place search, nearby amenities and
+    travel times; the provider is a server setting, for all uses or one use at a time. The default is none, so
+    nothing changes for users.
+  - Neither adapter has been tried against the real service: no account exists yet.
+  - Still to do: use the adapters in place search and on the property page, keeping answers so they are not paid
+    for twice; the map picture in the apps and on the website (step 6 part 3); the satellite check.
+  - Also recorded here: decision 82 (the scout invitation link opens no page of its own) and decision 83 (the
+    Pidgin wording is written later by Projectiles Tech Hub).
+
 ## Small follow-ups
 
 - Technical points from the specification check (finding 21): move rate limits to Redis (they are still counted in
@@ -225,12 +236,10 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
 
 - Before the website goes live: the lawyer's review of the terms of use and the privacy policy; the real support
   WhatsApp and phone numbers; the support and privacy emails; the name of the Data Protection Officer.
-- Which maps provider to use (Google Maps or Mapbox), for the map, place search, nearby amenities and travel times.
-  The map screens of step 6 part 3 wait for this.
-- The Pidgin wording for the app: who writes and checks it (decision 40). Until then the app shows English when
-  Pidgin is chosen.
-- Whether a scout's invitation link should open a page of its own before sign-up (pull request #54); that would be
-  a new screen, to be designed and approved first.
+- A Google Cloud account (for Google Maps), and a host for the OpenStreetMap services or the choice to run them
+  ourselves, before either maps provider can be switched on (decision 81; `docs/DEPLOYMENT.md`).
+- The Pidgin wording for the app, which Projectiles Tech Hub writes itself (decision 83). Until it is supplied the
+  app shows English when Pidgin is chosen.
 - Before identity checks go live: how long identity images are kept after verification, after legal advice
   (Decisions Log open point 15). Step 3 is built with this as a country setting (decision 55) that is not yet set.
 - A company dollar card, so the hosting account (and the test system) can be opened (decision 42).
