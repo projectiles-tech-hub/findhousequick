@@ -94,7 +94,11 @@ jobs:
       - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
         with:
+          # Pinned to the version the app is built with (scripts/setup-dev.sh), so a new Flutter release cannot fail
+          # the checks on its own. Newer releases move the Material parts into the package material_ui; the app moves
+          # to it when Flutter is upgraded on purpose (docs/STATUS.md).
           channel: stable
+          flutter-version: 3.47.9
           cache: true
       - run: flutter pub get
       - run: flutter analyze

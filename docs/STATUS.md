@@ -219,6 +219,9 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
   - Tried end to end in a browser against the real API, and compared by eye with the designs at 360 wide.
   - The server now gives the apps the country's dialling code, and has country settings for the versions of the
     terms and privacy policy a new user agrees to.
+  - The checks on GitHub now use a fixed Flutter version (3.47.9, the one the app is built with). A newer Flutter
+    release, out since pull request #55, marks the way the app brings in its Material parts as outdated, and the
+    check failed on that alone. Still to do: upgrade Flutter on purpose and move to the new `material_ui` package.
   - Still to do from part 2: the wide layouts of screens 1 to 9 (part 2b), which are their own designs with a
     card and a collage of live listings; verification, screens 12 to 21 (part 2c). Until 2b, a wide screen shows
     the phone layout in a narrow column.
