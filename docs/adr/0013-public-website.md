@@ -31,8 +31,9 @@ request, so it can only be merged after it.
   `docs/designs.md`. The font, Source Sans 3, is packaged with the site, so no visitor's browser calls Google.
 - **One layout for three widths.** The pages follow the 1366, 768 and 360 designs with the same code.
 - **Icons** are the app's own set (decision 68), read out of the Penpot design file into
-  `web/scripts/penpot-icons.txt` and turned into code by `web/scripts/make-icons.mjs`. The set has no icon for
-  money, a photo, several people or a lock, so the nearest icons of the set are used there (check, camera, person).
+  `web/scripts/penpot-icons.txt` and turned into code by `web/scripts/make-icons.mjs`. Four icons the set lacked (money,
+  image, people and lock) were drawn in the same style on 11 November 2026 and are used on the website; they are
+  still to be added to the icon set in the design file.
 
 ### Pages
 

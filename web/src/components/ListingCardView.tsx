@@ -13,7 +13,7 @@ export function ListingCardView({ card }: { card: ListingCard }) {
       <Link href={href} className="listing__photo" aria-label={card.title}>
         {/* Photo links expire after 15 minutes, so the photo is shown as it comes, with no image cache in between. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        {card.coverImage ? <img src={card.coverImage} alt="" loading="lazy" /> : <Icon name="camera" size={28} />}
+        {card.coverImage ? <img src={card.coverImage} alt="" loading="lazy" /> : <Icon name="image" size={28} />}
       </Link>
       <a className="listing__save" href={links.signIn(href)} aria-label="Sign in to save this home">
         <Icon name="heart" size={18} />
