@@ -1,6 +1,6 @@
 # Project status
 
-Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build session, and update it at the end.
+Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build session, and update it at the end.
 
 ## Where things stand
 
@@ -112,8 +112,8 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
   request #44 on 2 November 2026 (decision 56). Still to do from this step: comparing a building's location with
   its first photos (with media upload, step 5); admin endpoints to switch cities on.
 
-- **Release 1 step 5, part 1 (ownership documents, agent authority, media upload, listings and submission)**: in
-  pull request #47. Plan in `docs/adr/0009-media-listings-and-submission.md`, which also splits
+- **Release 1 step 5, part 1 (ownership documents, agent authority, media upload, listings and submission)**:
+  complete. Merged in pull request #47 on 10 November 2026. Plan in `docs/adr/0009-media-listings-and-submission.md`, which also splits
   step 5 into five parts.
   - Ownership documents and authority letters through `/documents`; agent authority, approved by the landlord in the
     app or, with a letter, by the team after calling the landlord.
@@ -128,7 +128,7 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
     "occupied" detail on units); the property page for tenants (part 2); a real storage provider adapter (Cloudflare
     R2) once the account is opened.
 
-- **Release 1 step 5, part 2 (search, the property page and saved items)**: in pull request #48. Built on pull requests #46 and #47, so it is merged after them. Plan in
+- **Release 1 step 5, part 2 (search, the property page and saved items)**: complete. Merged in pull request #48 on 10 November 2026. Plan in
   `docs/adr/0010-search-and-the-property-page.md`.
   - Search: around me, landmark, map (grouped pins when zoomed out) and area, with every filter.
   - Positions are approximate and distances rounded until an inspection is confirmed.
@@ -143,8 +143,8 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
     - alerts for saved areas (built in part 3);
     - the exact position after a confirmed inspection (built in part 4).
 
-- **Release 1 step 5, part 3 (messaging, calls and notifications)**: in pull request #49. Built on pull request
-  #48, so it is merged after it. Plan in `docs/adr/0011-messaging-calls-and-notifications.md`.
+- **Release 1 step 5, part 3 (messaging, calls and notifications)**: complete. Merged in pull request #49 on 10 November 2026.
+  Plan in `docs/adr/0011-messaging-calls-and-notifications.md`.
   - Chat between a tenant and the lister, with unread counts, automatic monitoring with a warning, and phone
     numbers shared only after an inspection is booked and both sides agree.
   - Voice calls inside the app (decision 44) through a calling service adapter, with a test service for
@@ -156,8 +156,8 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
   - Still to do from this part: real push (Firebase) and calling service adapters once the accounts are opened;
     notifications for verification results.
 
-- **Release 1 step 5, part 4 (inspections, reports, enforcement and the automatic checks)**: in pull request #50.
-  Built on pull request #49, so it is merged after it. Plan in
+- **Release 1 step 5, part 4 (inspections, reports, enforcement and the automatic checks)**:
+  complete. Merged in pull request #50 on 10 November 2026. Plan in
   `docs/adr/0012-inspections-reports-and-automatic-checks.md`.
   - Inspections with time slots (decision 45): availability, booking, confirming, rescheduling, cancelling,
     completing; the exact position, address and directions for the tenant once confirmed; safety sharing by SMS;
@@ -172,8 +172,8 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
     document numbers; a reminder before an inspection and a prompt for the follow-up answers; blocking another
     user in chat; the directions link through the maps provider adapter.
 
-- **Release 1 step 5, part 5 (the public website)**: in pull request #51. Built on pull request #50, so it is merged
-  after it; pages 107 and 108 follow the designs in pull request #46. Plan in `docs/adr/0013-public-website.md`.
+- **Release 1 step 5, part 5 (the public website)**: complete. Merged in pull request #51 on 10 November 2026.
+  Pages 107 and 108 follow the designs approved in pull request #46. Plan in `docs/adr/0013-public-website.md`.
   - The website's code structure in `web/` (Next.js), with its own checks in CI. This also completes the "public
     website code structure" item left over from Release 0.
   - Page 107 (search results) at `/homes` and page 108 (listing page) at `/homes/{id}`, at all three widths, made
@@ -260,13 +260,13 @@ Updated: 10 November 2026. Read this after CLAUDE.md at the start of every build
    of the building's location with the first photos (with media upload, step 5); admin endpoints to switch cities
    on (switched on in the database for now, see `docs/DEPLOYMENT.md`).
 5. **Step 5, in five parts** (ADR 0009). Part 1, documents and media upload, agent authority, listings and
-   submission: in pull request #47. Part 2, search, the property page and saved items: in pull request #48. Part 3,
+   submission: complete (pull request #47). Part 2, search, the property page and saved items: complete (pull request #48). Part 3,
    messaging with the live connection (decision 47), calls inside the app (decision 44, new feature switch
-   `contact.in_app_call`), notifications (decision 46) and alerts for saved areas: in pull request #49. Part 4,
+   `contact.in_app_call`), notifications (decision 46) and alerts for saved areas: complete (pull request #49). Part 4,
    inspections with time slots (decision 45), reports, review tasks with badge removal and bans (decision 51), the
    Release 1 automatic checks and risk score (decision 58), and fee types shown on listings as a country setting
-   (decision 55): in pull request #50. Part 5, the public website code structure with the public search and listing
-   pages (decisions 75 and 77): in pull request #51.
+   (decision 55): complete (pull request #50). Part 5, the public website code structure with the public search and listing
+   pages (decisions 75 and 77): complete (pull request #51).
 5a. **Scouts** (decisions 70 to 72; plan in `docs/adr/0008-scouts-and-referral-rewards.md`), after buildings and
     listings (steps 4 and 5): opting in, reporting vacant properties, inviting landlords, the referral record, the
     conflict checks and the staff referral screens, behind the switch `growth.scouts`. The scout routes are added
