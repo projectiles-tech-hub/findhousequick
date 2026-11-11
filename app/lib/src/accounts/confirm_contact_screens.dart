@@ -9,11 +9,12 @@ import '../design/fields.dart';
 import '../design/notice.dart';
 import '../design/screen.dart';
 import '../design/tokens.dart';
+import '../design/wide.dart';
 import '../l10n/languages.dart';
 import '../session/session.dart';
 import 'account_errors.dart';
 import 'accounts_api.dart';
-import 'sign_up_screens.dart' show ResendCountdown;
+import 'sign_up_screens.dart' show ResendCountdown, backToProperties;
 
 /// Screen 5, Confirm your email: shown straight after sign-up. When the sign-up code went by email, it asks for
 /// the phone number to be confirmed instead, with the same layout.
@@ -58,9 +59,64 @@ class _ConfirmContactScreenState extends ConsumerState<ConfirmContactScreen> {
     final t = context.texts;
     final me = ref.watch(sessionProvider).value?.me;
     final value = (widget.phone ? me?.phone : me?.email) ?? '';
+    final wide = AppWide.of(context);
+    final heading = AppHeading(
+      widget.justCreated ? t.welcomeReady(me?.firstName ?? '') : (widget.phone ? t.confirmYourPhone : t.confirmYourEmail),
+      intro: widget.phone ? t.confirmPhoneIntro : t.confirmEmailIntro,
+    );
+    final send = AppButton(
+      label: widget.phone ? t.sendCodeToPhone : t.sendCodeToEmail,
+      icon: widget.phone ? AppIcons.phone : AppIcons.mail,
+      iconFirst: true,
+      onPressed: _busy || me == null ? null : () => _send(me),
+    );
+    final failure = _failure == null ? const <Widget>[] : [AppNotice(kind: AppNoticeKind.error, title: _failure!), const SizedBox(height: 16)];
+    if (wide) {
+      final w600 = AppText.label.copyWith(fontWeight: FontWeight.w600, fontVariations: const [FontVariation('wght', 600)], height: 19 / 14);
+      return AppScreen(
+        onBackToProperties: backToProperties(ref),
+        side: _NextSteps(phone: widget.phone),
+        bottom: [send],
+        footer: AppFooterLink(link: t.doItLater, onPressed: () => context.go('/home')),
+        children: [
+          Row(
+            children: [
+              const AppIconTile(AppIcons.check, solid: true),
+              const SizedBox(width: 14),
+              if (widget.justCreated)
+                Container(
+                  padding: const EdgeInsets.fromLTRB(14, 7, 14, 6),
+                  decoration: BoxDecoration(color: AppColors.green50, borderRadius: BorderRadius.circular(20)),
+                  child: Text(t.accountCreated, style: w600.copyWith(color: AppColors.green700)),
+                ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          heading,
+          const SizedBox(height: 20),
+          Text(widget.phone ? t.phoneNumber : t.emailAddress, style: w600),
+          const SizedBox(height: 6),
+          Container(
+            constraints: const BoxConstraints(minHeight: 52),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
+            child: Row(
+              children: [
+                Expanded(child: Text(value, style: AppText.body.copyWith(height: 21 / 16))),
+                AppIcon(widget.phone ? AppIcons.phone : AppIcons.mail, color: AppColors.ink600),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          ...failure,
+          AppNotice(kind: AppNoticeKind.info, title: t.untilThenTitle, message: t.untilThenText, icon: AppIcons.eye),
+          const SizedBox(height: 20),
+        ],
+      );
+    }
     return AppScreen(
       bottom: [
-        AppButton(label: widget.phone ? t.sendCodeToPhone : t.sendCodeToEmail, onPressed: _busy || me == null ? null : () => _send(me)),
+        send,
         AppButton(label: t.doItLater, kind: AppButtonKind.text, onPressed: () => context.go('/home')),
       ],
       children: [
@@ -76,10 +132,7 @@ class _ConfirmContactScreenState extends ConsumerState<ConfirmContactScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        AppHeading(
-          widget.justCreated ? t.welcomeReady(me?.firstName ?? '') : (widget.phone ? t.confirmYourPhone : t.confirmYourEmail),
-          intro: widget.phone ? t.confirmPhoneIntro : t.confirmEmailIntro,
-        ),
+        heading,
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(16),
@@ -112,10 +165,65 @@ class _ConfirmContactScreenState extends ConsumerState<ConfirmContactScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        if (_failure != null) ...[AppNotice(kind: AppNoticeKind.error, title: _failure!), const SizedBox(height: 16)],
+        ...failure,
         AppNotice(kind: AppNoticeKind.info, title: t.untilThenTitle, message: t.untilThenText),
         const SizedBox(height: 16),
       ],
+    );
+  }
+}
+
+/// The dark panel beside the card on the website: what the user can do next, with this step marked.
+class _NextSteps extends StatelessWidget {
+  const _NextSteps({required this.phone});
+
+  final bool phone;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.texts;
+    Widget row(AppIcons icon, String title, String text, {bool here = false}) => Container(
+          margin: const EdgeInsets.only(top: 14),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(color: AppColors.ink600, borderRadius: BorderRadius.circular(16)),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: here ? AppColors.green700 : AppColors.ink500, borderRadius: BorderRadius.circular(12)),
+                child: AppIcon(icon, color: AppColors.surface, cut: here ? AppColors.green700 : AppColors.ink500),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: AppText.body.copyWith(color: AppColors.surface, fontWeight: FontWeight.w600, fontVariations: const [FontVariation('wght', 600)], height: 21 / 16)),
+                    const SizedBox(height: 2),
+                    Text(text, style: AppText.bodySmall.copyWith(color: AppColors.divider, height: 19 / 14)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+    return Container(
+      width: 400,
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(color: AppColors.ink900, borderRadius: BorderRadius.circular(28)),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(t.nextTitle, style: AppText.title.copyWith(color: AppColors.surface, height: 29 / 22)),
+          row(phone ? AppIcons.phone : AppIcons.mail, phone ? t.nextConfirmPhone : t.nextConfirmEmail, t.nextYouAreHere, here: true),
+          row(AppIcons.heart, t.nextSave, t.nextSaveText),
+          row(AppIcons.bell, t.nextAlerts, t.nextAlertsText),
+          row(AppIcons.shieldCheck, t.nextVerify, phone ? t.nextVerifyTextPhone : t.nextVerifyTextEmail),
+        ],
+      ),
     );
   }
 }
@@ -193,9 +301,10 @@ class _ConfirmContactCodeScreenState extends ConsumerState<ConfirmContactCodeScr
     return AppScreen(
       title: widget.phone ? t.confirmYourPhone : t.confirmYourEmail,
       onBack: () => context.canPop() ? context.pop() : context.go('/home'),
+      onBackToProperties: backToProperties(ref),
       bottom: [AppButton(label: t.confirm, onPressed: _busy || me == null ? null : () => _confirm(me))],
       children: [
-        const SizedBox(height: 8),
+        if (AppWide.of(context)) ...[AppIconTile(widget.phone ? AppIcons.phone : AppIcons.mail), const SizedBox(height: 20)] else const SizedBox(height: 8),
         AppHeading(t.enterTheCode, intro: sentTo),
         const SizedBox(height: 16),
         if (_failure != null) ...[AppNotice(kind: AppNoticeKind.error, title: _failure!), const SizedBox(height: 16)],

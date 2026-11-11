@@ -15,12 +15,17 @@ import '../design/fields.dart';
 import '../design/notice.dart';
 import '../design/screen.dart';
 import '../design/tokens.dart';
+import '../design/wide.dart';
 import '../l10n/languages.dart';
+import '../listings/listing_collage.dart';
 import '../providers.dart';
 import '../session/session.dart';
 import 'account_errors.dart';
 import 'accounts_api.dart';
 import 'sign_up_draft.dart';
+
+/// Opens the public website's list of homes: where "Back to properties" in the website header leads.
+VoidCallback backToProperties(WidgetRef ref) => () => launchUrl(Uri.parse('${ref.read(appConfigProvider).webUrl}/homes'), webOnlyWindowName: '_self');
 
 /// Screen 2, Who are you: tenant, landlord, agent; more than one may be chosen.
 class WhoAreYouScreen extends ConsumerStatefulWidget {
@@ -63,25 +68,31 @@ class _WhoAreYouScreenState extends ConsumerState<WhoAreYouScreen> {
       setState(() => _showError = false);
     }
 
+    final wide = AppWide.of(context);
+    final gap = SizedBox(height: wide ? 20 : 16);
     return AppScreen(
       title: t.createAnAccount,
       onBack: () => context.canPop() ? context.pop() : context.go('/'),
+      onBackToProperties: backToProperties(ref),
+      side: const ListingCollage(),
+      footer: AppFooterLink(words: t.alreadyHaveAccount, link: t.signIn, onPressed: () => context.push('/sign-in')),
       bottom: [
         AppButton(
           label: t.continueLabel,
+          icon: AppIcons.forward,
           onPressed: () => draft.types.isEmpty ? setState(() => _showError = true) : context.push('/sign-up/details'),
         ),
       ],
       children: [
-        const SizedBox(height: 8),
-        const AppStepProgress(step: 1, total: 3),
-        const SizedBox(height: 16),
-        AppHeading(t.whoTitle, intro: t.whoHint),
-        const SizedBox(height: 16),
+        if (!wide) const SizedBox(height: 8),
+        AppStepProgress(step: 1, total: 3, caption: t.stepAboutYou),
+        gap,
+        AppHeading(t.whoTitle, intro: wide ? t.whoHintWide : t.whoHint),
+        gap,
         _TypeTile(icon: AppIcons.search, title: t.typeTenant, text: t.typeTenantText, selected: draft.types.contains('TENANT'), onTap: () => toggle('TENANT')),
-        const SizedBox(height: 16),
+        gap,
         _TypeTile(icon: AppIcons.home, title: t.typeLandlord, text: t.typeLandlordText, selected: draft.types.contains('LANDLORD'), onTap: () => toggle('LANDLORD')),
-        const SizedBox(height: 16),
+        gap,
         _TypeTile(icon: AppIcons.person, title: t.typeAgent, text: t.typeAgentText, selected: draft.types.contains('AGENT'), onTap: () => toggle('AGENT')),
         if (_showError) ...[
           const SizedBox(height: 12),
@@ -104,15 +115,19 @@ class _TypeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final circle = selected ? AppColors.surface : AppColors.green50;
+    final wide = AppWide.of(context);
+    // Phone: a round tile, white when chosen. Website: a square tile, green with a white icon when chosen.
+    final circle = wide ? (selected ? AppColors.green700 : AppColors.background) : (selected ? AppColors.surface : AppColors.green50);
+    final ink = wide ? (selected ? AppColors.surface : AppColors.ink600) : AppColors.green700;
+    final bold = AppText.subtitle.copyWith(fontSize: 17, height: 23 / 17, fontWeight: FontWeight.w700, fontVariations: const [FontVariation('wght', 700)]);
     return Semantics(
       checked: selected,
       button: true,
       child: Material(
         color: selected ? AppColors.green50 : AppColors.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.medium),
-          side: selected ? const BorderSide(color: AppColors.green700, width: 2) : const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(wide ? 16 : AppRadius.medium),
+          side: selected ? const BorderSide(color: AppColors.green700, width: 2) : BorderSide(color: wide ? AppColors.divider : AppColors.border),
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -122,20 +137,20 @@ class _TypeTile extends StatelessWidget {
             child: Row(
               children: [
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: wide ? 48 : 44,
+                  height: wide ? 48 : 44,
                   alignment: Alignment.center,
-                  decoration: BoxDecoration(color: circle, shape: BoxShape.circle),
-                  child: AppIcon(icon, color: AppColors.green700, cut: circle),
+                  decoration: BoxDecoration(color: circle, borderRadius: BorderRadius.circular(wide ? 14 : 22)),
+                  child: AppIcon(icon, color: ink, cut: circle),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: AppText.subtitle.copyWith(height: 22 / 18)),
+                      Text(title, style: wide ? bold : AppText.subtitle.copyWith(height: 22 / 18)),
                       const SizedBox(height: 2),
-                      Text(text, style: AppText.bodySmall.copyWith(color: AppColors.ink600, height: 17 / 14)),
+                      Text(text, style: wide ? AppText.body.copyWith(fontSize: 15, height: 20 / 15, color: AppColors.ink600) : AppText.bodySmall.copyWith(color: AppColors.ink600, height: 17 / 14)),
                     ],
                   ),
                 ),
@@ -147,7 +162,7 @@ class _TypeTile extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(6),
                     color: selected ? AppColors.green700 : AppColors.surface,
-                    border: selected ? null : Border.all(color: AppColors.ink600, width: 2),
+                    border: selected ? null : Border.all(color: wide ? AppColors.border : AppColors.ink600, width: 2),
                   ),
                   child: selected ? const AppIcon(AppIcons.check, size: 18, color: AppColors.surface) : null,
                 ),
@@ -231,39 +246,66 @@ class _YourDetailsScreenState extends ConsumerState<YourDetailsScreen> {
     final web = ref.watch(appConfigProvider).webUrl;
     final link = AppText.body.copyWith(color: AppColors.green700, fontWeight: FontWeight.w500, decoration: TextDecoration.underline);
     TapGestureRecognizer open(String path) => TapGestureRecognizer()..onTap = () => launchUrl(Uri.parse('$web$path'), mode: LaunchMode.externalApplication);
+    final wide = AppWide.of(context);
+    final gap = SizedBox(height: wide ? 20 : 16);
+    final firstName = AppTextField(
+      label: t.firstName,
+      controller: _first,
+      helper: wide ? t.asOnYourId : null,
+      error: _checked && _first.text.trim().isEmpty ? t.errorFirstName : null,
+      autofillHints: const [AutofillHints.givenName],
+      textCapitalization: TextCapitalization.words,
+      textInputAction: TextInputAction.next,
+    );
+    final surname = AppTextField(
+      label: t.surname,
+      controller: _last,
+      helper: wide ? t.asOnYourId : null,
+      error: _checked && _last.text.trim().isEmpty ? t.errorSurname : null,
+      autofillHints: const [AutofillHints.familyName],
+      textCapitalization: TextCapitalization.words,
+      textInputAction: TextInputAction.next,
+    );
+    final smsChoice = AppRadio<bool>(label: t.sendBySms, value: false, groupValue: draft.codeByEmail, onChanged: (v) => notifier.update((d) => d.copyWith(codeByEmail: v)));
+    final emailChoice = AppRadio<bool>(label: t.sendByEmail, value: true, groupValue: draft.codeByEmail, onChanged: (v) => notifier.update((d) => d.copyWith(codeByEmail: v)));
+    final consent = AppCheckbox(
+      label: '${t.consentBefore}${t.consentTerms}${t.consentBetween}${t.consentPrivacy}${t.consentAfter}',
+      value: draft.agreed,
+      onChanged: (v) => notifier.update((d) => d.copyWith(agreed: v)),
+      rich: TextSpan(
+        style: wide ? AppText.body.copyWith(fontSize: 15, height: 19.5 / 15) : AppText.body.copyWith(height: 19.5 / 16),
+        children: [
+          TextSpan(text: t.consentBefore),
+          TextSpan(text: t.consentTerms, style: link, recognizer: open('/terms')),
+          TextSpan(text: t.consentBetween),
+          TextSpan(text: t.consentPrivacy, style: link, recognizer: open('/privacy')),
+          TextSpan(text: t.consentAfter),
+        ],
+      ),
+    );
     return AppScreen(
       title: t.createAnAccount,
       onBack: () => context.canPop() ? context.pop() : context.go('/sign-up'),
-      bottom: [AppButton(label: t.sendCode, onPressed: _busy || country == null ? null : () => _send(country))],
+      onBackToProperties: backToProperties(ref),
+      side: const ListingCollage(),
+      footer: AppFooterLink(words: t.alreadyHaveAccount, link: t.signIn, onPressed: () => context.push('/sign-in')),
+      bottom: [AppButton(label: t.sendCode, icon: AppIcons.forward, onPressed: _busy || country == null ? null : () => _send(country))],
       children: [
-        const SizedBox(height: 8),
-        const AppStepProgress(step: 2, total: 3),
-        const SizedBox(height: 16),
+        if (!wide) const SizedBox(height: 8),
+        AppStepProgress(step: 2, total: 3, caption: t.stepYourDetails),
+        gap,
         AppHeading(t.detailsTitle, intro: t.detailsIntro),
-        const SizedBox(height: 16),
+        gap,
         if (_failure != null) ...[AppNotice(kind: AppNoticeKind.error, title: _failure!), const SizedBox(height: 16)],
         AutofillGroup(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              AppTextField(
-                label: t.firstName,
-                controller: _first,
-                error: _checked && _first.text.trim().isEmpty ? t.errorFirstName : null,
-                autofillHints: const [AutofillHints.givenName],
-                textCapitalization: TextCapitalization.words,
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: 16),
-              AppTextField(
-                label: t.surname,
-                controller: _last,
-                error: _checked && _last.text.trim().isEmpty ? t.errorSurname : null,
-                autofillHints: const [AutofillHints.familyName],
-                textCapitalization: TextCapitalization.words,
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: 16),
+              // Side by side on the website, one under the other on the phone.
+              if (wide)
+                Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Expanded(child: firstName), const SizedBox(width: 12), Expanded(child: surname)])
+              else ...[firstName, gap, surname],
+              gap,
               AppPhoneField(
                 label: t.phoneNumber,
                 dialCode: country?.dialCode ?? '',
@@ -298,26 +340,19 @@ class _YourDetailsScreenState extends ConsumerState<YourDetailsScreen> {
         const SizedBox(height: 16),
         Text(t.sendCodeBy, style: AppText.label.copyWith(height: 17 / 14)),
         const SizedBox(height: 4),
-        AppRadio<bool>(label: t.sendBySms, value: false, groupValue: draft.codeByEmail, onChanged: (v) => notifier.update((d) => d.copyWith(codeByEmail: v))),
-        AppRadio<bool>(label: t.sendByEmail, value: true, groupValue: draft.codeByEmail, onChanged: (v) => notifier.update((d) => d.copyWith(codeByEmail: v))),
+        if (wide) Row(children: [Flexible(child: smsChoice), const SizedBox(width: 24), Flexible(child: emailChoice)]) else ...[smsChoice, emailChoice],
         const SizedBox(height: 4),
         Text(t.confirmOtherAfter, style: AppText.bodySmall.copyWith(color: AppColors.ink600, height: 17 / 14)),
         const SizedBox(height: 16),
-        AppCheckbox(
-          label: '${t.consentBefore}${t.consentTerms}${t.consentBetween}${t.consentPrivacy}${t.consentAfter}',
-          value: draft.agreed,
-          onChanged: (v) => notifier.update((d) => d.copyWith(agreed: v)),
-          rich: TextSpan(
-            style: AppText.body.copyWith(height: 19.5 / 16),
-            children: [
-              TextSpan(text: t.consentBefore),
-              TextSpan(text: t.consentTerms, style: link, recognizer: open('/terms')),
-              TextSpan(text: t.consentBetween),
-              TextSpan(text: t.consentPrivacy, style: link, recognizer: open('/privacy')),
-              TextSpan(text: t.consentAfter),
-            ],
-          ),
-        ),
+        // On the website the agreement sits in a tinted box.
+        if (wide)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+            decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(14)),
+            child: consent,
+          )
+        else
+          consent,
         if (_checked && !draft.agreed) ...[
           const SizedBox(height: 4),
           Semantics(liveRegion: true, child: Text(t.errorConsent, style: AppText.bodySmall.copyWith(color: AppColors.error))),
@@ -445,16 +480,30 @@ class _SignUpCodeScreenState extends ConsumerState<SignUpCodeScreen> with Resend
     final d = ref.watch(signUpProvider);
     final country = ref.watch(controlsProvider).value?.country;
     final sentTo = d.codeByEmail ? t.codeSentEmail(d.email) : t.codeSentSms(maskPhone(country?.dialCode ?? '', d.phone));
+    final wide = AppWide.of(context);
+    final gap = SizedBox(height: wide ? 20 : 16);
+    final change = AppLinkButton(
+      label: d.codeByEmail ? t.wrongEmailChange : t.wrongNumberChange,
+      onPressed: () => context.canPop() ? context.pop() : context.go('/sign-up/details'),
+    );
+    final other = AppLinkButton(
+      label: wide ? (d.codeByEmail ? t.sendBySmsInsteadShort : t.sendByEmailInsteadShort) : (d.codeByEmail ? t.sendBySmsInstead : t.sendByEmailInstead),
+      alignment: wide ? Alignment.centerRight : Alignment.centerLeft,
+      onPressed: country == null ? null : () => _resend(country, switchChannel: true),
+    );
     return AppScreen(
       title: t.createAnAccount,
       onBack: () => context.canPop() ? context.pop() : context.go('/sign-up/details'),
-      bottom: [AppButton(label: t.createMyAccount, onPressed: _busy || country == null ? null : () => _create(country))],
+      onBackToProperties: backToProperties(ref),
+      side: const ListingCollage(),
+      bottom: [AppButton(label: t.createMyAccount, icon: AppIcons.forward, onPressed: _busy || country == null ? null : () => _create(country))],
       children: [
-        const SizedBox(height: 8),
-        const AppStepProgress(step: 3, total: 3),
-        const SizedBox(height: 16),
+        if (!wide) const SizedBox(height: 8),
+        AppStepProgress(step: 3, total: 3, caption: d.codeByEmail ? t.stepConfirmEmail : t.stepConfirmPhone),
+        gap,
+        if (wide) ...[AppIconTile(d.codeByEmail ? AppIcons.mail : AppIcons.phone), gap],
         AppHeading(t.enterTheCode, intro: sentTo),
-        const SizedBox(height: 16),
+        gap,
         if (_failure != null) ...[AppNotice(kind: AppNoticeKind.error, title: _failure!), const SizedBox(height: 16)],
         AppCodeField(
           // A new field after the channel changes, so an old code is not left in the boxes.
@@ -469,15 +518,9 @@ class _SignUpCodeScreenState extends ConsumerState<SignUpCodeScreen> with Resend
           }),
         ),
         if (secondsLeft <= 0) AppLinkButton(label: t.sendCodeAgain, onPressed: country == null ? null : () => _resend(country)),
-        const SizedBox(height: 16),
-        AppLinkButton(
-          label: d.codeByEmail ? t.wrongEmailChange : t.wrongNumberChange,
-          onPressed: () => context.canPop() ? context.pop() : context.go('/sign-up/details'),
-        ),
-        AppLinkButton(
-          label: d.codeByEmail ? t.sendBySmsInstead : t.sendByEmailInstead,
-          onPressed: country == null ? null : () => _resend(country, switchChannel: true),
-        ),
+        gap,
+        if (wide) Row(children: [Expanded(child: change), Expanded(child: other)]) else ...[change, other],
+        if (wide) const SizedBox(height: 12),
       ],
     );
   }

@@ -98,12 +98,32 @@ anything it works out; the shared parts are also checked by eye against the desi
   `legal.termsVersion` and `legal.privacyVersion`.
 - Refusals from the server are shown in the app's own words for the reasons it knows, so they can be translated;
   any other reason is shown as the server wrote it.
-- Three code screens have no design of their own: signing in with a code, and confirming the email address or
-  phone number. They reuse the approved layout of screen 4 (Enter the code) without the sign-up steps.
+- Three code screens are forms of screen 4 (Enter the code) without the sign-up steps: 4b signing in with a
+  code, 4c confirming the email address and 4d confirming the phone number (decision 84; drawn in Figma).
 - When the sign-up code went by email, screen 5 asks for the phone number to be confirmed, with the same layout.
 - The language button on the welcome screen opens a short list of the country's languages.
-- Until the wide layouts are built (part 2b), a wide screen shows the phone layout in a column 480 wide.
 - Until the Me screen is built (part 6), signing out is a button on the temporary start screen.
+
+### 9. The website layouts of sign-up and sign-in (part 2b, as built)
+
+- From 768 wide (decision 74) every screen is shown in its website layout. A screen is written once: each shared
+  part reads which layout it is in (`app/lib/src/design/wide.dart`) and draws itself with the website's
+  measurements (rounder corners, heavier labels, larger headings), and the screen moves a few things (names side
+  by side, the two ways to get a code in one row, the agreement in a tinted box).
+- Sign-up (screens 2 to 5), Forgot password and Set a new password are a white card under a header with the logo
+  and "Back to properties", which leads to the public website's list of homes.
+- From 1100 wide, sign-up shows a picture beside the card made of the two newest real listings, how many
+  properties are available, and "Every lister identity-checked". With no listings, only that last line is drawn.
+  The distance on each card in the design is left out, because someone signing up has given no location yet;
+  the heart is left out, because it could not do anything there.
+- After sign-up, a dark panel beside the card lists what the user can do next.
+- Sign in and Sign in paused (screens 6 and 7) are a panel over a dimmed page with a close button. The design
+  shows the public home page behind and the words "You stay on this page"; the app shows only the header behind,
+  and leaves those words out, because the public pages are a separate site (ADR 0013). Opening sign-in over the
+  public page itself is recorded as work still to do with that site.
+- Screen 1's website layout is the public home page (page 106), which belongs to the public website and is not
+  part of this step.
+- The small calendar icon beside "Send the code again" in the website design is not drawn.
 
 ## Consequences
 

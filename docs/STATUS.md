@@ -222,9 +222,17 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
   - The checks on GitHub now use a fixed Flutter version (3.47.9, the one the app is built with). A newer Flutter
     release, out since pull request #55, marks the way the app brings in its Material parts as outdated, and the
     check failed on that alone. Still to do: upgrade Flutter on purpose and move to the new `material_ui` package.
-  - Still to do from part 2: the wide layouts of screens 1 to 9 (part 2b), which are their own designs with a
-    card and a collage of live listings; verification, screens 12 to 21 (part 2c). Until 2b, a wide screen shows
-    the phone layout in a narrow column.
+  - Still to do from part 2: verification, screens 12 to 21 (part 2c).
+
+- **Release 1 step 6 part 2b, the website layouts of sign-up and sign-in (screens 2 to 9)**: in pull request #58.
+  Built on pull request #57.
+  - From 768 wide the screens are shown as designed for the website: a card under a header for sign-up and
+    password reset, a panel over a dimmed page for sign-in, and from 1100 wide the newest real listings beside
+    the sign-up card.
+  - The three code screens (4b, 4c, 4d) are drawn in Figma and recorded (decision 84).
+  - Compared by eye with the designs at 1366 and 768.
+  - Still to do: opening sign-in over the public page itself, and the public home page (page 106, the website
+    layout of screen 1); both belong to the public website in `web/`.
 
 - **Maps providers (decision 81)**: in pull request #56. Built on pull request #55. How it is built is in
   `docs/adr/0015-maps-providers.md`.
@@ -329,8 +337,8 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
    desktop software (staff screens only): every screen listed in `docs/designs.md` (decision 73), including the scout screens and the
    staff screens with switch messages, return times and dependency warnings (decision 53). In seven parts
    (`docs/adr/0014-app-screens.md`). Part 1, the foundation: in pull request #55. Part 2a, sign-up and sign-in on the phone
-   (screens 1 to 9): in pull request #57. Next: part 2b, the wide layouts of screens 1 to 9; part 2c, verification
-   (screens 12 to 21); then part 3, search, the map, the property page and saved items; part 4,
+   (screens 1 to 9): in pull request #57. Part 2b, their website layouts: in pull request #58. Next: part 2c,
+   verification (screens 12 to 21); then part 3, search, the map, the property page and saved items; part 4,
    messages, calls and inspections; part 5, listing a property; part 6, me, settings and scouts; part 7, staff.
 
 ## Later releases (decided)

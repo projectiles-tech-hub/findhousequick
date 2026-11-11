@@ -8,6 +8,7 @@ import 'accounts/sign_up_screens.dart';
 import 'accounts/welcome_screen.dart';
 import 'design/gallery_screen.dart';
 import 'design/tokens.dart';
+import 'design/wide.dart';
 import 'home/home_screen.dart';
 import 'l10n/languages.dart';
 import 'l10n/locale.dart';
@@ -100,6 +101,8 @@ class _FindHouseQuickAppState extends ConsumerState<FindHouseQuickApp> {
       localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: appLocales,
       routerConfig: _router,
+      // Tells every screen whether it is in its phone layout or its website layout (decision 74).
+      builder: (context, child) => AppWide.forWidth(context, child!),
       debugShowCheckedModeBanner: false,
     );
   }

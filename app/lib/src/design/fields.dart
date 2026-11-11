@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import 'app_icon.dart';
 import 'tokens.dart';
+import 'wide.dart';
 
 /// The label above a field, the box, and the help or error line under it, as designed.
 /// An error is always written out in words under the box, never shown by colour alone.
@@ -18,11 +19,13 @@ class AppFieldFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final under = error ?? helper;
+    final wide = AppWide.of(context);
+    final labelStyle = wide ? AppText.label.copyWith(fontWeight: FontWeight.w600, fontVariations: const [FontVariation('wght', 600)], height: 19 / 14) : AppText.label.copyWith(height: 17 / 14);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(label, style: AppText.label.copyWith(color: enabled ? AppColors.ink900 : AppColors.ink400, height: 17 / 14)),
+        Text(label, style: labelStyle.copyWith(color: enabled ? AppColors.ink900 : AppColors.ink400)),
         const SizedBox(height: 6),
         child,
         if (under != null) ...[
@@ -37,9 +40,9 @@ class AppFieldFrame extends StatelessWidget {
   }
 }
 
-InputDecoration _box({String? hint, bool error = false, bool enabled = true, Widget? prefix, Widget? suffix}) {
-  OutlineInputBorder line(Color c, double w) =>
-      OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.small), borderSide: BorderSide(color: c, width: w));
+InputDecoration _box(BuildContext context, {String? hint, bool error = false, bool enabled = true, Widget? prefix, Widget? suffix}) {
+  final radius = AppWide.of(context) ? 12.0 : AppRadius.small;
+  OutlineInputBorder line(Color c, double w) => OutlineInputBorder(borderRadius: BorderRadius.circular(radius), borderSide: BorderSide(color: c, width: w));
   return InputDecoration(
     hintText: hint,
     hintStyle: AppText.body.copyWith(color: AppColors.ink600),
@@ -113,7 +116,7 @@ class AppTextField extends StatelessWidget {
           textCapitalization: textCapitalization,
           style: AppText.body.copyWith(color: enabled ? AppColors.ink900 : AppColors.ink400),
           cursorColor: AppColors.green700,
-          decoration: _box(hint: hint, error: error != null, enabled: enabled),
+          decoration: _box(context, hint: hint, error: error != null, enabled: enabled),
         ),
       ),
     );
@@ -169,6 +172,7 @@ class AppPhoneField extends StatelessWidget {
           style: AppText.body,
           cursorColor: AppColors.green700,
           decoration: _box(
+            context,
             error: error != null,
             enabled: enabled,
             prefix: Row(
@@ -246,6 +250,7 @@ class _AppPasswordFieldState extends State<AppPasswordField> {
           style: AppText.body,
           cursorColor: AppColors.green700,
           decoration: _box(
+            context,
             error: widget.error != null,
             suffix: Semantics(
               button: true,
@@ -315,25 +320,26 @@ class _AppCodeFieldState extends State<AppCodeField> {
   @override
   Widget build(BuildContext context) {
     final code = _controller.text;
+    final wide = AppWide.of(context);
     final boxes = Row(
       children: [
         for (var i = 0; i < widget.length; i++) ...[
-          if (i > 0) const SizedBox(width: 8),
+          if (i > 0) SizedBox(width: wide ? 10 : 8),
           Flexible(
             child: Container(
-              constraints: const BoxConstraints(maxWidth: 48),
-              height: 56,
+              constraints: BoxConstraints(maxWidth: wide ? 63 : 48),
+              height: wide ? 60 : 56,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: AppColors.surface,
-                borderRadius: BorderRadius.circular(AppRadius.small),
+                borderRadius: BorderRadius.circular(wide ? 12 : AppRadius.small),
                 border: widget.error != null
                     ? Border.all(color: AppColors.error, width: 2)
                     : (_focus.hasFocus && i == code.length.clamp(0, widget.length - 1))
                         ? Border.all(color: AppColors.green700, width: 2)
                         : Border.all(color: AppColors.border),
               ),
-              child: Text(i < code.length ? code[i] : '', style: AppText.title),
+              child: Text(i < code.length ? code[i] : '', style: wide ? AppText.title.copyWith(fontSize: 26, height: 34 / 26) : AppText.title),
             ),
           ),
         ],
