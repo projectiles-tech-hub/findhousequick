@@ -228,11 +228,11 @@ export default async function HomesPage({ searchParams }: { searchParams: Params
                 Inspections are always free. Report anyone who asks you to pay
               </li>
               <li>
-                <Icon name="check" />
+                <Icon name="money" />
                 Rent and every fee are shown before you call
               </li>
               <li>
-                <Icon name="camera" />
+                <Icon name="image" />
                 Photos taken on site, room by room
               </li>
             </ul>
