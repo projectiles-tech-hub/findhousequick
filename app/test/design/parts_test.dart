@@ -9,7 +9,7 @@ import 'package:findhousequick/src/design/main_tabs.dart';
 import 'package:findhousequick/src/design/tokens.dart';
 import 'package:findhousequick/src/l10n/languages.dart';
 import 'package:findhousequick/src/theme/theme.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Widget _host(Widget child, {Locale locale = const Locale('en')}) => MaterialApp(

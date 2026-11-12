@@ -8,7 +8,7 @@ import 'package:findhousequick/src/config/app_config.dart';
 import 'package:findhousequick/src/providers.dart';
 import 'package:findhousequick/src/session/token_store.dart';
 import 'package:findhousequick/src/verification/verification_api.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';

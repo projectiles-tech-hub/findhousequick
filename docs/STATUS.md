@@ -221,7 +221,7 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
     terms and privacy policy a new user agrees to.
   - The checks on GitHub now use a fixed Flutter version (3.47.9, the one the app is built with). A newer Flutter
     release, out since pull request #55, marks the way the app brings in its Material parts as outdated, and the
-    check failed on that alone. Still to do: upgrade Flutter on purpose and move to the new `material_ui` package.
+    check failed on that alone. Flutter upgraded to 3.50.0 in pull request #60 (below).
   - Still to do from part 2: verification, screens 12 to 21 (part 2c, below).
 
 - **Release 1 step 6 part 2b, the website layouts of sign-up and sign-in (screens 2 to 9)**: complete. Merged in
@@ -244,6 +244,14 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
     partner is chosen. Where the server has no provider, the app says identity checks are not available yet.
   - Still to do: the partner's camera, with the partner's adapter; comparing the website layouts of these
     screens with their designs one by one; the words for landlords and agents at each level, to be confirmed.
+
+- **Flutter upgraded to 3.50.0**: complete. Pull request #60. Built on pull request #59.
+  - The app, its tests, the checks on GitHub and the setup script all use Flutter 3.50.0.
+  - The app now takes its Material and Cupertino parts (side note: Flutter's standard buttons, fields and
+    screens) from the new packages `material_ui` and `cupertino_ui`, published by the Flutter team, instead of
+    from inside Flutter. The page router (`go_router`) and the state package (`flutter_riverpod`) had already
+    moved to them, so the app and those packages now use the same copy.
+  - Packages brought to their newest compatible versions. Users see no change.
 
 - **Maps providers (decision 81)**: complete. Merged in pull request #56 on 11 November 2026. How it is built is in
   `docs/adr/0015-maps-providers.md`.
@@ -353,7 +361,7 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
    staff screens with switch messages, return times and dependency warnings (decision 53). In seven parts
    (`docs/adr/0014-app-screens.md`). Part 1, the foundation: done (pull request #55). Part 2a, sign-up and sign-in on the phone
    (screens 1 to 9): done (pull request #57). Part 2b, their website layouts: done (pull request #58); all three
-   merged on 11 November 2026. Part 2c, verification: done (pull request #59). Next: upgrading Flutter (step 6 part 2a above); then part 3, search, the map, the property page and saved items; part 4,
+   merged on 11 November 2026. Part 2c, verification: done (pull request #59). Flutter upgraded to 3.50.0 (pull request #60). Next: then part 3, search, the map, the property page and saved items; part 4,
    messages, calls and inspections; part 5, listing a property; part 6, me, settings and scouts; part 7, staff.
 
 ## Later releases (decided)

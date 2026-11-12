@@ -3,3 +3,7 @@ template-arb-file: app_en.arb
 output-localization-file: app_texts.dart
 output-class: AppTexts
 nullable-getter: false
+# Flutter 3.50's own translation tool still writes the old Material and Cupertino names into the made-up file.
+# The app does not use them (it uses its own list in lib/src/l10n/languages.dart), so that one warning is
+# switched off in the made-up file only.
+header: "// ignore_for_file: deprecated_member_use"

@@ -153,6 +153,17 @@ anything it works out; the shared parts are also checked by eye against the desi
 - Until the Me screen is built (part 6), verification is reached from a shield button on the temporary start
   screen.
 
+### 11. Flutter version and the Material parts
+
+- The app is built and tested with Flutter 3.50.0. The same version is set in three places, kept together:
+  `.github/workflows/ci.yml`, `scripts/setup-dev.sh` (`FLUTTER_VERSION`) and the lowest version in
+  `app/pubspec.yaml`. Flutter is upgraded on purpose, in its own pull request.
+- Material and Cupertino come from the packages `material_ui` and `cupertino_ui` (Flutter team), not from
+  `package:flutter/material.dart`, which Flutter has marked as outdated. New code imports
+  `package:material_ui/material_ui.dart`.
+- Flutter's translation tool still writes the old names into the file it makes from the texts; that one warning
+  is switched off in that file only (`app/l10n.yaml`).
+
 ## Consequences
 
 - The app now needs the font file and five more packages (`flutter_svg`, `flutter_secure_storage`, `intl`,
