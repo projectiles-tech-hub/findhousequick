@@ -100,6 +100,19 @@ class ApiClient {
 
   Future<Map<String, dynamic>> getJson(String path, {Map<String, dynamic>? query}) => _send('GET', path, query: query);
 
+  /// For the few requests whose answer is a list rather than an object.
+  Future<List<dynamic>> getList(String path, {Map<String, dynamic>? query}) async => ((await _send('GET', path, query: query))['items'] as List?) ?? const [];
+
+  /// Sends a file to the upload address the server issued (private storage). No sign-in token goes with it: the
+  /// address itself is the permission, and it is not the API.
+  Future<void> uploadTo(String url, List<int> bytes, Map<String, String> headers) async {
+    try {
+      await _dio.putUri<dynamic>(Uri.parse(url), data: Stream.fromIterable([bytes]), options: Options(headers: {...headers, Headers.contentLengthHeader: bytes.length}));
+    } on DioException catch (e) {
+      throw ApiException.fromDio(e);
+    }
+  }
+
   Future<Map<String, dynamic>> postJson(String path, {Object? body, bool signedIn = true, String? idempotencyKey}) =>
       _send('POST', path, body: body, signedIn: signedIn, idempotencyKey: idempotencyKey);
 
@@ -152,6 +165,8 @@ class ApiClient {
         }),
       );
       final data = res.data;
+      // A list is handed back under "items", so every answer has the same shape inside the app.
+      if (data is List) return {'items': data};
       return data is Map<String, dynamic> ? data : const {};
     } on DioException catch (e) {
       throw ApiException.fromDio(e);

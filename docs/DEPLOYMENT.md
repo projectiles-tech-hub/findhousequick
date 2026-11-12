@@ -74,6 +74,13 @@ into the app at build time; they are not secrets).
 | `PUBLIC_WEB_URL` | Where the public website is, for the links to the terms of use and the privacy policy on the sign-up screen | `https://findhousequick.com` |
 | `PARTS_GALLERY` | `true` adds a page of the shared parts at `/parts`, for checking against the designs. Never set in a build given to users. | not set |
 
+### App permissions on phones
+
+The app asks the phone for the camera and the photo gallery when a user adds a photo of an ID document. The words
+iPhone shows when asking are in `app/ios/Runner/Info.plist` (`NSCameraUsageDescription` and
+`NSPhotoLibraryUsageDescription`). **Manual step:** Apple reads these words when the app is submitted; change
+them there if the wording must change.
+
 ### Settings changed in the admin panel (not server settings)
 
 These live in the database and are changed by super admins through the admin endpoints, with a reason; every

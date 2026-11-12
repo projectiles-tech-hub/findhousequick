@@ -234,6 +234,17 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
   - Still to do: opening sign-in over the public page itself, and the public home page (page 106, the website
     layout of screen 1); both belong to the public website in `web/`.
 
+- **Release 1 step 6 part 2c, verification (screens 12 to 14 and 16 to 21)**: in pull request #59.
+  - Your verification (the three levels), Verify your identity, Checking, You're verified, The face check didn't
+    work, Add an ID document, With our verification team and Company details, from the Penpot phone designs and
+    working against the API. Verify to continue (screen 13) is built as a sheet, first used in part 3.
+  - Tried end to end in a browser against the real API with the test identity provider: account, NIN, check,
+    result, "You're verified", level 2.
+  - Screen 15, the camera for the face check, is not built: it is the identity partner's own component, and no
+    partner is chosen. Where the server has no provider, the app says identity checks are not available yet.
+  - Still to do: the partner's camera, with the partner's adapter; comparing the website layouts of these
+    screens with their designs one by one; the words for landlords and agents at each level, to be confirmed.
+
 - **Maps providers (decision 81)**: in pull request #56. Built on pull request #55. How it is built is in
   `docs/adr/0015-maps-providers.md`.
   - The server has an adapter for Google Maps and one for OpenStreetMap, for place search, nearby amenities and
@@ -261,6 +272,8 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
   WhatsApp and phone numbers; the support and privacy emails; the name of the Data Protection Officer.
 - A Google Cloud account (for Google Maps), and a host for the OpenStreetMap services or the choice to run them
   ourselves, before either maps provider can be switched on (decision 81; `docs/DEPLOYMENT.md`).
+- Which identity partner to use for the NIN and face check (ADR 0007). Until one is chosen and its account opened,
+  nobody can reach level 2 on a live server, and the camera screen (screen 15) cannot be built.
 - The Pidgin wording for the app, which Projectiles Tech Hub writes itself (decision 83). Until it is supplied the
   app shows English when Pidgin is chosen.
 - Before identity checks go live: how long identity images are kept after verification, after legal advice
@@ -337,8 +350,8 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
    desktop software (staff screens only): every screen listed in `docs/designs.md` (decision 73), including the scout screens and the
    staff screens with switch messages, return times and dependency warnings (decision 53). In seven parts
    (`docs/adr/0014-app-screens.md`). Part 1, the foundation: in pull request #55. Part 2a, sign-up and sign-in on the phone
-   (screens 1 to 9): in pull request #57. Part 2b, their website layouts: in pull request #58. Next: part 2c,
-   verification (screens 12 to 21); then part 3, search, the map, the property page and saved items; part 4,
+   (screens 1 to 9): in pull request #57. Part 2b, their website layouts: in pull request #58. Part 2c,
+   verification: in pull request #59. Next: upgrading Flutter (see below); then part 3, search, the map, the property page and saved items; part 4,
    messages, calls and inspections; part 5, listing a property; part 6, me, settings and scouts; part 7, staff.
 
 ## Later releases (decided)
