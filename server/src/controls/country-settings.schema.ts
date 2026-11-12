@@ -222,6 +222,14 @@ export function publicCountrySettings(s: CountrySettings) {
     unitDetails: s.unitDetails,
     formats: s.formats,
     legal: s.legal,
+    // What the identity screens need: which ID types are accepted and how their numbers look, which documents
+    // may be added as a photo, and whether a check can be started at all. The provider's name is not given out.
+    verification: {
+      identityCheckAvailable: s.verification.identityProvider !== null,
+      acceptedIdTypes: s.verification.acceptedIdTypes,
+      idNumberPatterns: s.verification.idNumberPatterns,
+      idDocumentTypes: s.verification.idDocumentTypes,
+    },
   };
 }
 

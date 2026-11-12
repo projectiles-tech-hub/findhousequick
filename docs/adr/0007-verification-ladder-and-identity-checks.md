@@ -1,6 +1,6 @@
 # ADR 0007: The verification ladder check and identity checks
 
-- Status: Proposed (Release 1 step 3).
+- Status: Accepted. Merged in pull requests #13 and #14 on 23 October 2026 (Release 1 step 3).
 - Context: Product Specification, Sections 3.1 to 3.4 and 15; decisions 6, 35, 37, 49, 50, 55 and 64; ADR 0004
   (sign-in); ADR 0006 (contacts). Technical Architecture: identity providers such as Smile ID, Dojah or Prembly.
 

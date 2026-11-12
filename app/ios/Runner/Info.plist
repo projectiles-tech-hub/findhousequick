@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>FindHouseQuick uses the camera to take photos of your ID document and of the properties you list.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>FindHouseQuick lets you choose photos of your ID document and of the properties you list.</string>
 </dict>
 </plist>

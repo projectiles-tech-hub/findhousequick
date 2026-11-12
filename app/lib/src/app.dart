@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -14,6 +14,7 @@ import 'l10n/languages.dart';
 import 'l10n/locale.dart';
 import 'session/session.dart';
 import 'theme/theme.dart';
+import 'verification/verification_screens.dart';
 
 /// Set with --dart-define=PARTS_GALLERY=true to open the page of shared parts at /parts. Off in every released build.
 const _partsGallery = bool.fromEnvironment('PARTS_GALLERY');
@@ -60,6 +61,15 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
           path: '/reset-password',
           redirect: (context, state) => state.extra is SignInContact ? null : '/forgot-password',
           builder: (context, state) => NewPasswordScreen(who: state.extra! as SignInContact),
+        ),
+        GoRoute(
+          path: '/verification',
+          builder: (context, state) => const VerificationHubScreen(),
+          routes: [
+            GoRoute(path: 'identity', builder: (context, state) => const VerifyIdentityScreen()),
+            GoRoute(path: 'check/:id', builder: (context, state) => IdentityCheckScreen(checkId: state.pathParameters['id']!)),
+            GoRoute(path: 'company', builder: (context, state) => const CompanyDetailsScreen()),
+          ],
         ),
         if (_partsGallery) GoRoute(path: '/parts', builder: (context, state) => const GalleryScreen()),
       ],

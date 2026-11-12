@@ -1,6 +1,7 @@
 # ADR 0014: The app screens (Release 1 step 6)
 
-Status: proposed in the step 6 part 1 pull request; takes effect when Emmanuel merges it.
+Status: accepted. Merged in pull request #55 on 11 November 2026; sections 8 and 9 in pull requests #57 and #58
+(11 November 2026); section 10 in pull request #59.
 
 ## Context
 
@@ -125,10 +126,49 @@ anything it works out; the shared parts are also checked by eye against the desi
   part of this step.
 - The small calendar icon beside "Send the code again" in the website design is not drawn.
 
+### 10. Verification (part 2c, as built)
+
+- The addresses are `/verification` (screen 12, Your verification), `/verification/identity` (screen 14),
+  `/verification/check/{id}` and `/verification/company` (screen 21).
+- **One address for a check.** Screens 16 to 20 (Checking, You're verified, The face check didn't work, Add an ID
+  document, With our verification team) are shown at the one address of the check, whichever matches the check's
+  state on the server. Coming back later, or reloading the page, always shows the truth. While a check is being
+  made, the app asks the server again every 4 seconds for the first minute, then every 15 seconds.
+- **Screen 15, the camera, is not built.** As the design says, the camera is the identity partner's own
+  component. No partner is chosen yet, so after the ID number the app goes straight to Checking. This can only be
+  reached where the server has a provider: with none, screen 14 says identity checks are not available yet and
+  asks for nothing. The partner's camera is added with the partner's adapter (ADR 0007).
+- **Screen 13, Verify to continue,** is built as a sheet any screen can open (`showVerifySheet`). It is first
+  used in part 3, from the property page.
+- The ID type, how its number must look, and the documents accepted as a photo come from `GET /controls` and the
+  country's document types; none is written in the app. The words for NIN are in the app's texts; any other ID
+  type gets plain words made from its name.
+- A photo of an ID document is taken or chosen with the phone's own camera and gallery (`image_picker`), declared
+  to the server with its size and fingerprint, sent to private storage, confirmed and attached to the check
+  (decision 49). The sign-in token never goes to the storage address.
+- The words shown to landlords and agents at each level ("List properties, and message and call tenants") are
+  not in the designs, which show a tenant; they are written to match and can be changed.
+- The website layouts of these screens use the same card and header as sign-up (section 9). They have not yet
+  been compared one by one with their own website designs (screens 12 to 21 at 1366 and 768).
+- Until the Me screen is built (part 6), verification is reached from a shield button on the temporary start
+  screen.
+
+### 11. Flutter version and the Material parts
+
+- The app is built and tested with Flutter 3.50.0. The same version is set in three places, kept together:
+  `.github/workflows/ci.yml`, `scripts/setup-dev.sh` (`FLUTTER_VERSION`) and the lowest version in
+  `app/pubspec.yaml`. Flutter is upgraded on purpose, in its own pull request.
+- Material and Cupertino come from the packages `material_ui` and `cupertino_ui` (Flutter team), not from
+  `package:flutter/material.dart`, which Flutter has marked as outdated. New code imports
+  `package:material_ui/material_ui.dart`.
+- Flutter's translation tool still writes the old names into the file it makes from the texts; that one warning
+  is switched off in that file only (`app/l10n.yaml`).
+
 ## Consequences
 
 - The app now needs the font file and five more packages (`flutter_svg`, `flutter_secure_storage`, `intl`,
-  `flutter_localizations`, and `url_launcher` to open the terms and privacy pages).
+  `flutter_localizations`, `url_launcher` to open the terms and privacy pages, and `image_picker` and `crypto`
+  for photos of ID documents).
 - On the web, a browser has no protected storage like a phone's; the package encrypts the keys in the browser's
   own storage. This is the usual arrangement for a web app and is looked at again with the security review.
 - Pidgin shows English in the app until Projectiles Tech Hub supplies the Pidgin wording (decision 83).

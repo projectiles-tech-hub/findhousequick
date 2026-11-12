@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
 
@@ -557,4 +559,337 @@ class AppTextsPcm extends AppTexts {
 
   @override
   String get asOnYourId => 'As written on your ID';
+
+  @override
+  String get verification => 'Verification';
+
+  @override
+  String get yourVerification => 'Your verification';
+
+  @override
+  String accountKindIntro(String kinds) {
+    return '$kinds account. Each level unlocks more of FindHouseQuick.';
+  }
+
+  @override
+  String get level1Title => 'Level 1: Basic';
+
+  @override
+  String get level1Text => 'Phone and email confirmed';
+
+  @override
+  String get level1Unlocks =>
+      'Look around, use the map, save homes and set alerts for areas';
+
+  @override
+  String get level2Title => 'Level 2: Verified';
+
+  @override
+  String level2Text(String idType) {
+    return '$idType and a face check';
+  }
+
+  @override
+  String get level2UnlocksTenant =>
+      'Message and call landlords and agents, and book inspections';
+
+  @override
+  String get level2UnlocksLister =>
+      'List properties, and message and call tenants';
+
+  @override
+  String get level3Title => 'Level 3: Payment ready';
+
+  @override
+  String get level3Text => 'A bank account in your name';
+
+  @override
+  String get level3UnlocksTenant =>
+      'Pay rent safely through FindHouseQuick and sign tenancy agreements';
+
+  @override
+  String get level3UnlocksLister =>
+      'Be paid rent safely through FindHouseQuick and sign tenancy agreements';
+
+  @override
+  String get tagDone => 'Done';
+
+  @override
+  String get tagNext => 'Next';
+
+  @override
+  String get tagLater => 'Later';
+
+  @override
+  String get tagWaiting => 'Waiting for check';
+
+  @override
+  String get tagApproved => 'Approved';
+
+  @override
+  String get tagNotApproved => 'Not approved';
+
+  @override
+  String get verifyMyIdentity => 'Verify my identity';
+
+  @override
+  String get seeMyCheck => 'See my check';
+
+  @override
+  String get verifyYourIdentity => 'Verify your identity';
+
+  @override
+  String yourId(String idType) {
+    return 'Your $idType';
+  }
+
+  @override
+  String get verifyIntro =>
+      'Landlords, agents and tenants all verify the same way, so everyone on FindHouseQuick is who they say they are.';
+
+  @override
+  String get idLabelNin => 'NIN (National Identification Number)';
+
+  @override
+  String get idHelperNin =>
+      '11 digits, on your NIN slip. We keep it locked away and only ever show the last 4 digits.';
+
+  @override
+  String idLabelOther(String idType) {
+    return '$idType number';
+  }
+
+  @override
+  String get idHelperOther =>
+      'We keep it locked away and only ever show the last 4 digits.';
+
+  @override
+  String get forTheFaceCheck => 'For the face check';
+
+  @override
+  String get tipGoodLight => 'Stand in good light, facing it';
+
+  @override
+  String get tipNoCap => 'Remove your cap or glasses';
+
+  @override
+  String get tipEyeLevel => 'Hold your phone at eye level';
+
+  @override
+  String identityConsent(String idType) {
+    return 'I agree that my $idType and a photo of my face are checked against the national identity records to confirm who I am, and stored securely as the privacy policy explains.';
+  }
+
+  @override
+  String get continueToFaceCheck => 'Continue to face check';
+
+  @override
+  String get errorIdNumber =>
+      'This number does not look right. Please check it.';
+
+  @override
+  String get errorIdentityConsent =>
+      'Please tick the box to agree before you continue';
+
+  @override
+  String get identityUnavailableTitle =>
+      'Identity checks are not available yet';
+
+  @override
+  String get identityUnavailableText =>
+      'We will tell you as soon as you can verify your identity.';
+
+  @override
+  String get errorTooManyChecks =>
+      'You have reached today\'s limit of identity checks. Please try again tomorrow.';
+
+  @override
+  String get errorProviderDown =>
+      'The identity check is not answering at the moment. Please try again in a little while.';
+
+  @override
+  String get checkingTitle => 'Checking your details';
+
+  @override
+  String get checkingText =>
+      'This usually takes a few minutes. You can keep using FindHouseQuick; we will send you a notification when it is done.';
+
+  @override
+  String idEnding(String idType, String last4) {
+    return '$idType ending $last4';
+  }
+
+  @override
+  String get checkedAgainstRecords =>
+      'Checked against the national identity records, with your face check.';
+
+  @override
+  String get keepLookingAround => 'Keep looking around';
+
+  @override
+  String get verifiedTitle => 'You\'re verified';
+
+  @override
+  String get verifiedText =>
+      'Your verified badge now shows on your profile. Landlords and agents can see that you are who you say you are.';
+
+  @override
+  String get youCanNow => 'You can now';
+
+  @override
+  String get canMessage => 'Message and call landlords and agents';
+
+  @override
+  String get canBook => 'Book inspections';
+
+  @override
+  String get canSave => 'Save homes and set area alerts';
+
+  @override
+  String get canList => 'List your properties';
+
+  @override
+  String get canTalkTenants => 'Message and call tenants';
+
+  @override
+  String get startLooking => 'Start looking for a home';
+
+  @override
+  String get faceFailedTitle => 'The face check didn\'t work';
+
+  @override
+  String get faceFailedText =>
+      'Nothing is wrong with your account. The camera could not confirm a live face this time. Please try again.';
+
+  @override
+  String get tipsNextTry => 'Tips for the next try';
+
+  @override
+  String get tipWindow =>
+      'Face a window or bright light, not a light behind you';
+
+  @override
+  String get tipStill => 'Hold the phone still at eye level';
+
+  @override
+  String get getHelp => 'Get help';
+
+  @override
+  String get addIdTitle => 'Add a photo of your ID';
+
+  @override
+  String addIdText(String idType) {
+    return 'We could not match your $idType this time. A clear photo of one of these documents lets our verification team confirm who you are.';
+  }
+
+  @override
+  String get whichDocument => 'Which document?';
+
+  @override
+  String get takePhotoFront => 'Take a photo of the front';
+
+  @override
+  String get orChooseGallery => 'or choose one from your gallery';
+
+  @override
+  String get photoChosen => 'Photo chosen. Tap to change it.';
+
+  @override
+  String get showCorners => 'Show all four corners, with no glare or blur.';
+
+  @override
+  String get takeAPhoto => 'Take a photo';
+
+  @override
+  String get chooseFromGallery => 'Choose from gallery';
+
+  @override
+  String get sendForChecking => 'Send for checking';
+
+  @override
+  String get errorChooseDocument => 'Please choose which document it is';
+
+  @override
+  String get errorChoosePhoto => 'Please add a photo of the document';
+
+  @override
+  String get errorPhotoType => 'Please use a JPEG or PNG photo, 20 MB at most.';
+
+  @override
+  String get teamTitle => 'A member of our team is checking';
+
+  @override
+  String teamText(String idType) {
+    return 'Some details need a person to look at them, for example when the name on your $idType is spelt differently. We will notify you as soon as it is done.';
+  }
+
+  @override
+  String get nothingMoreTitle => 'Nothing more is needed from you';
+
+  @override
+  String get nothingMoreText =>
+      'If we need anything, we will tell you in the app and by email.';
+
+  @override
+  String get checkProblemTitle => 'The check could not be finished';
+
+  @override
+  String get checkProblemText =>
+      'This was a fault on our side, not yours. Please try again.';
+
+  @override
+  String get companyDetails => 'Company details';
+
+  @override
+  String get yourCompany => 'Your company';
+
+  @override
+  String get companyIntro =>
+      'If you work through a firm, add it here. Once checked, landlords and tenants see the company name on your profile.';
+
+  @override
+  String get companyWaiting =>
+      'Our verification team is checking the details below. You can keep working while they do.';
+
+  @override
+  String get companyApproved => 'Your company details have been checked.';
+
+  @override
+  String get companyNotApproved =>
+      'Our verification team could not confirm these details. Please check them and save again.';
+
+  @override
+  String get businessName => 'Business name';
+
+  @override
+  String get registrationNumber => 'Registration number (optional)';
+
+  @override
+  String get registrationHelper =>
+      'Your company registration number, if the business is registered';
+
+  @override
+  String get saveCompanyDetails => 'Save company details';
+
+  @override
+  String get errorBusinessName => 'Please enter the business name';
+
+  @override
+  String get companyNeedsLevel2 =>
+      'Verify your identity first; then you can add your company.';
+
+  @override
+  String sheetVerifyText(String idType) {
+    return 'Landlords and agents only talk to verified tenants, so everyone knows who they are dealing with. It takes a few minutes: your $idType and a quick face check.';
+  }
+
+  @override
+  String get verifyNow => 'Verify now';
+
+  @override
+  String get notNow => 'Not now';
+
+  @override
+  String get confirmFirst =>
+      'Confirm your phone number and email address first';
 }

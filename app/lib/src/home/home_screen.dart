@@ -1,9 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:go_router/go_router.dart';
 
 import '../controls/controls.dart';
+import '../design/app_icon.dart';
+import '../design/buttons.dart';
 import '../l10n/languages.dart';
 import '../session/session.dart';
 
@@ -20,6 +22,7 @@ class HomeScreen extends ConsumerWidget {
         title: const Text('FindHouseQuick'),
         // Until the Me screen is built (step 6 part 6), signing out lives here.
         actions: [
+          if (ref.watch(sessionProvider).value?.signedIn == true) AppIconButton(icon: AppIcons.shieldCheck, label: context.texts.verification, onPressed: () => context.push('/verification')),
           if (ref.watch(sessionProvider).value?.signedIn == true)
             TextButton(
               onPressed: () async {
