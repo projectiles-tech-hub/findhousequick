@@ -1,6 +1,6 @@
 # ADR 0012: Inspections, reports, enforcement and the automatic checks (Release 1 step 5, part 4)
 
-Status: proposed in the step 5 part 4 pull request; takes effect when Emmanuel merges it.
+Status: accepted. Merged in pull request #50 on 10 November 2026.
 
 ## Context
 

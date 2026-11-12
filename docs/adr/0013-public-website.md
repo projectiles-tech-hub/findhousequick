@@ -1,6 +1,6 @@
 # ADR 0013: The public website (Release 1 step 5, part 5)
 
-Status: proposed in the step 5 part 5 pull request; takes effect when Emmanuel merges it.
+Status: accepted. Merged in pull request #51 on 10 November 2026.
 
 ## Context
 

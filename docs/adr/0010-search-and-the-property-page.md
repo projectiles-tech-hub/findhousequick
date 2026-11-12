@@ -1,6 +1,6 @@
 # ADR 0010: Search, the property page and saved items (Release 1 step 5, part 2)
 
-Status: proposed in the step 5 part 2 pull request; takes effect when Emmanuel merges it.
+Status: accepted. Merged in pull request #48 on 10 November 2026.
 
 ## Context
 

@@ -1,6 +1,6 @@
 # ADR 0009: Ownership documents, agent authority, media and listings (Release 1 step 5, part 1)
 
-Status: proposed in the step 5 part 1 pull request; takes effect when Emmanuel merges it.
+Status: accepted. Merged in pull request #47 on 10 November 2026.
 
 ## Context
 

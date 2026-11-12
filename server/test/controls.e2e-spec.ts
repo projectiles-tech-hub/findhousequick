@@ -52,6 +52,8 @@ describe('Country and feature controls (API)', () => {
     expect(res.body.features['contact.chat']).toBe(true);
     expect(res.body.features['money.escrow']).toBe(false);
     expect(res.body.country).toMatchObject({ code: 'NG', currency: 'NGN', dialCode: '+234' });
+    expect(res.body.country.settings.verification).toMatchObject({ acceptedIdTypes: ['NIN'], idNumberPatterns: { NIN: '^[0-9]{11}$' } });
+    expect(res.body.country.settings.verification).not.toHaveProperty('identityProvider');
     expect(res.body.country.settings.legal).toEqual({ termsVersion: '2026-11-10', privacyVersion: '2026-11-10' });
     expect(res.body.country.settings.fees).toEqual({
       escrowTenantBps: 150,

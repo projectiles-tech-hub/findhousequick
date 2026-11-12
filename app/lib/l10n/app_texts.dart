@@ -1062,6 +1062,582 @@ abstract class AppTexts {
   /// In en, this message translates to:
   /// **'As written on your ID'**
   String get asOnYourId;
+
+  /// No description provided for @verification.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification'**
+  String get verification;
+
+  /// No description provided for @yourVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Your verification'**
+  String get yourVerification;
+
+  /// No description provided for @accountKindIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'{kinds} account. Each level unlocks more of FindHouseQuick.'**
+  String accountKindIntro(String kinds);
+
+  /// No description provided for @level1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Level 1: Basic'**
+  String get level1Title;
+
+  /// No description provided for @level1Text.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone and email confirmed'**
+  String get level1Text;
+
+  /// No description provided for @level1Unlocks.
+  ///
+  /// In en, this message translates to:
+  /// **'Look around, use the map, save homes and set alerts for areas'**
+  String get level1Unlocks;
+
+  /// No description provided for @level2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Level 2: Verified'**
+  String get level2Title;
+
+  /// No description provided for @level2Text.
+  ///
+  /// In en, this message translates to:
+  /// **'{idType} and a face check'**
+  String level2Text(String idType);
+
+  /// No description provided for @level2UnlocksTenant.
+  ///
+  /// In en, this message translates to:
+  /// **'Message and call landlords and agents, and book inspections'**
+  String get level2UnlocksTenant;
+
+  /// No description provided for @level2UnlocksLister.
+  ///
+  /// In en, this message translates to:
+  /// **'List properties, and message and call tenants'**
+  String get level2UnlocksLister;
+
+  /// No description provided for @level3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Level 3: Payment ready'**
+  String get level3Title;
+
+  /// No description provided for @level3Text.
+  ///
+  /// In en, this message translates to:
+  /// **'A bank account in your name'**
+  String get level3Text;
+
+  /// No description provided for @level3UnlocksTenant.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay rent safely through FindHouseQuick and sign tenancy agreements'**
+  String get level3UnlocksTenant;
+
+  /// No description provided for @level3UnlocksLister.
+  ///
+  /// In en, this message translates to:
+  /// **'Be paid rent safely through FindHouseQuick and sign tenancy agreements'**
+  String get level3UnlocksLister;
+
+  /// No description provided for @tagDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get tagDone;
+
+  /// No description provided for @tagNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get tagNext;
+
+  /// No description provided for @tagLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get tagLater;
+
+  /// No description provided for @tagWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for check'**
+  String get tagWaiting;
+
+  /// No description provided for @tagApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get tagApproved;
+
+  /// No description provided for @tagNotApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Not approved'**
+  String get tagNotApproved;
+
+  /// No description provided for @verifyMyIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify my identity'**
+  String get verifyMyIdentity;
+
+  /// No description provided for @seeMyCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'See my check'**
+  String get seeMyCheck;
+
+  /// No description provided for @verifyYourIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity'**
+  String get verifyYourIdentity;
+
+  /// No description provided for @yourId.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {idType}'**
+  String yourId(String idType);
+
+  /// No description provided for @verifyIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Landlords, agents and tenants all verify the same way, so everyone on FindHouseQuick is who they say they are.'**
+  String get verifyIntro;
+
+  /// No description provided for @idLabelNin.
+  ///
+  /// In en, this message translates to:
+  /// **'NIN (National Identification Number)'**
+  String get idLabelNin;
+
+  /// No description provided for @idHelperNin.
+  ///
+  /// In en, this message translates to:
+  /// **'11 digits, on your NIN slip. We keep it locked away and only ever show the last 4 digits.'**
+  String get idHelperNin;
+
+  /// No description provided for @idLabelOther.
+  ///
+  /// In en, this message translates to:
+  /// **'{idType} number'**
+  String idLabelOther(String idType);
+
+  /// No description provided for @idHelperOther.
+  ///
+  /// In en, this message translates to:
+  /// **'We keep it locked away and only ever show the last 4 digits.'**
+  String get idHelperOther;
+
+  /// No description provided for @forTheFaceCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'For the face check'**
+  String get forTheFaceCheck;
+
+  /// No description provided for @tipGoodLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Stand in good light, facing it'**
+  String get tipGoodLight;
+
+  /// No description provided for @tipNoCap.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove your cap or glasses'**
+  String get tipNoCap;
+
+  /// No description provided for @tipEyeLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold your phone at eye level'**
+  String get tipEyeLevel;
+
+  /// No description provided for @identityConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree that my {idType} and a photo of my face are checked against the national identity records to confirm who I am, and stored securely as the privacy policy explains.'**
+  String identityConsent(String idType);
+
+  /// No description provided for @continueToFaceCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue to face check'**
+  String get continueToFaceCheck;
+
+  /// No description provided for @errorIdNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'This number does not look right. Please check it.'**
+  String get errorIdNumber;
+
+  /// No description provided for @errorIdentityConsent.
+  ///
+  /// In en, this message translates to:
+  /// **'Please tick the box to agree before you continue'**
+  String get errorIdentityConsent;
+
+  /// No description provided for @identityUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity checks are not available yet'**
+  String get identityUnavailableTitle;
+
+  /// No description provided for @identityUnavailableText.
+  ///
+  /// In en, this message translates to:
+  /// **'We will tell you as soon as you can verify your identity.'**
+  String get identityUnavailableText;
+
+  /// No description provided for @errorTooManyChecks.
+  ///
+  /// In en, this message translates to:
+  /// **'You have reached today\'s limit of identity checks. Please try again tomorrow.'**
+  String get errorTooManyChecks;
+
+  /// No description provided for @errorProviderDown.
+  ///
+  /// In en, this message translates to:
+  /// **'The identity check is not answering at the moment. Please try again in a little while.'**
+  String get errorProviderDown;
+
+  /// No description provided for @checkingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking your details'**
+  String get checkingTitle;
+
+  /// No description provided for @checkingText.
+  ///
+  /// In en, this message translates to:
+  /// **'This usually takes a few minutes. You can keep using FindHouseQuick; we will send you a notification when it is done.'**
+  String get checkingText;
+
+  /// No description provided for @idEnding.
+  ///
+  /// In en, this message translates to:
+  /// **'{idType} ending {last4}'**
+  String idEnding(String idType, String last4);
+
+  /// No description provided for @checkedAgainstRecords.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked against the national identity records, with your face check.'**
+  String get checkedAgainstRecords;
+
+  /// No description provided for @keepLookingAround.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep looking around'**
+  String get keepLookingAround;
+
+  /// No description provided for @verifiedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re verified'**
+  String get verifiedTitle;
+
+  /// No description provided for @verifiedText.
+  ///
+  /// In en, this message translates to:
+  /// **'Your verified badge now shows on your profile. Landlords and agents can see that you are who you say you are.'**
+  String get verifiedText;
+
+  /// No description provided for @youCanNow.
+  ///
+  /// In en, this message translates to:
+  /// **'You can now'**
+  String get youCanNow;
+
+  /// No description provided for @canMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Message and call landlords and agents'**
+  String get canMessage;
+
+  /// No description provided for @canBook.
+  ///
+  /// In en, this message translates to:
+  /// **'Book inspections'**
+  String get canBook;
+
+  /// No description provided for @canSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save homes and set area alerts'**
+  String get canSave;
+
+  /// No description provided for @canList.
+  ///
+  /// In en, this message translates to:
+  /// **'List your properties'**
+  String get canList;
+
+  /// No description provided for @canTalkTenants.
+  ///
+  /// In en, this message translates to:
+  /// **'Message and call tenants'**
+  String get canTalkTenants;
+
+  /// No description provided for @startLooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Start looking for a home'**
+  String get startLooking;
+
+  /// No description provided for @faceFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The face check didn\'t work'**
+  String get faceFailedTitle;
+
+  /// No description provided for @faceFailedText.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing is wrong with your account. The camera could not confirm a live face this time. Please try again.'**
+  String get faceFailedText;
+
+  /// No description provided for @tipsNextTry.
+  ///
+  /// In en, this message translates to:
+  /// **'Tips for the next try'**
+  String get tipsNextTry;
+
+  /// No description provided for @tipWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Face a window or bright light, not a light behind you'**
+  String get tipWindow;
+
+  /// No description provided for @tipStill.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold the phone still at eye level'**
+  String get tipStill;
+
+  /// No description provided for @getHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Get help'**
+  String get getHelp;
+
+  /// No description provided for @addIdTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a photo of your ID'**
+  String get addIdTitle;
+
+  /// No description provided for @addIdText.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not match your {idType} this time. A clear photo of one of these documents lets our verification team confirm who you are.'**
+  String addIdText(String idType);
+
+  /// No description provided for @whichDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Which document?'**
+  String get whichDocument;
+
+  /// No description provided for @takePhotoFront.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo of the front'**
+  String get takePhotoFront;
+
+  /// No description provided for @orChooseGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'or choose one from your gallery'**
+  String get orChooseGallery;
+
+  /// No description provided for @photoChosen.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo chosen. Tap to change it.'**
+  String get photoChosen;
+
+  /// No description provided for @showCorners.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all four corners, with no glare or blur.'**
+  String get showCorners;
+
+  /// No description provided for @takeAPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get takeAPhoto;
+
+  /// No description provided for @chooseFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from gallery'**
+  String get chooseFromGallery;
+
+  /// No description provided for @sendForChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Send for checking'**
+  String get sendForChecking;
+
+  /// No description provided for @errorChooseDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Please choose which document it is'**
+  String get errorChooseDocument;
+
+  /// No description provided for @errorChoosePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Please add a photo of the document'**
+  String get errorChoosePhoto;
+
+  /// No description provided for @errorPhotoType.
+  ///
+  /// In en, this message translates to:
+  /// **'Please use a JPEG or PNG photo, 20 MB at most.'**
+  String get errorPhotoType;
+
+  /// No description provided for @teamTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A member of our team is checking'**
+  String get teamTitle;
+
+  /// No description provided for @teamText.
+  ///
+  /// In en, this message translates to:
+  /// **'Some details need a person to look at them, for example when the name on your {idType} is spelt differently. We will notify you as soon as it is done.'**
+  String teamText(String idType);
+
+  /// No description provided for @nothingMoreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing more is needed from you'**
+  String get nothingMoreTitle;
+
+  /// No description provided for @nothingMoreText.
+  ///
+  /// In en, this message translates to:
+  /// **'If we need anything, we will tell you in the app and by email.'**
+  String get nothingMoreText;
+
+  /// No description provided for @checkProblemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The check could not be finished'**
+  String get checkProblemTitle;
+
+  /// No description provided for @checkProblemText.
+  ///
+  /// In en, this message translates to:
+  /// **'This was a fault on our side, not yours. Please try again.'**
+  String get checkProblemText;
+
+  /// No description provided for @companyDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Company details'**
+  String get companyDetails;
+
+  /// No description provided for @yourCompany.
+  ///
+  /// In en, this message translates to:
+  /// **'Your company'**
+  String get yourCompany;
+
+  /// No description provided for @companyIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'If you work through a firm, add it here. Once checked, landlords and tenants see the company name on your profile.'**
+  String get companyIntro;
+
+  /// No description provided for @companyWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Our verification team is checking the details below. You can keep working while they do.'**
+  String get companyWaiting;
+
+  /// No description provided for @companyApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Your company details have been checked.'**
+  String get companyApproved;
+
+  /// No description provided for @companyNotApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Our verification team could not confirm these details. Please check them and save again.'**
+  String get companyNotApproved;
+
+  /// No description provided for @businessName.
+  ///
+  /// In en, this message translates to:
+  /// **'Business name'**
+  String get businessName;
+
+  /// No description provided for @registrationNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration number (optional)'**
+  String get registrationNumber;
+
+  /// No description provided for @registrationHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Your company registration number, if the business is registered'**
+  String get registrationHelper;
+
+  /// No description provided for @saveCompanyDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Save company details'**
+  String get saveCompanyDetails;
+
+  /// No description provided for @errorBusinessName.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the business name'**
+  String get errorBusinessName;
+
+  /// No description provided for @companyNeedsLevel2.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity first; then you can add your company.'**
+  String get companyNeedsLevel2;
+
+  /// No description provided for @sheetVerifyText.
+  ///
+  /// In en, this message translates to:
+  /// **'Landlords and agents only talk to verified tenants, so everyone knows who they are dealing with. It takes a few minutes: your {idType} and a quick face check.'**
+  String sheetVerifyText(String idType);
+
+  /// No description provided for @verifyNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify now'**
+  String get verifyNow;
+
+  /// No description provided for @notNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get notNow;
+
+  /// No description provided for @confirmFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your phone number and email address first'**
+  String get confirmFirst;
 }
 
 class _AppTextsDelegate extends LocalizationsDelegate<AppTexts> {

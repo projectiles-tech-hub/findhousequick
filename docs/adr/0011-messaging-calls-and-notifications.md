@@ -1,6 +1,6 @@
 # ADR 0011: Messaging, calls inside the app and notifications (Release 1 step 5, part 3)
 
-Status: proposed in the step 5 part 3 pull request; takes effect when Emmanuel merges it.
+Status: accepted. Merged in pull request #49 on 10 November 2026.
 
 ## Context
 
