@@ -1,6 +1,7 @@
 # ADR 0014: The app screens (Release 1 step 6)
 
-Status: proposed in the step 6 part 1 pull request; takes effect when Emmanuel merges it.
+Status: accepted. Merged in pull request #55 on 11 November 2026; sections 8 and 9 in pull requests #57 and #58
+(11 November 2026); section 10 in pull request #59.
 
 ## Context
 

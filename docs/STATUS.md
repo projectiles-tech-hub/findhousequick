@@ -187,7 +187,7 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
   - Still to do from this part: pages 106 and 109; the map and the "power and water" and "more filters" filters;
     the lawyer's review of the terms and the privacy policy; the real support numbers and contact emails.
 
-- **Release 1 step 5a (scouts)**: in pull request #53. Built on pull request #52. How it was built is at the end
+- **Release 1 step 5a (scouts)**: complete. Merged in pull request #53 on 11 November 2026. How it was built is at the end
   of `docs/adr/0008-scouts-and-referral-rewards.md` ("As built").
   - Joining as a scout, reporting a vacant property, making the invitation code and link, the landlord
     registering with the code and confirming his building, one reward line per unit, the conflict checks with a
@@ -195,11 +195,11 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
     which is off.
   - Rewards only wait for a rental; the steps for the first rental and the fee are built and tested, and are
     connected when rentals and the completed rental fee exist (Release 2).
-  - Added in pull request #54: photos on a scout's report; remembering, as hashes, the phone numbers and emails an
+  - Added in pull request #54, merged on 11 November 2026: photos on a scout's report; remembering, as hashes, the phone numbers and emails an
     account has confirmed, for the conflict checks; the invitation link leading to sign-up with the code.
   - Still to do from this step: the scout screens (step 6); switching `growth.scouts` on when the screens exist.
 
-- **Release 1 step 6 (app screens), part 1, the foundation**: in pull request #55. Built on pull request #54. The
+- **Release 1 step 6 (app screens), part 1, the foundation**: complete. Merged in pull request #55 on 11 November 2026. The
   plan for the whole step, in seven parts, is `docs/adr/0014-app-screens.md`.
   - The design values (colours, text styles, spacing, corners) and Source Sans 3, read from the design system page.
   - The app's own icons, made from the same list as the website's; the nine filled icons were added to the list.
@@ -211,8 +211,8 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
   - No screen for users is built in this part; the app still opens on the start screen.
   - Still to do from this step: parts 2 to 7.
 
-- **Release 1 step 6 part 2a, sign-up and sign-in on the phone (screens 1 to 9)**: in pull request #57. Built on
-  pull request #56.
+- **Release 1 step 6 part 2a, sign-up and sign-in on the phone (screens 1 to 9)**: complete. Merged in pull
+  request #57 on 11 November 2026.
   - Welcome, Who are you, Your details, Enter the code, Confirm your email, Sign in, Sign in paused, Forgot
     password and Set a new password, built from the Penpot designs and working against the API: an account can be
     created, its email confirmed, signed in to by password or by code, and its password reset.
@@ -222,10 +222,10 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
   - The checks on GitHub now use a fixed Flutter version (3.47.9, the one the app is built with). A newer Flutter
     release, out since pull request #55, marks the way the app brings in its Material parts as outdated, and the
     check failed on that alone. Still to do: upgrade Flutter on purpose and move to the new `material_ui` package.
-  - Still to do from part 2: verification, screens 12 to 21 (part 2c).
+  - Still to do from part 2: verification, screens 12 to 21 (part 2c, below).
 
-- **Release 1 step 6 part 2b, the website layouts of sign-up and sign-in (screens 2 to 9)**: in pull request #58.
-  Built on pull request #57.
+- **Release 1 step 6 part 2b, the website layouts of sign-up and sign-in (screens 2 to 9)**: complete. Merged in
+  pull request #58 on 11 November 2026.
   - From 768 wide the screens are shown as designed for the website: a card under a header for sign-up and
     password reset, a panel over a dimmed page for sign-in, and from 1100 wide the newest real listings beside
     the sign-up card.
@@ -234,7 +234,7 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
   - Still to do: opening sign-in over the public page itself, and the public home page (page 106, the website
     layout of screen 1); both belong to the public website in `web/`.
 
-- **Release 1 step 6 part 2c, verification (screens 12 to 14 and 16 to 21)**: in pull request #59.
+- **Release 1 step 6 part 2c, verification (screens 12 to 14 and 16 to 21)**: complete. Pull request #59.
   - Your verification (the three levels), Verify your identity, Checking, You're verified, The face check didn't
     work, Add an ID document, With our verification team and Company details, from the Penpot phone designs and
     working against the API. Verify to continue (screen 13) is built as a sheet, first used in part 3.
@@ -245,7 +245,7 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
   - Still to do: the partner's camera, with the partner's adapter; comparing the website layouts of these
     screens with their designs one by one; the words for landlords and agents at each level, to be confirmed.
 
-- **Maps providers (decision 81)**: in pull request #56. Built on pull request #55. How it is built is in
+- **Maps providers (decision 81)**: complete. Merged in pull request #56 on 11 November 2026. How it is built is in
   `docs/adr/0015-maps-providers.md`.
   - The server has an adapter for Google Maps and one for OpenStreetMap, for place search, nearby amenities and
     travel times; the provider is a server setting, for all uses or one use at a time. The default is none, so
@@ -274,6 +274,8 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
   ourselves, before either maps provider can be switched on (decision 81; `docs/DEPLOYMENT.md`).
 - Which identity partner to use for the NIN and face check (ADR 0007). Until one is chosen and its account opened,
   nobody can reach level 2 on a live server, and the camera screen (screen 15) cannot be built.
+- The words shown to landlords and agents at each verification level, which the designs do not show (pull request
+  #59, "For your decision").
 - The Pidgin wording for the app, which Projectiles Tech Hub writes itself (decision 83). Until it is supplied the
   app shows English when Pidgin is chosen.
 - Before identity checks go live: how long identity images are kept after verification, after legal advice
@@ -341,7 +343,7 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
    Release 1 automatic checks and risk score (decision 58), and fee types shown on listings as a country setting
    (decision 55): complete (pull request #50). Part 5, the public website code structure with the public search and listing
    pages (decisions 75 and 77): complete (pull request #51).
-5a. **Scouts, server side: in pull request #53.** (decisions 70 to 72; plan in `docs/adr/0008-scouts-and-referral-rewards.md`), after buildings and
+5a. ~~**Scouts, server side**~~: done (pull requests #53 and #54, merged on 11 November 2026). (decisions 70 to 72; plan in `docs/adr/0008-scouts-and-referral-rewards.md`), after buildings and
     listings (steps 4 and 5): opting in, reporting vacant properties, inviting landlords, the referral record, the
     conflict checks and the staff referral screens, behind the switch `growth.scouts`. The scout routes are added
     to `docs/api/openapi.yaml` at the start of this step. Rewards are recorded as waiting for a rental; payouts
@@ -349,9 +351,9 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
 6. **App screens** (Flutter), built only from approved designs (step 2c), for the phone app, the website and the
    desktop software (staff screens only): every screen listed in `docs/designs.md` (decision 73), including the scout screens and the
    staff screens with switch messages, return times and dependency warnings (decision 53). In seven parts
-   (`docs/adr/0014-app-screens.md`). Part 1, the foundation: in pull request #55. Part 2a, sign-up and sign-in on the phone
-   (screens 1 to 9): in pull request #57. Part 2b, their website layouts: in pull request #58. Part 2c,
-   verification: in pull request #59. Next: upgrading Flutter (see below); then part 3, search, the map, the property page and saved items; part 4,
+   (`docs/adr/0014-app-screens.md`). Part 1, the foundation: done (pull request #55). Part 2a, sign-up and sign-in on the phone
+   (screens 1 to 9): done (pull request #57). Part 2b, their website layouts: done (pull request #58); all three
+   merged on 11 November 2026. Part 2c, verification: done (pull request #59). Next: upgrading Flutter (step 6 part 2a above); then part 3, search, the map, the property page and saved items; part 4,
    messages, calls and inspections; part 5, listing a property; part 6, me, settings and scouts; part 7, staff.
 
 ## Later releases (decided)
