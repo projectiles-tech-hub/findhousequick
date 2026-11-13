@@ -30,6 +30,7 @@ import { MessagingModule } from './messaging/messaging.module.js';
 import { InspectionsModule } from './inspections/inspections.module.js';
 import { ReportsModule } from './reports/reports.module.js';
 import { ScoutsModule } from './scouts/scouts.module.js';
+import { PrivacyModule } from './privacy/privacy.module.js';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { ScoutsModule } from './scouts/scouts.module.js';
     AccountsModule,
     LiveModule,
     NotificationsModule,
+    PrivacyModule,
     StaffModule,
     IdentityModule,
     DocumentsModule,

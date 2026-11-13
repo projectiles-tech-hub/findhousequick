@@ -155,6 +155,10 @@ export const countrySettingsSchema = z.object({
     .object({
       /** Days identity document photos are kept after the check they belong to is closed. Set after legal advice. */
       identityImagesDays: z.number().int().positive().nullable().default(null),
+      /** Days a user's copy of their own data can be downloaded before it is deleted (Specification 15.2). */
+      dataExportLinkDays: z.number().int().min(1).max(30).default(7),
+      /** Hours a user waits between two copies of their data, so the work of making one is not repeated needlessly. */
+      dataExportEveryHours: z.number().int().min(0).max(168).default(24),
     })
     .prefault({}),
 

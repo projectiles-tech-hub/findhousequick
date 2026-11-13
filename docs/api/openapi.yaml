@@ -597,9 +597,24 @@ paths:
   /me/data-export:
     post:
       tags: [Accounts]
-      summary: Request a copy of all personal data held about the user
+      summary: Request a copy of all personal data held about the user (built)
+      description: |
+        Made in the background as one JSON file in private storage; the user is told by push and email when it is
+        ready. Secrets are never included; ID and bank account numbers appear only by their last four digits. One copy
+        at a time, and no more often than the country's retention.dataExportEveryHours; each copy can be downloaded
+        for retention.dataExportLinkDays, then it is deleted.
       responses:
-        "202": { description: Export being prepared; the user is notified when it is ready. }
+        "202": { description: "The copy being prepared: { id, status: PREPARING, requestedAt }" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { description: A copy is already being prepared (EXPORT_IN_PROGRESS). }
+        "429": { description: Asked too recently (EXPORT_TOO_SOON), with nextAllowedAt. }
+    get:
+      tags: [Accounts]
+      summary: The user's copies of their data, newest first (built)
+      responses:
+        "200":
+          description: "Up to five copies, each { id, status (PREPARING, READY, FAILED, EXPIRED), requestedAt, readyAt, expiresAt, sizeBytes, downloadUrl }; downloadUrl works for 15 minutes and is given only for a READY copy."
+        "401": { $ref: "#/components/responses/Unauthorized" }
 
   # ------------------------------------------------------------------
   # Identity

@@ -273,6 +273,7 @@ model User {
   inspectionsAsHost   Inspection[]           @relation("InspectionHost")
   reports             ListingReport[]
   mediaUploads        MediaAsset[]
+  dataExports         DataExport[]
 }
 
 /// Company details for agents who work through a firm (decision 50), checked by the verification team.
@@ -1390,4 +1391,29 @@ model ScoutReportPhoto {
   report ScoutReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
 
   @@index([reportId])
+}
+
+enum DataExportStatus {
+  PREPARING
+  READY
+  FAILED
+  EXPIRED
+}
+
+/// A copy of everything held about a user, made at their request (Specification 15.2), kept in private storage
+/// until expiresAt and then deleted.
+model DataExport {
+  id          String           @id @default(uuid(7)) @db.Uuid
+  userId      String           @db.Uuid
+  status      DataExportStatus @default(PREPARING)
+  storageKey  String?
+  sizeBytes   Int?
+  requestedAt DateTime         @default(now())
+  readyAt     DateTime?
+  expiresAt   DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, requestedAt])
+  @@index([status])
 }

@@ -110,6 +110,8 @@ The country settings used by identity checks (ADR 0007):
 | `verification.idDocumentTypes` | `["DRIVERS_LICENCE", "INTERNATIONAL_PASSPORT", "NIN_SLIP"]` | Document photos accepted when the ID check fails or does not match (decision 49) | Codes from the country's document types |
 | `verification.maxIdentityChecksPerDay` | 3 | Checks one user may start in 24 hours (each costs money with the provider) | 1 to 20 |
 | `retention.identityImagesDays` | Not set | Days identity document photos are kept after their check is closed (decision 55) | **Must be set after legal advice before identity checks go live** (open point 15) |
+| `retention.dataExportLinkDays` | 7 | Days a user can download the copy of their data they asked for, before it is deleted (Specification 15.2) | A starting value; change it if legal advice says otherwise |
+| `retention.dataExportEveryHours` | 24 | Hours a user waits between two copies of their data | A starting value |
 
 The feature switch `verification.identity_check` (critical) turns identity checks on or off, like any other switch.
 
