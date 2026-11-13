@@ -76,9 +76,11 @@ into the app at build time; they are not secrets).
 
 ### App permissions on phones
 
-The app asks the phone for the camera and the photo gallery when a user adds a photo of an ID document. The words
-iPhone shows when asking are in `app/ios/Runner/Info.plist` (`NSCameraUsageDescription` and
-`NSPhotoLibraryUsageDescription`). **Manual step:** Apple reads these words when the app is submitted; change
+The app asks the phone for the camera and the photo gallery when a user adds a photo of an ID document, and for
+the location (while the app is in use only) when a user taps "Homes around me". The words iPhone shows when
+asking are in `app/ios/Runner/Info.plist` (`NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription` and
+`NSLocationWhenInUseUsageDescription`); Android's location permissions are in
+`app/android/app/src/main/AndroidManifest.xml`. **Manual step:** Apple reads these words when the app is submitted; change
 them there if the wording must change.
 
 ### Settings changed in the admin panel (not server settings)
