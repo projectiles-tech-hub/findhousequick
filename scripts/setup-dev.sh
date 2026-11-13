@@ -17,7 +17,7 @@ say() { printf '\n==> %s\n' "$*"; }
 say "Database (PostgreSQL 16 + PostGIS) and Redis"
 if ! dpkg -s postgresql-16-postgis-3 >/dev/null 2>&1; then
   $SUDO apt-get update -qq
-  $SUDO apt-get install -y -qq --no-install-recommends postgresql-16 postgresql-16-postgis-3 redis-server >/dev/null
+  $SUDO apt-get install -y -qq --no-install-recommends postgresql-16 postgresql-16-postgis-3 redis-server ffmpeg >/dev/null
 fi
 $SUDO pg_ctlcluster 16 main start 2>/dev/null || true
 redis-cli ping >/dev/null 2>&1 || redis-server --daemonize yes >/dev/null
