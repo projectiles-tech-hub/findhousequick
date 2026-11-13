@@ -607,7 +607,7 @@ paths:
         "202": { description: "The copy being prepared: { id, status: PREPARING, requestedAt }" }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "409": { description: A copy is already being prepared (EXPORT_IN_PROGRESS). }
-        "429": { description: Asked too recently (EXPORT_TOO_SOON), with nextAllowedAt. }
+        "429": { description: "Asked too recently (EXPORT_TOO_SOON), with nextAllowedAt." }
     get:
       tags: [Accounts]
       summary: The user's copies of their data, newest first (built)
