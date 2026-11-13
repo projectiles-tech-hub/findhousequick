@@ -1,6 +1,6 @@
 # ADR 0015: Maps providers (Google Maps and OpenStreetMap)
 
-Status: proposed in the maps providers pull request; takes effect when Emmanuel merges it.
+Status: accepted. Merged in pull request #56 on 11 November 2026 (decision 81).
 
 ## Context
 

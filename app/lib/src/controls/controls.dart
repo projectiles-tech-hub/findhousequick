@@ -33,6 +33,20 @@ class CountryInfo {
   /// The country's flag as an emoji, worked out from its two-letter code (each letter has a matching flag letter).
   String get flag => String.fromCharCodes(code.toUpperCase().codeUnits.map((c) => 0x1F1E6 + c - 0x41));
 
+  Map get _verification => (settings['verification'] as Map?) ?? const {};
+
+  /// Whether an identity check can be started in this country at all.
+  bool get identityCheckAvailable => _verification['identityCheckAvailable'] == true;
+
+  /// The ID types accepted for the identity check, e.g. NIN.
+  List<String> get acceptedIdTypes => ((_verification['acceptedIdTypes'] as List?) ?? const []).cast<String>();
+
+  /// How an ID number of [idType] must look once spaces and dashes are removed; empty when the country sets none.
+  String? idNumberPattern(String idType) => (_verification['idNumberPatterns'] as Map?)?[idType] as String?;
+
+  /// The documents that may be added as a photo when the ID check does not match (decision 49).
+  List<String> get idDocumentTypes => ((_verification['idDocumentTypes'] as List?) ?? const []).cast<String>();
+
   /// The versions of the terms of use and privacy policy a new user agrees to.
   String get termsVersion => ((settings['legal'] as Map?)?['termsVersion'] as String?) ?? '';
   String get privacyVersion => ((settings['legal'] as Map?)?['privacyVersion'] as String?) ?? '';

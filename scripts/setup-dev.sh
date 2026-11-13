@@ -8,6 +8,8 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 FLUTTER_DIR="${FLUTTER_DIR:-/opt/sdk/flutter}"
+# The Flutter version the app is built and tested with; the same as in .github/workflows/ci.yml.
+FLUTTER_VERSION="${FLUTTER_VERSION:-3.50.0}"
 if [ "$(id -u)" -eq 0 ]; then SUDO=""; AS_PG="runuser -u postgres --"; else SUDO="sudo"; AS_PG="sudo -u postgres"; fi
 
 say() { printf '\n==> %s\n' "$*"; }
@@ -49,9 +51,9 @@ pnpm db:seed
 if [ -z "${SKIP_FLUTTER:-}" ]; then
   say "Flutter"
   if ! command -v flutter >/dev/null && [ ! -x "$FLUTTER_DIR/bin/flutter" ]; then
-    url=$(curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json | python3 -c '
-import json,sys; d=json.load(sys.stdin); h=d["current_release"]["stable"]
-print([r for r in d["releases"] if r["hash"]==h][0]["archive"])')
+    url=$(curl -s https://storage.googleapis.com/flutter_infra_release/releases/releases_linux.json | FLUTTER_VERSION="$FLUTTER_VERSION" python3 -c '
+import json,os,sys; d=json.load(sys.stdin); v=os.environ["FLUTTER_VERSION"]
+print([r for r in d["releases"] if r["version"]==v and r["channel"]=="stable"][0]["archive"])')
     $SUDO mkdir -p "$(dirname "$FLUTTER_DIR")"
     curl -sSL "https://storage.googleapis.com/flutter_infra_release/releases/$url" | $SUDO tar -xJ -C "$(dirname "$FLUTTER_DIR")"
     git config --global --add safe.directory "$FLUTTER_DIR"

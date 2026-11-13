@@ -74,6 +74,15 @@ into the app at build time; they are not secrets).
 | `PUBLIC_WEB_URL` | Where the public website is, for the links to the terms of use and the privacy policy on the sign-up screen | `https://findhousequick.com` |
 | `PARTS_GALLERY` | `true` adds a page of the shared parts at `/parts`, for checking against the designs. Never set in a build given to users. | not set |
 
+### App permissions on phones
+
+The app asks the phone for the camera and the photo gallery when a user adds a photo of an ID document, and for
+the location (while the app is in use only) when a user taps "Homes around me". The words iPhone shows when
+asking are in `app/ios/Runner/Info.plist` (`NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription` and
+`NSLocationWhenInUseUsageDescription`); Android's location permissions are in
+`app/android/app/src/main/AndroidManifest.xml`. **Manual step:** Apple reads these words when the app is submitted; change
+them there if the wording must change.
+
 ### Settings changed in the admin panel (not server settings)
 
 These live in the database and are changed by super admins through the admin endpoints, with a reason; every
@@ -142,7 +151,7 @@ login. Most need the CAC certificate (RC 7987623).
 | A host for the OpenStreetMap services (map picture, Nominatim, Overpass, OSRM), or servers the company runs | OpenStreetMap (decision 81) | Release 1, if OpenStreetMap is switched on | Not yet; to be chosen |
 | Calling service (a self-hosted relay, or a provider such as LiveKit or Agora) | Voice calls inside the app (decision 44) | Release 1 | Not yet; to be chosen when calls are built |
 | Penpot (free, open source) and its claude.ai connector | Screen designs (decisions 42 and 67) | Now | Done. Connected and tested on 23 October 2026. The designs are in the Penpot file "Release 1 Screens". The connector's sign-in is kept in claude.ai (Settings, then Connectors, then Penpot), never in this repository or in chat. For each design session, Emmanuel opens the file in his browser, starts the Penpot MCP plugin in it, and keeps that tab open and active. If the connector stops working, reconnect it in claude.ai; if it is still unreliable, the designs move to Claude's Design artifact type (decision 67) |
-| Figma | Screen designs (decision 42) | No longer needed | Replaced by Penpot (decision 67), because Figma's AI connector needs a paid seat. The test file "FindHouseQuick Release 1 Screens" in Emmanuel's Figma drafts can be deleted |
+| Figma | Some approved screen designs: pages 107 and 108, screens 25 and 30 (decisions 75 to 80), and the code screens 4b to 4d (decision 84) | Now | Done. **Keep the file `NaB8jOcBvSM3DW08fEcbZe`** in Emmanuel's Figma drafts: it holds approved designs (listed in `docs/designs.md`). All other screens are in Penpot (decision 67). Figma's free plan is enough to keep and view it |
 | Identity check provider (Smile ID, Dojah, Prembly or similar) | NIN, selfie and liveness checks | Release 1 (before any pilot) | Not yet. Built with a test provider; the real one needs its own adapter, its keys as server settings, and our results address given to the provider: `https://<api address>/v1/identity/provider-results/<provider name>` (ADR 0007) |
 | Google Play developer account | Android app distribution and testing | Pilot | Not yet |
 | Apple developer account | iPhone app (TestFlight), push notifications and incoming-call alerts on iPhone, Sign in with Apple if adopted | iPhone release | Not yet |
