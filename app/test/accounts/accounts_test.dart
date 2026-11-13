@@ -8,7 +8,7 @@ import 'package:findhousequick/src/app.dart';
 import 'package:findhousequick/src/config/app_config.dart';
 import 'package:findhousequick/src/providers.dart';
 import 'package:findhousequick/src/session/token_store.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -245,7 +245,9 @@ void main() {
     await tester.tap(find.widgetWithText(TextButton, 'Sign in'));
     await tester.pumpAndSettle();
     expect(server.body('/auth/login'), {'email': 'osaro@example.com', 'password': 'correct horse 9'});
-    expect(find.text('Sign out'), findsOneWidget);
+    // The home screen, greeting the user, with the bottom bar.
+    expect(find.textContaining(', Osaro'), findsOneWidget);
+    expect(find.text('Inspections'), findsOneWidget);
   });
 
   group('website layouts (768 and over)', () {

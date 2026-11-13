@@ -26,6 +26,12 @@ GitHub repository secrets, **never in the code**. `server/.env.example` shows th
 | `GOOGLE_MAPS_API_KEY` | When any maps use is `google` | The Google Maps Platform key | From the Google Cloud project, with "Places API (New)" and "Routes API" switched on | **Secret.** Limit the key to those two services and to the server's address in the Google Cloud console. Google charges per request above its free allowance |
 | `OSM_SEARCH_URL`, `OSM_AMENITIES_URL`, `OSM_ROUTES_URL` | Each when its use is `openstreetmap` | Where the OpenStreetMap services are: Nominatim (place search), Overpass (nearby amenities), OSRM (travel times) | e.g. `https://nominatim.example.com`, `https://overpass.example.com/api/interpreter`, `https://osrm.example.com` | From a paid host, or servers the company runs. Do not point a live server at the OpenStreetMap project's public servers; they are for light use only |
 | `OSM_USER_AGENT` | No | The name sent to the OpenStreetMap services, so their operator knows who is calling | `FindHouseQuick (support@findhousequick.com)` | Use a real contact address |
+| `HIDDEN_MARK_KEY` | In production | The secret behind the hidden watermark added to every display photo (Specification 15.3) | (32 or more random characters) | The server refuses to start in production without it. Keep it safe: it is needed to read the mark from a copied photo, and changing it means older photos can no longer be read |
+| `PRIVATE_REGIONS_PROVIDER` | No (default `none`) | The service that finds faces, number plates, documents and family photographs to blur in property photos | `none` | **Must be set to a real provider before real users sign up**: the terms and privacy policy promise automatic blurring. Waiting for Emmanuel to choose the provider |
+| `MAPS_TILES_PROVIDER` | No | Who draws the map picture in the apps: `none`, `google` or `openstreetmap` | `openstreetmap` | Leave out to follow `MAPS_PROVIDER`. Without the key or address below, the apps show that the map is not available |
+| `GOOGLE_MAPS_TILES_KEY` | When the map picture is `google` | A second Google key, for the Map Tiles API only | (a key) | The apps see this key, so in the Google Cloud console limit it to the Map Tiles API and to our app and website. Keep `GOOGLE_MAPS_API_KEY` separate and server-only |
+| `OSM_TILES_URL` | When the map picture is `openstreetmap` | The tile address of the OpenStreetMap tile host, with `{z}`, `{x}` and `{y}` | `https://tiles.example.com/{z}/{x}/{y}.png` | The public openstreetmap.org tiles may not be used by an app of our size; use a paid host or our own server |
+| `OSM_TILES_ATTRIBUTION` | No | The credit shown on the map | `© OpenStreetMap contributors` | Add the host's own credit if it asks for one |
 | `MAPS_TIMEOUT_MS` | No (default `4000`) | How long to wait for a maps service before carrying on without it | `4000` | |
 | `RUN_BACKGROUND_JOBS` | No (default `true`) | Whether this server runs background jobs, such as deleting identity photos whose retention period has ended | `true` or `false` | Leave `true` on at least one server. With several servers each job still runs once |
 | `STORAGE_PROVIDER` | Yes | Where private documents (identity photos, later ownership documents) are kept | `local` for development only | `local` keeps files in a folder and is refused in production. A real provider (Cloudflare R2) is added before any pilot (ADR 0007) |
@@ -74,6 +80,15 @@ into the app at build time; they are not secrets).
 | `PUBLIC_WEB_URL` | Where the public website is, for the links to the terms of use and the privacy policy on the sign-up screen | `https://findhousequick.com` |
 | `PARTS_GALLERY` | `true` adds a page of the shared parts at `/parts`, for checking against the designs. Never set in a build given to users. | not set |
 
+### App permissions on phones
+
+The app asks the phone for the camera and the photo gallery when a user adds a photo of an ID document, and for
+the location (while the app is in use only) when a user taps "Homes around me". The words iPhone shows when
+asking are in `app/ios/Runner/Info.plist` (`NSCameraUsageDescription`, `NSPhotoLibraryUsageDescription` and
+`NSLocationWhenInUseUsageDescription`); Android's location permissions are in
+`app/android/app/src/main/AndroidManifest.xml`. **Manual step:** Apple reads these words when the app is submitted; change
+them there if the wording must change.
+
 ### Settings changed in the admin panel (not server settings)
 
 These live in the database and are changed by super admins through the admin endpoints, with a reason; every
@@ -97,6 +112,13 @@ The country settings used by identity checks (ADR 0007):
 | `verification.idDocumentTypes` | `["DRIVERS_LICENCE", "INTERNATIONAL_PASSPORT", "NIN_SLIP"]` | Document photos accepted when the ID check fails or does not match (decision 49) | Codes from the country's document types |
 | `verification.maxIdentityChecksPerDay` | 3 | Checks one user may start in 24 hours (each costs money with the provider) | 1 to 20 |
 | `retention.identityImagesDays` | Not set | Days identity document photos are kept after their check is closed (decision 55) | **Must be set after legal advice before identity checks go live** (open point 15) |
+| `retention.dataExportLinkDays` | 7 | Days a user can download the copy of their data they asked for, before it is deleted (Specification 15.2) | A starting value; change it if legal advice says otherwise |
+| `retention.dataExportEveryHours` | 24 | Hours a user waits between two copies of their data | A starting value |
+| `maps.amenityKinds` | school, hospital, market, bus stop, bank | Which kinds of amenity the property page lists, from the platform's list (ADR 0015) | Change to suit the country |
+| `maps.amenityRadiusMetres` and `maps.amenityLimit` | 2000 and 8 | How far from a property amenities are looked for, and how many are shown | |
+| `maps.keepAnswersDays` | 30 | Days an answer from the maps provider is kept before it is asked again; fewer days cost more | Check the provider's terms on keeping answers |
+| `inspections.reminderHoursBefore` | 3 | Hours before a confirmed inspection that the tenant and the lister are reminded | A starting value |
+| `inspections.followUpHoursAfter` | 2 | Hours after a completed inspection's time that both are asked the follow-up questions (Specification 14.2) | A starting value |
 
 The feature switch `verification.identity_check` (critical) turns identity checks on or off, like any other switch.
 
@@ -138,11 +160,11 @@ login. Most need the CAC certificate (RC 7987623).
 | Hosting (VPS, e.g. DigitalOcean or Hetzner) | Runs the API, database and Redis | Test system and pilot | Not yet (needs a company dollar card) |
 | Cloudflare | Domain DNS, web app hosting (Pages), file storage (R2: private documents now, media later) | Test system and pilot | Not yet. Private storage is built with a local provider; R2 needs its own adapter and keys as server settings |
 | Domain name (findhousequick.com and/or .com.ng) | Web addresses | Pilot | Not yet |
-| Google Cloud project (with Firebase) | Google Maps (decision 81): switch on "Places API (New)" and "Routes API", and later the maps kits for the apps; push notifications (decision 46); Sign in with Google if adopted | Release 1 | Not yet. Needs a payment card on the account |
+| Google Cloud project (with Firebase) | Google Maps (decision 81): switch on "Places API (New)" and "Routes API", and "Map Tiles API" with its own restricted key (`GOOGLE_MAPS_TILES_KEY`) for the map picture in the apps; push notifications (decision 46); Sign in with Google if adopted | Release 1 | Not yet. Needs a payment card on the account |
 | A host for the OpenStreetMap services (map picture, Nominatim, Overpass, OSRM), or servers the company runs | OpenStreetMap (decision 81) | Release 1, if OpenStreetMap is switched on | Not yet; to be chosen |
 | Calling service (a self-hosted relay, or a provider such as LiveKit or Agora) | Voice calls inside the app (decision 44) | Release 1 | Not yet; to be chosen when calls are built |
 | Penpot (free, open source) and its claude.ai connector | Screen designs (decisions 42 and 67) | Now | Done. Connected and tested on 23 October 2026. The designs are in the Penpot file "Release 1 Screens". The connector's sign-in is kept in claude.ai (Settings, then Connectors, then Penpot), never in this repository or in chat. For each design session, Emmanuel opens the file in his browser, starts the Penpot MCP plugin in it, and keeps that tab open and active. If the connector stops working, reconnect it in claude.ai; if it is still unreliable, the designs move to Claude's Design artifact type (decision 67) |
-| Figma | Screen designs (decision 42) | No longer needed | Replaced by Penpot (decision 67), because Figma's AI connector needs a paid seat. The test file "FindHouseQuick Release 1 Screens" in Emmanuel's Figma drafts can be deleted |
+| Figma | Some approved screen designs: pages 107 and 108, screens 25 and 30 (decisions 75 to 80), and the code screens 4b to 4d (decision 84) | Now | Done. **Keep the file `NaB8jOcBvSM3DW08fEcbZe`** in Emmanuel's Figma drafts: it holds approved designs (listed in `docs/designs.md`). All other screens are in Penpot (decision 67). Figma's free plan is enough to keep and view it |
 | Identity check provider (Smile ID, Dojah, Prembly or similar) | NIN, selfie and liveness checks | Release 1 (before any pilot) | Not yet. Built with a test provider; the real one needs its own adapter, its keys as server settings, and our results address given to the provider: `https://<api address>/v1/identity/provider-results/<provider name>` (ADR 0007) |
 | Google Play developer account | Android app distribution and testing | Pilot | Not yet |
 | Apple developer account | iPhone app (TestFlight), push notifications and incoming-call alerts on iPhone, Sign in with Apple if adopted | iPhone release | Not yet |
@@ -163,7 +185,7 @@ login. Most need the CAC certificate (RC 7987623).
 
 | Software | Why | How | Notes |
 | --- | --- | --- | --- |
-| ffmpeg (which includes ffprobe) | Reading the length of uploaded videos (ADR 0009); later, making the watermarked video copies | On Ubuntu: `sudo apt install ffmpeg`. In a container image, add the `ffmpeg` package | Needed on every server with `RUN_BACKGROUND_JOBS=true`. Without it, every video is rejected as UNREADABLE |
+| ffmpeg (which includes ffprobe) | Reading the length of uploaded videos and making their watermarked copies (ADR 0009) | On Ubuntu: `sudo apt install ffmpeg`. In a container image, add the `ffmpeg` package | Needed on every server with `RUN_BACKGROUND_JOBS=true`. Without it, every video is rejected as UNREADABLE |
 | sharp (image library) | Processing photos: removing location data, quality checks, watermarked display copies | Installed with the server's packages (`pnpm install`); it brings its own image tools | Nothing to do by hand |
 
 ### Background queues
@@ -187,7 +209,7 @@ by default. With several servers, events travel between them through Redis.
 | --- | --- | --- | --- |
 | Create the first super admin | Once per server, after the database is set up (from the staff accounts pull request) | 1. The person (normally the Managing Director) registers in the app as a normal user. 2. On the server, in the `server` folder: `pnpm staff:make-super-admin +234...` with their phone number. 3. They confirm both phone and email, sign in **with their password**, and complete two-step login with an email or SMS code (the second step never uses the channel they signed in with, decision 36). They can then add an authenticator app. | The command refuses if any super admin already exists, so it can only be used once per server. All further staff are added by a super admin through the admin endpoints (ADR 0005). It is recorded in the audit log |
 | Load the starter data again after each update | After every deployment that changes `server/prisma/seed.ts` or `server/prisma/seed-data/` (from the step 4 pull request: the photo checklists now ask for toilets separately, decision 56) | On the server, in the `server` folder, after `npx prisma migrate deploy`: `pnpm db:seed` | Safe to run again: it updates property types and checklists without touching anything staff have set |
-| Switch on the launch city | Once the launch city is decided (Decisions Log open point) | No admin screen yet. In the database, set `enabled = true` on the city's row in `City` and on its state's row in `Region` | Until a city is switched on, buildings cannot be added there (`CITY_NOT_AVAILABLE`). An admin endpoint for this can be added when wanted |
+| Switch on the launch city | Once the launch city is decided (Decisions Log open point) | A super admin switches the state on, then the city: `PATCH /v1/admin/countries/NG/regions/{regionId}` and then `PATCH /v1/admin/countries/NG/cities/{cityId}`, each with `enabled: true` and a reason (the ids come from `GET /v1/reference/countries/NG/regions`). No admin screen yet (step 6 part 7) | Until a city is switched on, buildings cannot be added there (`CITY_NOT_AVAILABLE`). Each change is recorded |
 
 ### Legal and regulatory steps (before any real user signs up)
 
@@ -211,7 +233,7 @@ company and its lawyer, not the developers, but no real user may sign up until t
    is set (section 1).
 3. Database migrations applied (`npx prisma migrate deploy`) and starter data loaded (`pnpm db:seed`).
    The launch city and its state are switched on (section 4).
-4. `GET /v1/health` returns `status: ok`, and `ffprobe -version` works on every server that runs background jobs.
+4. `GET /v1/health` returns `status: ok`, and `ffmpeg -version` and `ffprobe -version` work on every server that runs background jobs.
 5. The first super admin has been created (section 4) and has completed two-step login.
 6. Daily database backups are running and one restore has been tested.
 7. HTTPS works on the API and web app addresses.

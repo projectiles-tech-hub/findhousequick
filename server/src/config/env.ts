@@ -47,6 +47,13 @@ const envSchema = z.object({
    * server and serves uploads through the API; it is for development and tests only and is refused in production.
    */
   STORAGE_PROVIDER: z.enum(['local']).default('local'),
+  /**
+   * The service that finds faces, number plates, documents and family photographs to blur in property photos
+   * (Specification 15.3). "none" finds nothing; a real provider must be set before real users sign up.
+   */
+  PRIVATE_REGIONS_PROVIDER: z.enum(['none']).default('none'),
+  /** The secret that makes the hidden watermark in display photos (Specification 15.3). At least 32 characters. */
+  HIDDEN_MARK_KEY: z.string().min(32).default('development-only-hidden-mark-key-change-me'),
   /** Folder used by the "local" storage provider. */
   STORAGE_LOCAL_DIR: z.string().default('.private-storage'),
   /** The API's own address as the apps reach it, used in upload links, e.g. https://api.findhousequick.com. */
@@ -93,6 +100,17 @@ const envSchema = z.object({
   OSM_SEARCH_URL: z.string().url().optional(),
   OSM_AMENITIES_URL: z.string().url().optional(),
   OSM_ROUTES_URL: z.string().url().optional(),
+  /**
+   * Who draws the map picture in the apps (decision 81). Follows MAPS_PROVIDER unless set. "google" needs
+   * GOOGLE_MAPS_TILES_KEY; "openstreetmap" needs OSM_TILES_URL. Without them the apps say the map is not available.
+   */
+  MAPS_TILES_PROVIDER: z.enum(['none', 'google', 'openstreetmap']).optional(),
+  /** A Google key made only for the Map Tiles API. The apps see it, so limit it in the Google Cloud console. */
+  GOOGLE_MAPS_TILES_KEY: z.string().min(10).optional(),
+  /** The tile address of an OpenStreetMap host, with {z}, {x} and {y}, e.g. https://tiles.example.com/{z}/{x}/{y}.png */
+  OSM_TILES_URL: z.string().url().optional(),
+  /** The credit shown on the map; the host may ask for more than the OpenStreetMap one. */
+  OSM_TILES_ATTRIBUTION: z.string().min(3).default('© OpenStreetMap contributors'),
   /** Sent to the OpenStreetMap services so their operator knows who is calling. */
   OSM_USER_AGENT: z.string().min(3).default('FindHouseQuick (support@findhousequick.com)'),
   /** The sender shown on emails, e.g. "FindHouseQuick <no-reply@findhousequick.com>". */
@@ -106,6 +124,9 @@ const envSchema = z.object({
   }
   if (env.NODE_ENV === 'production' && env.SMS_PROVIDER === 'log') {
     ctx.addIssue({ code: 'custom', path: ['SMS_PROVIDER'], message: 'The "log" SMS provider cannot be used in production' });
+  }
+  if (env.NODE_ENV === 'production' && env.HIDDEN_MARK_KEY.startsWith('development-only')) {
+    ctx.addIssue({ code: 'custom', path: ['HIDDEN_MARK_KEY'], message: 'Set HIDDEN_MARK_KEY to a long random secret in production' });
   }
   if (env.NODE_ENV === 'production' && env.STORAGE_PROVIDER === 'local') {
     ctx.addIssue({ code: 'custom', path: ['STORAGE_PROVIDER'], message: 'The "local" storage provider cannot be used in production' });
@@ -128,6 +149,18 @@ const envSchema = z.object({
     if (provider === 'openstreetmap' && !url) {
       ctx.addIssue({ code: 'custom', path: [urlName], message: `${urlName} is needed when ${use} (or MAPS_PROVIDER) is "openstreetmap"` });
     }
+  }
+  // Checked only when MAPS_TILES_PROVIDER is set; when it follows MAPS_PROVIDER without its own setting, the map is
+  // simply shown as not available.
+  const tiles = env.MAPS_TILES_PROVIDER;
+  if (tiles === 'google' && !env.GOOGLE_MAPS_TILES_KEY) {
+    ctx.addIssue({ code: 'custom', path: ['GOOGLE_MAPS_TILES_KEY'], message: 'GOOGLE_MAPS_TILES_KEY is needed when the map picture comes from "google"' });
+  }
+  if (tiles === 'openstreetmap' && !env.OSM_TILES_URL) {
+    ctx.addIssue({ code: 'custom', path: ['OSM_TILES_URL'], message: 'OSM_TILES_URL is needed when the map picture comes from "openstreetmap"' });
+  }
+  if (env.OSM_TILES_URL && !['{z}', '{x}', '{y}'].every((p) => env.OSM_TILES_URL!.includes(p))) {
+    ctx.addIssue({ code: 'custom', path: ['OSM_TILES_URL'], message: 'OSM_TILES_URL must contain {z}, {x} and {y}' });
   }
   if (env.NODE_ENV === 'production' && env.EMAIL_PROVIDER === 'log') {
     ctx.addIssue({ code: 'custom', path: ['EMAIL_PROVIDER'], message: 'The "log" email provider cannot be used in production' });

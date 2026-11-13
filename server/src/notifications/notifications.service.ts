@@ -63,6 +63,23 @@ export class NotificationsService {
     }
   }
 
+  /**
+   * A message about the account itself (like a security message, decision 46): sent by push and to the confirmed
+   * email address whatever the user's choices, since it cannot be switched off.
+   */
+  async notifyAccount(userId: string, notice: Notice): Promise<void> {
+    try {
+      const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { email: true, emailVerifiedAt: true, pushDevices: true } });
+      if (!user) return;
+      const data = { kind: 'ACCOUNT', ...notice.data };
+      await this.live.publish([userId], 'notification', { kind: 'ACCOUNT', title: notice.title, body: notice.body, data });
+      if (user.pushDevices.length) await this.push.send(user.pushDevices, { title: notice.title, body: notice.body, data });
+      if (user.email && user.emailVerifiedAt) await this.email.send({ to: user.email, subject: notice.title, text: `${notice.body}\n\nFindHouseQuick` });
+    } catch (err) {
+      this.logger.warn(`Account message to ${userId} not delivered: ${(err as Error).message}`);
+    }
+  }
+
   // Settings ---------------------------------------------------------------------------------------
 
   async getSettings(user: RequestUser) {

@@ -273,6 +273,7 @@ model User {
   inspectionsAsHost   Inspection[]           @relation("InspectionHost")
   reports             ListingReport[]
   mediaUploads        MediaAsset[]
+  dataExports         DataExport[]
 }
 
 /// Company details for agents who work through a firm (decision 50), checked by the verification team.
@@ -507,6 +508,8 @@ model Unit {
   floorAreaSqm   Decimal? @db.Decimal(10, 2)
   /// Finishing, power, water, security, parking and similar, validated against country settings.
   details        Json     @default("{}")
+  /// Someone lives or works there now: their consent is then needed before inside photos are taken (Specification 5.3).
+  occupied       Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -528,6 +531,8 @@ model UnitPart {
   required  Boolean   @default(true)
   minPhotos Int       @default(2)
   mediaKind MediaKind @default(PHOTO)
+  /// Outside the unit (frontage, compound): photographed without the occupant's consent.
+  outside   Boolean   @default(false)
   /// A note on this part, e.g. "newly tiled" (decision 56).
   note      String?
   sortOrder Int       @default(0)
@@ -997,6 +1002,9 @@ model Inspection {
   closedById       String?          @db.Uuid
   /// How many times the details were sent to a trusted contact (limited, as each SMS costs money).
   safetyShareCount Int              @default(0)
+  /// When both sides were reminded before a confirmed inspection, and asked the follow-up questions after it.
+  remindedAt       DateTime?
+  followUpAskedAt  DateTime?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
@@ -1005,6 +1013,7 @@ model Inspection {
   host    User    @relation("InspectionHost", fields: [hostId], references: [id])
 
   @@index([listingId, status])
+  @@index([status, scheduledAt])
 }
 
 /// The times a lister is available for inspections of a listing (decision 45). Tenants book one of the free slots.
@@ -1390,4 +1399,38 @@ model ScoutReportPhoto {
   report ScoutReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
 
   @@index([reportId])
+}
+
+enum DataExportStatus {
+  PREPARING
+  READY
+  FAILED
+  EXPIRED
+}
+
+/// A copy of everything held about a user, made at their request (Specification 15.2), kept in private storage
+/// until expiresAt and then deleted.
+model DataExport {
+  id          String           @id @default(uuid(7)) @db.Uuid
+  userId      String           @db.Uuid
+  status      DataExportStatus @default(PREPARING)
+  storageKey  String?
+  sizeBytes   Int?
+  requestedAt DateTime         @default(now())
+  readyAt     DateTime?
+  expiresAt   DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, requestedAt])
+  @@index([status])
+}
+
+/// Answers from the maps provider, kept for a time so the same question is not paid for twice (ADR 0015).
+model MapsAnswer {
+  key       String   @id
+  value     Json
+  expiresAt DateTime
+
+  @@index([expiresAt])
 }

@@ -9,6 +9,9 @@ import { PRIVATE_STORAGE, type PrivateStorage } from '../integrations/storage/pr
 import { DISPLAY_LINK_MINUTES, MediaService } from '../media/media.service.js';
 import { shownFees } from '../listings/fee-types.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { MAPS, metresBetween, type Maps } from '../integrations/maps/maps-provider.js';
+import { MapsAnswers } from '../integrations/maps/maps-answers.js';
+import type { MapTiles } from '../integrations/maps/map-tiles.js';
 import { approximateLocation, roundedDistance } from './approximate.js';
 import type { SearchFiltersDto, SearchListingsQuery } from './dto.js';
 
@@ -65,7 +68,23 @@ export class SearchService {
     private readonly controls: ControlsService,
     private readonly media: MediaService,
     @Inject(PRIVATE_STORAGE) private readonly storage: PrivateStorage,
+    @Inject(MAPS) private readonly maps: Maps,
+    private readonly answers: MapsAnswers,
   ) {}
+
+  /** The country a request is about: the one it names, or the only country switched on. */
+  private async countryOf(ctx: EvaluationContext): Promise<{ code: string; defaultLanguage: string } | null> {
+    if (ctx.countryCode) return this.prisma.country.findUnique({ where: { code: ctx.countryCode }, select: { code: true, defaultLanguage: true } });
+    const on = await this.prisma.country.findMany({ where: { enabled: true }, select: { code: true, defaultLanguage: true }, take: 2 });
+    return on.length === 1 ? on[0]! : null;
+  }
+
+  /** Where the apps fetch the map picture, in the country's language and with its borders and labels. */
+  async tileSource(tiles: MapTiles, ctx: EvaluationContext) {
+    const country = await this.countryOf(ctx);
+    if (!country) return null;
+    return tiles.source({ language: country.defaultLanguage, region: country.code });
+  }
 
   async search(q: SearchListingsQuery, ctx: EvaluationContext) {
     if (q.near && q.bbox) throw apiError(400, 'BAD_REQUEST', 'Send either near or bbox, not both.');
@@ -158,8 +177,36 @@ export class SearchService {
     return { similar: strip(await this.cards(similar)), nearby: strip(await this.cards(nearby)) };
   }
 
-  /** Areas and landmarks whose names start with the text, in switched-on cities, for landmark search. */
-  async places(q: string) {
+  /**
+   * Areas and landmarks for landmark search: first those named on listings in switched-on cities, then the maps
+   * provider's places in the country, near the city when there is one (ADR 0015). The provider's answers are kept
+   * for the country's maps.keepAnswersDays.
+   */
+  async places(q: string, ctx: EvaluationContext) {
+    const own = await this.ownPlaces(q);
+    const country = await this.countryOf(ctx);
+    if (!country || q.trim().length < 3 || this.maps.places.provider === 'none') return own;
+    const settings = await this.controls.getCountrySettings(country.code);
+    const city = await this.prisma.$queryRaw<{ lat: number; lng: number }[]>`
+      SELECT ST_Y(c."centre"::geometry) AS "lat", ST_X(c."centre"::geometry) AS "lng" FROM "City" c JOIN "Region" r ON r."id" = c."regionId"
+      WHERE c."enabled" AND r."enabled" AND r."countryCode" = ${country.code} AND c."centre" IS NOT NULL LIMIT 2`;
+    const near = city.length === 1 ? { lat: round5(city[0]!.lat), lng: round5(city[0]!.lng) } : undefined;
+    const text = q.trim().toLowerCase().replace(/\s+/g, ' ');
+    const found = await this.answers.get(
+      `places:${this.maps.places.provider}:${country.code}:${near ? `${near.lat},${near.lng}` : '-'}:${text}`,
+      settings.maps.keepAnswersDays,
+      () => this.maps.places.searchPlaces({ text, countryCode: country.code, near, limit: 10 }),
+      [],
+    );
+    const seen = new Set(own.map((p) => p.name.toLowerCase()));
+    const theirs = found
+      .filter((p) => !seen.has(p.name.toLowerCase()))
+      .map((p) => ({ name: p.name, description: p.description, location: { lat: round5(p.location.lat), lng: round5(p.location.lng) } }));
+    return [...own, ...theirs].slice(0, 10);
+  }
+
+  /** Areas and landmarks whose names start with the text, in switched-on cities. */
+  private async ownPlaces(q: string) {
     const like = `${q.trim().replace(/[%_\\]/g, '')}%`;
     const rows = await this.prisma.$queryRaw<{ name: string; city: string; kind: string; lat: number; lng: number }[]>`
       SELECT x."name", x."city", x."kind", ST_Y(ST_Centroid(ST_Collect(x."loc"))) AS "lat", ST_X(ST_Centroid(ST_Collect(x."loc"))) AS "lng"
@@ -261,14 +308,43 @@ export class SearchService {
         .filter((p) => p.mediaKind === 'PHOTO')
         .map((p) => ({ partCode: p.code, partLabel: p.label, note: p.note, media: items.filter((i) => i.partCode === p.code) }))
         .filter((g) => g.media.length > 0),
-      // Shown once its watermarked copy exists (ADR 0009).
-      walkthrough: null,
+      // The watermarked copy of the walkthrough video, behind a 15-minute link (ADR 0009).
+      walkthrough: await this.walkthrough(l.unitId),
       savedPlaceDistances,
-      // Filled from the maps provider when it is connected.
-      nearbyAmenities: [],
+      nearbyAmenities: await this.amenities(card.approximateLocation, row.countryCode, settings),
       lister,
       exactLocation: released ? { lat: row.lat, lng: row.lng } : null,
     };
+  }
+
+  /**
+   * Schools, hospitals, markets and the like near a property, from the maps provider (ADR 0015), measured from the
+   * approximate position and rounded like every other distance, so they do not point to the exact building.
+   */
+  private async amenities(at: { lat: number; lng: number } | null, countryCode: string, settings: Awaited<ReturnType<ControlsService['getCountrySettings']>>) {
+    const m = settings.maps;
+    if (!at || !m.amenityKinds.length || !m.amenityLimit || this.maps.amenities.provider === 'none') return [];
+    const found = await this.answers.get(
+      `amenities:${this.maps.amenities.provider}:${countryCode}:${at.lat.toFixed(4)},${at.lng.toFixed(4)}:${m.amenityRadiusMetres}:${[...m.amenityKinds].sort().join(',')}`,
+      m.keepAnswersDays,
+      () => this.maps.amenities.nearbyAmenities({ at, radiusMetres: m.amenityRadiusMetres, kinds: [...m.amenityKinds], limit: 20 }),
+      [],
+    );
+    return found
+      .map((a) => ({ kind: a.kind, name: a.name, distanceM: roundedDistance(metresBetween(at, a.location)) }))
+      .sort((x, y) => x.distanceM - y.distanceM)
+      .slice(0, m.amenityLimit);
+  }
+
+  private async walkthrough(unitId: string) {
+    const video = await this.prisma.mediaAsset.findFirst({
+      where: { unitId, kind: 'VIDEO', status: 'READY', unitPart: { code: 'walkthrough' } },
+      include: { unitPart: true },
+      orderBy: { capturedAt: 'desc' },
+    });
+    if (!video || !(video.variants as Record<string, string> | null)?.video) return null;
+    const item = await this.media.toItem(video);
+    return { id: item.id, durationSeconds: item.durationSeconds, capturedAt: item.capturedAt, url: item.display?.video ?? null, expiresAt: item.display?.expiresAt ?? null };
   }
 
   // -------------------------------------------------------------------

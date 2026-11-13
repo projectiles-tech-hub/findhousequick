@@ -1,6 +1,6 @@
 # ADR 0015: Maps providers (Google Maps and OpenStreetMap)
 
-Status: proposed in the maps providers pull request; takes effect when Emmanuel merges it.
+Status: accepted. Merged in pull request #56 on 11 November 2026 (decision 81).
 
 ## Context
 
@@ -65,12 +65,22 @@ and no OpenStreetMap host exists yet; the first step after an account is opened 
 
 Not built yet:
 
-- **Using the adapters in the features.** Place search (`GET /search/places`), the nearby amenities and the travel
-  times on the property page still behave as before. Connecting them needs answers to be kept for a time (side
-  note: a "cache"), so the same question is not paid for twice; that comes with the screens that show them
-  (step 6 part 3).
-- **The map picture in the apps and on the website**, for both providers: with step 6 part 3. The apps will be
-  told which provider draws the map through `GET /controls`.
+- **Travel times** to the user's saved places on the property page: still straight-line distances. Each one is
+  asked per user and per listing, so it is left until the cost is known once the account exists.
+
+## Built in step 6 part 3 (13 November 2026)
+
+- **Place search** (`GET /search/places`) lists the areas and landmarks named on our own listings first, then the
+  provider's places in the country, near the city when only one city is open.
+- **Nearby amenities** on the property page, measured from the approximate position and rounded to 100 m like every
+  other distance, so they do not point to the building. Which kinds, how far and how many are country settings
+  (`maps.amenityKinds`, `maps.amenityRadiusMetres`, `maps.amenityLimit`).
+- **Answers are kept** in the database for the country's `maps.keepAnswersDays` (side note: a "cache"), shared by
+  every server, so the same question is paid for once; the hourly job clears old ones. If the provider fails, the
+  last answer kept is used, or nothing.
+- **The map picture**: `GET /maps/tiles` tells the apps where to fetch it (a Google Map Tiles session, made per
+  language and country, or an OpenStreetMap tile host), with the credit to show. Settings: `MAPS_TILES_PROVIDER`,
+  `GOOGLE_MAPS_TILES_KEY`, `OSM_TILES_URL`, `OSM_TILES_ATTRIBUTION`.
 - **The satellite check** of a building's location (Specification Section 6): OpenStreetMap has no satellite
   pictures, so that check needs Google Maps or another source of pictures.
 - **The directions link** after an inspection is confirmed still opens Google Maps (ADR 0012).

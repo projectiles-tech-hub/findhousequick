@@ -12,6 +12,7 @@ import { JobsModule } from './jobs/jobs.module.js';
 import { EmailModule } from './integrations/email/email.module.js';
 import { IdentityProviderModule } from './integrations/identity/identity.module.js';
 import { StorageModule } from './integrations/storage/storage.module.js';
+import { PrivacyIntegrationModule } from './integrations/privacy/privacy.module.js';
 import { ReviewModule } from './review/review.module.js';
 import { PropertiesModule } from './properties/properties.module.js';
 import { ListingsModule } from './listings/listings.module.js';
@@ -30,6 +31,7 @@ import { MessagingModule } from './messaging/messaging.module.js';
 import { InspectionsModule } from './inspections/inspections.module.js';
 import { ReportsModule } from './reports/reports.module.js';
 import { ScoutsModule } from './scouts/scouts.module.js';
+import { PrivacyModule } from './privacy/privacy.module.js';
 
 @Module({
   imports: [
@@ -47,12 +49,14 @@ import { ScoutsModule } from './scouts/scouts.module.js';
     EmailModule,
     IdentityProviderModule,
     StorageModule,
+    PrivacyIntegrationModule,
     MapsModule,
     PushModule,
     CallsProviderModule,
     AccountsModule,
     LiveModule,
     NotificationsModule,
+    PrivacyModule,
     StaffModule,
     IdentityModule,
     DocumentsModule,

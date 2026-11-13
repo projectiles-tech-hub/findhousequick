@@ -8,6 +8,7 @@ import { freeSlots, availabilitySchema, localDate } from '../src/inspections/slo
 import type { LogSmsAdapter } from '../src/integrations/sms/log-sms.adapter.js';
 import { SMS_SENDER } from '../src/integrations/sms/sms-sender.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
+import { InspectionsService } from '../src/inspections/inspections.service.js';
 import { createTestApp } from './helpers.js';
 
 const PASSWORD = 'a good long password';
@@ -225,6 +226,35 @@ describe('Inspections, reports and enforcement (API, step 5 part 4)', () => {
       expect(reports[0]).toMatchObject({ reason: 'DOES_NOT_MATCH', reporterId: tenant.id });
       expect((await prisma.listing.findUniqueOrThrow({ where: { id: listing.id } })).riskScore).toBe(20);
       expect(await prisma.reviewTask.count({ where: { type: 'REPORT', entityId: reports[0]!.id } })).toBe(1);
+    });
+  });
+
+  describe('reminders and follow-up questions', () => {
+    it('reminds both sides once before a confirmed inspection, and asks the follow-up questions once after a completed one', async () => {
+      const due = await confirmedAndDue();
+      const soon = await confirmedAndDue();
+      const later = await confirmedAndDue();
+      const now = Date.now();
+      await prisma.inspection.update({ where: { id: soon.inspectionId }, data: { scheduledAt: new Date(now + 2 * 3_600_000) } });
+      await prisma.inspection.update({ where: { id: later.inspectionId }, data: { scheduledAt: new Date(now + 10 * 3_600_000) } });
+      await status(due.lister, due.inspectionId, { action: 'COMPLETE' }).expect(200);
+      await prisma.inspection.update({ where: { id: due.inspectionId }, data: { scheduledAt: new Date(now - 3 * 3_600_000) } });
+
+      const jobs = app.get(InspectionsService);
+      await jobs.sendReminders();
+      const rows = async () =>
+        Object.fromEntries(
+          (await prisma.inspection.findMany({ where: { id: { in: [due.inspectionId, soon.inspectionId, later.inspectionId] } } })).map((r) => [r.id, r]),
+        );
+      let r = await rows();
+      expect(r[soon.inspectionId]!.remindedAt).not.toBeNull();
+      expect(r[later.inspectionId]!.remindedAt).toBeNull();
+      expect(r[due.inspectionId]!.followUpAskedAt).not.toBeNull();
+      const first = r[soon.inspectionId]!.remindedAt!.getTime();
+
+      await jobs.sendReminders();
+      r = await rows();
+      expect(r[soon.inspectionId]!.remindedAt!.getTime()).toBe(first);
     });
   });
 

@@ -303,6 +303,50 @@ export class InspectionsService {
     };
   }
 
+  /**
+   * Background job, every few minutes: reminds both sides before a confirmed inspection (the country's
+   * inspections.reminderHoursBefore), and asks both the follow-up questions after a completed one
+   * (inspections.followUpHoursAfter; Specification 14.2). Each is sent once.
+   */
+  async sendReminders(now = new Date()): Promise<{ reminded: number; asked: number }> {
+    let reminded = 0;
+    let asked = 0;
+    // The longest reminder any country may set, so every candidate is looked at; each is then checked against its own country.
+    const soon = await this.prisma.inspection.findMany({
+      where: { status: 'CONFIRMED', remindedAt: null, scheduledAt: { gt: now, lte: new Date(now.getTime() + 72 * 3_600_000) } },
+      take: 200,
+    });
+    for (const i of soon) {
+      const place = await this.place(i.listingId);
+      const { inspections } = await this.controls.getCountrySettings(place.countryCode);
+      if (i.scheduledAt.getTime() - now.getTime() > inspections.reminderHoursBefore * 3_600_000) continue;
+      const claimed = await this.prisma.inspection.updateMany({ where: { id: i.id, remindedAt: null }, data: { remindedAt: now } });
+      if (!claimed.count) continue;
+      const body = `Your inspection of ${place.title} is at ${this.when(i.scheduledAt, place.timezone)}.`;
+      for (const userId of [i.tenantId, i.hostId]) {
+        await this.notifications.notify(userId, 'REMINDER', { title: 'Inspection reminder', body, data: { inspectionId: i.id, listingId: i.listingId } });
+      }
+      reminded++;
+    }
+    const done = await this.prisma.inspection.findMany({ where: { status: 'COMPLETED', followUpAskedAt: null, scheduledAt: { lte: now } }, take: 200 });
+    for (const i of done) {
+      const place = await this.place(i.listingId);
+      const { inspections } = await this.controls.getCountrySettings(place.countryCode);
+      if (now.getTime() - i.scheduledAt.getTime() < inspections.followUpHoursAfter * 3_600_000) continue;
+      const claimed = await this.prisma.inspection.updateMany({ where: { id: i.id, followUpAskedAt: null }, data: { followUpAskedAt: now } });
+      if (!claimed.count) continue;
+      const data = { inspectionId: i.id, listingId: i.listingId, followUp: 'true' };
+      if (i.tenantSaysRented === null) {
+        await this.notifications.notify(i.tenantId, 'INSPECTION_UPDATE', { title: 'How was the inspection?', body: `Did ${place.title} match the listing, and did you rent it?`, data });
+      }
+      if (i.hostSaysRented === null) {
+        await this.notifications.notify(i.hostId, 'INSPECTION_UPDATE', { title: 'Was it rented?', body: `Did the inspection of ${place.title} lead to a rental?`, data });
+      }
+      asked++;
+    }
+    return { reminded, asked };
+  }
+
   private async announce(i: Inspection, actorId: string, title: string, body: string): Promise<void> {
     const otherId = i.tenantId === actorId ? i.hostId : i.tenantId;
     await this.live.publish([i.tenantId, i.hostId], 'inspection.updated', { inspectionId: i.id, listingId: i.listingId, status: i.status, scheduledAt: i.scheduledAt });

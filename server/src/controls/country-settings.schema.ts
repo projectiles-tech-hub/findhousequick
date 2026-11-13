@@ -104,6 +104,10 @@ export const countrySettingsSchema = z.object({
       maxDaysAhead: z.number().int().min(1).max(90).default(30),
       /** How many times one inspection's details can be sent to a trusted contact; each SMS costs money. */
       maxSafetyShares: z.number().int().min(1).max(10).default(3),
+      /** Hours before a confirmed inspection that both sides are reminded of it. */
+      reminderHoursBefore: z.number().int().min(1).max(72).default(3),
+      /** Hours after a completed inspection's time that both sides are asked the follow-up questions (Specification 14.2). */
+      followUpHoursAfter: z.number().int().min(0).max(72).default(2),
     })
     .prefault({}),
 
@@ -150,11 +154,30 @@ export const countrySettingsSchema = z.object({
     })
     .prefault({}),
 
+  /** What the maps provider is asked for in this country (ADR 0015). */
+  maps: z
+    .object({
+      /** The kinds of amenity shown near a property, from the platform's own list. */
+      amenityKinds: z
+        .array(z.enum(['school', 'hospital', 'pharmacy', 'market', 'bank', 'fuel_station', 'bus_stop', 'place_of_worship', 'police']))
+        .default(['school', 'hospital', 'market', 'bus_stop', 'bank']),
+      /** How far from a property amenities are looked for, and how many are shown. */
+      amenityRadiusMetres: z.number().int().min(200).max(10_000).default(2000),
+      amenityLimit: z.number().int().min(0).max(20).default(8),
+      /** Days an answer from the provider is kept before it is asked again. */
+      keepAnswersDays: z.number().int().min(1).max(365).default(30),
+    })
+    .prefault({}),
+
   /** How long personal data is kept (decision 55). Null means not yet set (open point 15). */
   retention: z
     .object({
       /** Days identity document photos are kept after the check they belong to is closed. Set after legal advice. */
       identityImagesDays: z.number().int().positive().nullable().default(null),
+      /** Days a user's copy of their own data can be downloaded before it is deleted (Specification 15.2). */
+      dataExportLinkDays: z.number().int().min(1).max(30).default(7),
+      /** Hours a user waits between two copies of their data, so the work of making one is not repeated needlessly. */
+      dataExportEveryHours: z.number().int().min(0).max(168).default(24),
     })
     .prefault({}),
 
@@ -222,6 +245,14 @@ export function publicCountrySettings(s: CountrySettings) {
     unitDetails: s.unitDetails,
     formats: s.formats,
     legal: s.legal,
+    // What the identity screens need: which ID types are accepted and how their numbers look, which documents
+    // may be added as a photo, and whether a check can be started at all. The provider's name is not given out.
+    verification: {
+      identityCheckAvailable: s.verification.identityProvider !== null,
+      acceptedIdTypes: s.verification.acceptedIdTypes,
+      idNumberPatterns: s.verification.idNumberPatterns,
+      idDocumentTypes: s.verification.idDocumentTypes,
+    },
   };
 }
 

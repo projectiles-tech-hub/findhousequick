@@ -41,6 +41,10 @@ jobs:
       DATABASE_URL: postgresql://fhq:fhq_dev_password@localhost:5432/findhousequick_test?schema=public
     steps:
       - uses: actions/checkout@v7
+      # ffmpeg reads uploaded videos and makes their watermarked copies (ADR 0009).
+      - name: Install ffmpeg
+        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+        working-directory: .
       - uses: pnpm/action-setup@v6
         with:
           package_json_file: server/package.json
@@ -94,11 +98,11 @@ jobs:
       - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
         with:
-          # Pinned to the version the app is built and tested with, so a new Flutter release cannot fail
-          # the checks on its own. Newer releases move the Material parts into the package material_ui; the app moves
-          # to it when Flutter is upgraded on purpose (docs/STATUS.md).
+          # Pinned to the version the app is built and tested with, so a new Flutter release cannot fail the
+          # checks on its own. Keep it the same as FLUTTER_VERSION in scripts/setup-dev.sh and the lowest version
+          # in app/pubspec.yaml; Flutter is upgraded on purpose, in its own pull request.
           channel: stable
-          flutter-version: 3.47.9
+          flutter-version: 3.50.0
           cache: true
       - run: flutter pub get
       - run: flutter analyze

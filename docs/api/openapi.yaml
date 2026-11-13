@@ -597,9 +597,24 @@ paths:
   /me/data-export:
     post:
       tags: [Accounts]
-      summary: Request a copy of all personal data held about the user
+      summary: Request a copy of all personal data held about the user (built)
+      description: |
+        Made in the background as one JSON file in private storage; the user is told by push and email when it is
+        ready. Secrets are never included; ID and bank account numbers appear only by their last four digits. One copy
+        at a time, and no more often than the country's retention.dataExportEveryHours; each copy can be downloaded
+        for retention.dataExportLinkDays, then it is deleted.
       responses:
-        "202": { description: Export being prepared; the user is notified when it is ready. }
+        "202": { description: "The copy being prepared: { id, status: PREPARING, requestedAt }" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { description: A copy is already being prepared (EXPORT_IN_PROGRESS). }
+        "429": { description: "Asked too recently (EXPORT_TOO_SOON), with nextAllowedAt." }
+    get:
+      tags: [Accounts]
+      summary: The user's copies of their data, newest first (built)
+      responses:
+        "200":
+          description: "Up to five copies, each { id, status (PREPARING, READY, FAILED, EXPIRED), requestedAt, readyAt, expiresAt, sizeBytes, downloadUrl }; downloadUrl works for 15 minutes and is given only for a READY copy."
+        "401": { $ref: "#/components/responses/Unauthorized" }
 
   # ------------------------------------------------------------------
   # Identity
@@ -934,6 +949,7 @@ paths:
                 floorLevel: { type: integer }
                 floorArea: { type: number, description: In the country's area unit }
                 details: { $ref: "#/components/schemas/UnitDetails" }
+                occupied: { type: boolean, description: "Someone lives or works there now; inside photos then need the occupant's consent (OCCUPANT_CONSENT_REQUIRED). Frontage and compound parts are marked outside and need none." }
       responses:
         "201":
           description: Unit created with its parts checklist.
@@ -971,6 +987,7 @@ paths:
                 bathrooms: { type: integer, minimum: 0 }
                 toilets: { type: integer, minimum: 0 }
                 details: { $ref: "#/components/schemas/UnitDetails" }
+                occupied: { type: boolean, description: "Someone lives or works there now; inside photos then need the occupant's consent (OCCUPANT_CONSENT_REQUIRED). Frontage and compound parts are marked outside and need none." }
       responses:
         "200":
           description: Updated unit.
@@ -1158,7 +1175,7 @@ paths:
                 capturedAt: { type: string, format: date-time }
                 captureLocation: { $ref: "#/components/schemas/LatLng" }
                 captureAccuracyM: { type: integer }
-                occupantConsent: { type: boolean, description: Required when the unit is still occupied }
+                occupantConsent: { type: boolean, description: "Required for parts that are not outside when the unit is marked occupied (OCCUPANT_CONSENT_REQUIRED)" }
       responses:
         "201":
           description: Resumable upload created.
@@ -1516,8 +1533,8 @@ paths:
       tags: [Search]
       summary: Find areas and landmarks by name (for landmark search)
       description: |
-        Area names and landmarks typed in by listers, starting with the text, in switched-on cities.
-        Full place search needs the maps provider (ADR 0010). Built in step 5, part 2.
+        Area names and landmarks typed in by listers, starting with the text, in switched-on cities; then, from
+        three letters, the maps provider's places in the country (ADR 0015), kept for maps.keepAnswersDays. Up to 10.
       security: [{}, { bearer: [] }]
       parameters:
         - name: q
@@ -1537,6 +1554,32 @@ paths:
                     name: { type: string }
                     description: { type: string }
                     location: { $ref: "#/components/schemas/LatLng" }
+
+  /maps/tiles:
+    get:
+      tags: [Search]
+      summary: Where the apps fetch the map picture from
+      description: |
+        The map picture is made of square images ("tiles"). This says where to fetch them, the credit to show on the
+        map and until when the address works (Google's address lasts about two weeks; ask again after `expiresAt`).
+        `source` is null when no map provider is set, and the apps show that the map is not available (decision 81).
+      security: [{}, { bearer: [] }]
+      responses:
+        "200":
+          description: The tile source, or null.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  source:
+                    type: [object, "null"]
+                    properties:
+                      provider: { type: string, enum: [google, openstreetmap] }
+                      urlTemplate: { type: string, description: "With {z}, {x} and {y}" }
+                      attribution: { type: string }
+                      maxZoom: { type: integer }
+                      expiresAt: { type: [string, "null"], format: date-time }
 
   # ------------------------------------------------------------------
   # Saved searches and favourites
@@ -2595,6 +2638,55 @@ paths:
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { description: The country is not set up. }
 
+  /admin/countries/{countryCode}/regions/{regionId}:
+    patch:
+      tags: [Admin]
+      summary: Switch a state or region on or off (super admin; recorded)
+      parameters:
+        - { $ref: "#/components/parameters/CountryCodePath" }
+        - { name: regionId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enabled, reason]
+              properties:
+                enabled: { type: boolean }
+                reason: { type: string, minLength: 3, maxLength: 500 }
+      responses:
+        "200": { description: "The state after the change." }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { description: The state is not set up in this country. }
+
+  /admin/countries/{countryCode}/cities/{cityId}:
+    patch:
+      tags: [Admin]
+      summary: Switch a city on or off (super admin; recorded)
+      description: Buildings can be added only in a city that is on. A city can be switched on only when its state is on (REGION_OFF). Switching a city off keeps its buildings and listings.
+      parameters:
+        - { $ref: "#/components/parameters/CountryCodePath" }
+        - { name: cityId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enabled, reason]
+              properties:
+                enabled: { type: boolean }
+                reason: { type: string, minLength: 3, maxLength: 500 }
+      responses:
+        "200": { description: "The city after the change." }
+        "400": { description: "Its state is off (REGION_OFF), or no reason was given." }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { description: The city is not set up in this country. }
+
 components:
   securitySchemes:
     bearer:
@@ -2836,6 +2928,7 @@ components:
         floorArea: { type: [number, "null"], description: "In the country's area unit" }
         areaUnit: { type: string, enum: [SQM, SQFT] }
         details: { $ref: "#/components/schemas/UnitDetails" }
+        occupied: { type: boolean, description: "Someone lives or works there now; inside photos then need the occupant's consent (OCCUPANT_CONSENT_REQUIRED). Frontage and compound parts are marked outside and need none." }
         checklistComplete: { type: boolean, description: Every required part has its photos or video }
         parts:
           type: array
@@ -3093,7 +3186,15 @@ components:
                   partCode: { type: string }
                   partLabel: { type: string }
                   media: { type: array, items: { $ref: "#/components/schemas/MediaItem" } }
-            walkthrough: { $ref: "#/components/schemas/MediaItem" }
+            walkthrough:
+              type: [object, "null"]
+              description: The watermarked copy of the walkthrough video (at most 720 high), behind a 15-minute link; null until one is ready.
+              properties:
+                id: { $ref: "#/components/schemas/Id" }
+                durationSeconds: { type: [integer, "null"] }
+                capturedAt: { type: string, format: date-time }
+                url: { type: [string, "null"] }
+                expiresAt: { type: [string, "null"], format: date-time }
             savedPlaceDistances:
               type: array
               description: Travel distance to the viewer's saved places (decision 48).
@@ -3106,6 +3207,7 @@ components:
                   travelMinutes: { type: [integer, "null"] }
             nearbyAmenities:
               type: array
+              description: From the maps provider (ADR 0015); kinds, distance and number are country settings. Measured from the approximate position, rounded to 100 m, nearest first; empty with no provider.
               items:
                 type: object
                 properties:

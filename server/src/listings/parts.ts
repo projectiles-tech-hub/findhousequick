@@ -14,6 +14,8 @@ export const partTemplateItemSchema = z.object({
   /** Repeat this part once per bedroom, bathroom or toilet in the unit. */
   repeat: z.enum(['bedrooms', 'bathrooms', 'toilets']).optional(),
   mediaKind: z.enum(['PHOTO', 'VIDEO']).default('PHOTO'),
+  /** Outside the unit (frontage, compound): no occupant's consent is needed for its photos. */
+  outside: z.boolean().default(false),
 });
 
 export const partTemplateSchema = z.array(partTemplateItemSchema);
@@ -31,6 +33,7 @@ export interface GeneratedPart {
   required: boolean;
   minPhotos: number;
   mediaKind: 'PHOTO' | 'VIDEO';
+  outside: boolean;
   sortOrder: number;
 }
 
@@ -47,6 +50,7 @@ export function generateParts(template: unknown, counts: UnitCounts, defaultMinP
         required: item.required,
         minPhotos,
         mediaKind: item.mediaKind,
+        outside: item.outside,
         sortOrder: parts.length,
       });
     }

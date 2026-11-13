@@ -71,6 +71,11 @@ export class MediaService {
       throw apiError(403, 'FEATURE_UNAVAILABLE', 'This feature is not available at the moment.', { feature: extraFeature });
     }
 
+    // Inside an occupied unit, only with the occupant's consent (Specification 5.3).
+    if (unit.occupied && !part.outside && dto.occupantConsent !== true) {
+      throw apiError(422, 'OCCUPANT_CONSENT_REQUIRED', "Someone lives or works here. Ask for the occupant's consent before taking photos inside.");
+    }
+
     // Taken with the app's camera, at the building, recently (Specification 5.3 and 6.2).
     const settings = await this.controls.getCountrySettings(building.countryCode);
     const capturedAt = new Date(dto.capturedAt);

@@ -1,6 +1,6 @@
 # ADR 0009: Ownership documents, agent authority, media and listings (Release 1 step 5, part 1)
 
-Status: proposed in the step 5 part 1 pull request; takes effect when Emmanuel merges it.
+Status: accepted. Merged in pull request #47 on 10 November 2026.
 
 ## Context
 
@@ -107,3 +107,18 @@ This part follows Product Specification Sections 3.3 to 3.5, 5.3, 6.2, 6.6 and 1
 - Servers need ffprobe installed (part of ffmpeg) to process videos. This is recorded in `docs/DEPLOYMENT.md`.
 - The `sharp` image library is added to the server.
 - Two new country settings are added: `listings.maxCaptureAgeHours` and `listings.captureRadiusMetres`.
+
+## Built on 13 November 2026: blurring, the hidden watermark and the video copy
+
+- **Automatic blurring** (Specification 15.3): before the display copies are made, a detection service finds faces,
+  number plates, documents and family photographs, and each is blurred heavily (made into large blocks, then
+  blurred, with a margin around it). The service is reached through an adapter (`PRIVATE_REGIONS_PROVIDER`); only
+  `none` exists so far, which finds nothing. Choosing the real service is waiting for Emmanuel; it must be set
+  before real users sign up. What was blurred is recorded on the photo.
+- **The hidden watermark**: a faint pattern, too slight to see, spread over the whole photo, carries a number taken
+  from the photo's id, so a copy found elsewhere can be traced back to the photo. It survives shrinking and
+  compressing; heavy cropping can defeat it, which the visible watermark and the photo fingerprint cover. It is
+  made from the secret `HIDDEN_MARK_KEY`; without the key it can be neither made nor read.
+- **The video copy**: each video gets a shown copy made with ffmpeg, at most 720 high, in H.264, with the visible
+  watermark, upright phone videos kept upright. The original stays private. The property page now shows the
+  walkthrough video's copy behind a 15-minute link.

@@ -8,6 +8,8 @@ import { LogEmailAdapter } from '../src/integrations/email/log-email.adapter.js'
 import { LogSmsAdapter } from '../src/integrations/sms/log-sms.adapter.js';
 import { SMS_SENDER } from '../src/integrations/sms/sms-sender.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
+import { DataExportService } from '../src/privacy/data-export.service.js';
+import { PRIVATE_STORAGE, type PrivateStorage } from '../src/integrations/storage/private-storage.js';
 import { createStaff, createTestApp } from './helpers.js';
 import { TEST_ENV } from './test-env.js';
 
@@ -626,6 +628,35 @@ describe('Accounts: codes, registration, contacts, sign-in and sessions (API)', 
       await api().patch('/v1/me').set(auth).send({ verificationLevel: 3 }).expect(400);
       await api().patch('/v1/me').set(auth).send({ language: 'yo' }).expect(400);
       await api().patch('/v1/me').set(auth).send({ types: [] }).expect(400);
+    });
+  });
+  describe('a copy of your own data (Specification 15.2)', () => {
+    it('is made in the background, told by email, downloadable, without secrets, and not repeated too often', async () => {
+      const u = await register();
+      const token = u.session.accessToken;
+      const asked = await api().post('/v1/me/data-export').set(bearer(token)).expect(202);
+      expect(asked.body).toMatchObject({ status: 'PREPARING', downloadUrl: null });
+      const busy = await api().post('/v1/me/data-export').set(bearer(token)).expect(409);
+      expect(busy.body.code).toBe('EXPORT_IN_PROGRESS');
+
+      await app.get(DataExportService).run();
+      const list = await api().get('/v1/me/data-export').set(bearer(token)).expect(200);
+      expect(list.body.items[0]).toMatchObject({ id: asked.body.id, status: 'READY' });
+      expect(list.body.items[0].downloadUrl).toBeTruthy();
+      expect(mail.messagesTo(u.email).some((m) => /copy of your data is ready/i.test(m.subject))).toBe(true);
+
+      const row = await prisma.dataExport.findUniqueOrThrow({ where: { id: asked.body.id } });
+      const copy = JSON.parse((await app.get<PrivateStorage>(PRIVATE_STORAGE).read(row.storageKey!)).toString());
+      expect(copy.account).toMatchObject({ firstName: 'Ada', lastName: 'Obi', phone: u.phone });
+      expect(JSON.stringify(copy)).not.toMatch(/passwordHash|tokenHash|codeHash/);
+
+      const soon = await api().post('/v1/me/data-export').set(bearer(token)).expect(429);
+      expect(soon.body.code).toBe('EXPORT_TOO_SOON');
+
+      // Once its time is up the file is deleted.
+      await prisma.dataExport.update({ where: { id: row.id }, data: { expiresAt: new Date(Date.now() - 1000) } });
+      await app.get(DataExportService).run();
+      expect(await prisma.dataExport.findUniqueOrThrow({ where: { id: row.id } })).toMatchObject({ status: 'EXPIRED', storageKey: null });
     });
   });
 });
