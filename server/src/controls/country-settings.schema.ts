@@ -104,6 +104,10 @@ export const countrySettingsSchema = z.object({
       maxDaysAhead: z.number().int().min(1).max(90).default(30),
       /** How many times one inspection's details can be sent to a trusted contact; each SMS costs money. */
       maxSafetyShares: z.number().int().min(1).max(10).default(3),
+      /** Hours before a confirmed inspection that both sides are reminded of it. */
+      reminderHoursBefore: z.number().int().min(1).max(72).default(3),
+      /** Hours after a completed inspection's time that both sides are asked the follow-up questions (Specification 14.2). */
+      followUpHoursAfter: z.number().int().min(0).max(72).default(2),
     })
     .prefault({}),
 

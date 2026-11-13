@@ -10,6 +10,8 @@ import { MessagingModule } from '../messaging/messaging.module.js';
 import { CallsService } from '../messaging/calls.service.js';
 import { PrivacyModule } from '../privacy/privacy.module.js';
 import { DataExportService } from '../privacy/data-export.service.js';
+import { InspectionsModule } from '../inspections/inspections.module.js';
+import { InspectionsService } from '../inspections/inspections.service.js';
 
 export { redisConnection };
 
@@ -18,6 +20,7 @@ const PURGE_DOCUMENTS = 'purge-expired-documents';
 const EXPIRE_LISTINGS = 'expire-listings';
 const MISSED_CALLS = 'missed-calls';
 const DATA_EXPORTS = 'data-exports';
+const INSPECTION_REMINDERS = 'inspection-reminders';
 
 /**
  * Background jobs, run through BullMQ on Redis (decision 59: BullMQ starts with the first background job).
@@ -37,6 +40,7 @@ export class JobsRunner implements OnApplicationBootstrap, OnApplicationShutdown
     private readonly listings: ListingsService,
     private readonly calls: CallsService,
     private readonly dataExports: DataExportService,
+    private readonly inspections: InspectionsService,
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
@@ -50,6 +54,8 @@ export class JobsRunner implements OnApplicationBootstrap, OnApplicationShutdown
     await this.queue.upsertJobScheduler(MISSED_CALLS, { pattern: '* * * * *' }, { name: MISSED_CALLS });
     // Copies of users' data asked for, and deleting those whose time is up (Specification 15.2).
     await this.queue.upsertJobScheduler(DATA_EXPORTS, { pattern: '* * * * *' }, { name: DATA_EXPORTS });
+    // Reminders before inspections and the follow-up questions after them (Specification 14.2).
+    await this.queue.upsertJobScheduler(INSPECTION_REMINDERS, { pattern: '*/5 * * * *' }, { name: INSPECTION_REMINDERS });
     this.worker = new Worker(
       QUEUE,
       async (job) => {
@@ -57,6 +63,7 @@ export class JobsRunner implements OnApplicationBootstrap, OnApplicationShutdown
         if (job.name === EXPIRE_LISTINGS) return this.listings.expireOverdue();
         if (job.name === MISSED_CALLS) return this.calls.sweepUnanswered();
         if (job.name === DATA_EXPORTS) return this.dataExports.run();
+        if (job.name === INSPECTION_REMINDERS) return this.inspections.sendReminders();
         this.logger.warn(`Unknown job ${job.name}`);
       },
       { connection },
@@ -72,7 +79,7 @@ export class JobsRunner implements OnApplicationBootstrap, OnApplicationShutdown
 }
 
 @Module({
-  imports: [ListingsModule, MessagingModule, PrivacyModule],
+  imports: [ListingsModule, MessagingModule, PrivacyModule, InspectionsModule],
   providers: [RetentionService, JobsRunner],
   exports: [RetentionService],
 })

@@ -112,6 +112,8 @@ The country settings used by identity checks (ADR 0007):
 | `retention.identityImagesDays` | Not set | Days identity document photos are kept after their check is closed (decision 55) | **Must be set after legal advice before identity checks go live** (open point 15) |
 | `retention.dataExportLinkDays` | 7 | Days a user can download the copy of their data they asked for, before it is deleted (Specification 15.2) | A starting value; change it if legal advice says otherwise |
 | `retention.dataExportEveryHours` | 24 | Hours a user waits between two copies of their data | A starting value |
+| `inspections.reminderHoursBefore` | 3 | Hours before a confirmed inspection that the tenant and the lister are reminded | A starting value |
+| `inspections.followUpHoursAfter` | 2 | Hours after a completed inspection's time that both are asked the follow-up questions (Specification 14.2) | A starting value |
 
 The feature switch `verification.identity_check` (critical) turns identity checks on or off, like any other switch.
 

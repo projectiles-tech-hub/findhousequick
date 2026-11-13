@@ -998,6 +998,9 @@ model Inspection {
   closedById       String?          @db.Uuid
   /// How many times the details were sent to a trusted contact (limited, as each SMS costs money).
   safetyShareCount Int              @default(0)
+  /// When both sides were reminded before a confirmed inspection, and asked the follow-up questions after it.
+  remindedAt       DateTime?
+  followUpAskedAt  DateTime?
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
@@ -1006,6 +1009,7 @@ model Inspection {
   host    User    @relation("InspectionHost", fields: [hostId], references: [id])
 
   @@index([listingId, status])
+  @@index([status, scheduledAt])
 }
 
 /// The times a lister is available for inspections of a listing (decision 45). Tenants book one of the free slots.
