@@ -41,6 +41,10 @@ jobs:
       DATABASE_URL: postgresql://fhq:fhq_dev_password@localhost:5432/findhousequick_test?schema=public
     steps:
       - uses: actions/checkout@v7
+      # ffmpeg reads uploaded videos and makes their watermarked copies (ADR 0009).
+      - name: Install ffmpeg
+        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+        working-directory: .
       - uses: pnpm/action-setup@v6
         with:
           package_json_file: server/package.json
