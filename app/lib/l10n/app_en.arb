@@ -395,5 +395,424 @@
   },
   "verifyNow": "Verify now",
   "notNow": "Not now",
-  "confirmFirst": "Confirm your phone number and email address first"
+  "confirmFirst": "Confirm your phone number and email address first",
+  "goodMorning": "Good morning, {name}",
+  "@goodMorning": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "goodAfternoon": "Good afternoon, {name}",
+  "@goodAfternoon": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "goodEvening": "Good evening, {name}",
+  "@goodEvening": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "alerts": "Alerts",
+  "searchHint": "Search area, street or landmark",
+  "homesAroundMe": "Homes around me",
+  "homesAroundMeText": "See what is available near where you are now",
+  "nearYourPlaces": "Near your places",
+  "whatLookingFor": "What are you looking for?",
+  "catHomes": "Homes to rent",
+  "catShops": "Shops and offices",
+  "catShortLets": "Short lets",
+  "catHomesShort": "Homes",
+  "newIn": "New in {area}",
+  "@newIn": {
+    "placeholders": {
+      "area": {
+        "type": "String"
+      }
+    }
+  },
+  "seeAll": "See all",
+  "kmAway": "{km} km away",
+  "@kmAway": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "mAway": "{m} m away",
+  "@mAway": {
+    "placeholders": {
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "resultsTitleHomes": "Homes to rent in {place}",
+  "@resultsTitleHomes": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "resultsTitleShops": "Shops and offices in {place}",
+  "@resultsTitleShops": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "resultsTitleShortLets": "Short lets in {place}",
+  "@resultsTitleShortLets": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "resultsTitleAll": "Properties in {place}",
+  "@resultsTitleAll": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "aroundYou": "around you",
+  "nearPlace": "near {place}",
+  "@nearPlace": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "resultsSubtitle": "{count, plural, =1{1 home, every lister identity-checked. Inspections are always free.} other{{count} homes, every lister identity-checked. Inspections are always free.}}",
+  "@resultsSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sortLabel": "Sort: {how}",
+  "@sortLabel": {
+    "placeholders": {
+      "how": {
+        "type": "String"
+      }
+    }
+  },
+  "sortNewest": "Newest first",
+  "sortNearest": "Nearest first",
+  "sortCheapest": "Lowest price first",
+  "sortDearest": "Highest price first",
+  "anyPrice": "Any price",
+  "bedroomsFilter": "Bedrooms",
+  "furnishedFilter": "Furnished",
+  "moreFilters": "More filters",
+  "perYearShort": "/year",
+  "perMonthShort": "/month",
+  "perWeekShort": "/week",
+  "perNightShort": "/night",
+  "beds": "{count, plural, =1{1 bed} other{{count} beds}}",
+  "@beds": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rooms": "{count, plural, =1{1 room} other{{count} rooms}}",
+  "@rooms": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "baths": "{count, plural, =1{1 bath} other{{count} baths}}",
+  "@baths": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "verifiedLister": "Verified lister",
+  "ownerVerified": "Owner verified",
+  "saveHome": "Save this home",
+  "unsaveHome": "Remove from saved",
+  "getAlertsTitle": "Get alerts for this search",
+  "getAlertsText": "We tell you the moment a new home {place} matches this search.",
+  "@getAlertsText": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "saveThisSearch": "Save this search",
+  "showingOf": "Showing {shown} of {total} homes",
+  "@showingOf": {
+    "placeholders": {
+      "shown": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "showMoreHomes": "Show more homes",
+  "whyRentTitle": "Why rent on FindHouseQuick",
+  "whyRent1": "Every landlord and agent has proved who they are",
+  "whyRent2": "Inspections are always free",
+  "whyRent3": "Rent and every fee are shown before you call",
+  "whyRent4": "Photos taken on site, room by room",
+  "newlyListedIn": "Newly listed in {place}",
+  "@newlyListedIn": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "addedLast7Days": "Added in the last 7 days",
+  "seeAllNew": "See all new homes",
+  "popularAreasIn": "Popular areas in {place}",
+  "@popularAreasIn": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "areaWithCount": "{area} ({count})",
+  "@areaWithCount": {
+    "placeholders": {
+      "area": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "filters": "Filters",
+  "clearAll": "Clear all",
+  "lookingFor": "Looking for",
+  "rentPerYear": "Rent per year",
+  "pricePerNight": "Price per night",
+  "lowest": "Lowest",
+  "highest": "Highest",
+  "noMinimum": "No minimum",
+  "noMaximum": "No maximum",
+  "bedroomsAny": "Any",
+  "bedroomsAtLeast": "{n}+",
+  "@bedroomsAtLeast": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "propertyType": "Property type",
+  "furnishing": "Furnishing",
+  "furnUNFURNISHED": "Unfurnished",
+  "furnSEMI_FURNISHED": "Semi-furnished",
+  "furnFURNISHED": "Furnished",
+  "verifiedOnly": "Verified listers only",
+  "verifiedOnlyText": "Owner or authority checked by our team",
+  "showHomes": "{count, plural, =0{No homes match} =1{Show 1 home} other{Show {count} homes}}",
+  "@showHomes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "errorRentRange": "The lowest rent must be less than the highest",
+  "places": "Places",
+  "recentSearches": "Recent searches",
+  "clearSearch": "Clear search",
+  "landmarkHint": "Many addresses are not exact, so search by a landmark people know and set how far from it to look.",
+  "howFar": "How far from it",
+  "withinM": "{m} m",
+  "@withinM": {
+    "placeholders": {
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "withinKm": "{km} km",
+  "@withinKm": {
+    "placeholders": {
+      "km": {
+        "type": "int"
+      }
+    }
+  },
+  "placeWithin": "{place} · {distance}",
+  "@placeWithin": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "noPlacesFound": "No places match. Try the name of an area or a landmark nearby.",
+  "noResultsTitle": "No homes match yet",
+  "noResultsTextNear": "Nothing within {distance} of {place} fits all your filters right now. Try one of these, or get an alert when a match is listed.",
+  "@noResultsTextNear": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "noResultsTextArea": "Nothing in {place} fits all your filters right now. Try one of these, or get an alert when a match is listed.",
+  "@noResultsTextArea": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "searchUpTo": "Search up to {distance} away ({count} homes)",
+  "@searchUpTo": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "removeFilter": "Remove the {filter} filter ({count} homes)",
+  "@removeFilter": {
+    "placeholders": {
+      "filter": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "removeAllFilters": "Remove all filters ({count} homes)",
+  "@removeAllFilters": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "alertMeWhenListed": "Alert me when one is listed",
+  "saveThisArea": "Save this area",
+  "nameThisSearch": "Name this search",
+  "matching": "Matching",
+  "alertMeHere": "Alert me about new homes here",
+  "alertMeHereText": "By notification, as set in your notification settings",
+  "saveArea": "Save area",
+  "areaSaved": "Area saved. We will tell you when a matching home is listed.",
+  "errorSearchName": "Please give this search a name",
+  "errorTooManyAreas": "You have saved the most areas allowed. Delete one in Saved to add another.",
+  "withinOf": "Within {distance} of {place}",
+  "@withinOf": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "upToRent": "Up to {amount} a year",
+  "@upToRent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "fromRent": "From {amount} a year",
+  "@fromRent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "bedroomsPlus": "{n}+ bedrooms",
+  "@bedroomsPlus": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "homesIn": "{count, plural, =1{1 home in {place}} other{{count} homes in {place}}}",
+  "@homesIn": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "seeEveryPhotoTitle": "See every photo, the map and distances",
+  "seeEveryPhotoText": "Create a free account to see every photo, the map and distances, and to save homes.",
+  "createFreeAccount": "Create a free account",
+  "locationTitle": "Show homes around you?",
+  "locationText": "FindHouseQuick uses your phone's location to show homes near where you are, and how far each one is.",
+  "locationPoint1": "Only while you use the app",
+  "locationPoint2": "Never saved or shared with landlords",
+  "locationPoint3": "You can turn it off at any time in your phone settings",
+  "allowLocation": "Allow location",
+  "searchByAreaInstead": "Search by area instead",
+  "locationDenied": "Location is turned off for FindHouseQuick. You can turn it on in your phone settings, or search by area.",
+  "locationUnavailable": "Your location could not be found. Search by area instead.",
+  "openSettings": "Open settings",
+  "searchFailed": "The homes could not be loaded. Check your connection and try again.",
+  "signInToSave": "Sign in to save homes",
+  "beingBuiltTitle": "This part of the app is on its way",
+  "beingBuiltText": "It is being built now and arrives in a coming update.",
+  "noHomesYet": "No homes are listed here yet.",
+  "bedroomsCount": "{count, plural, =1{1 bedroom} other{{count} bedrooms}}",
+  "@bedroomsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "toiletsCount": "{count, plural, =1{1 toilet} other{{count} toilets}}",
+  "@toiletsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

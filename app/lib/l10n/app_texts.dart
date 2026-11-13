@@ -1639,6 +1639,780 @@ abstract class AppTexts {
   /// In en, this message translates to:
   /// **'Confirm your phone number and email address first'**
   String get confirmFirst;
+
+  /// No description provided for @goodMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning, {name}'**
+  String goodMorning(String name);
+
+  /// No description provided for @goodAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon, {name}'**
+  String goodAfternoon(String name);
+
+  /// No description provided for @goodEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening, {name}'**
+  String goodEvening(String name);
+
+  /// No description provided for @alerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts'**
+  String get alerts;
+
+  /// No description provided for @searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search area, street or landmark'**
+  String get searchHint;
+
+  /// No description provided for @homesAroundMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Homes around me'**
+  String get homesAroundMe;
+
+  /// No description provided for @homesAroundMeText.
+  ///
+  /// In en, this message translates to:
+  /// **'See what is available near where you are now'**
+  String get homesAroundMeText;
+
+  /// No description provided for @nearYourPlaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Near your places'**
+  String get nearYourPlaces;
+
+  /// No description provided for @whatLookingFor.
+  ///
+  /// In en, this message translates to:
+  /// **'What are you looking for?'**
+  String get whatLookingFor;
+
+  /// No description provided for @catHomes.
+  ///
+  /// In en, this message translates to:
+  /// **'Homes to rent'**
+  String get catHomes;
+
+  /// No description provided for @catShops.
+  ///
+  /// In en, this message translates to:
+  /// **'Shops and offices'**
+  String get catShops;
+
+  /// No description provided for @catShortLets.
+  ///
+  /// In en, this message translates to:
+  /// **'Short lets'**
+  String get catShortLets;
+
+  /// No description provided for @catHomesShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Homes'**
+  String get catHomesShort;
+
+  /// No description provided for @newIn.
+  ///
+  /// In en, this message translates to:
+  /// **'New in {area}'**
+  String newIn(String area);
+
+  /// No description provided for @seeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get seeAll;
+
+  /// No description provided for @kmAway.
+  ///
+  /// In en, this message translates to:
+  /// **'{km} km away'**
+  String kmAway(String km);
+
+  /// No description provided for @mAway.
+  ///
+  /// In en, this message translates to:
+  /// **'{m} m away'**
+  String mAway(int m);
+
+  /// No description provided for @resultsTitleHomes.
+  ///
+  /// In en, this message translates to:
+  /// **'Homes to rent in {place}'**
+  String resultsTitleHomes(String place);
+
+  /// No description provided for @resultsTitleShops.
+  ///
+  /// In en, this message translates to:
+  /// **'Shops and offices in {place}'**
+  String resultsTitleShops(String place);
+
+  /// No description provided for @resultsTitleShortLets.
+  ///
+  /// In en, this message translates to:
+  /// **'Short lets in {place}'**
+  String resultsTitleShortLets(String place);
+
+  /// No description provided for @resultsTitleAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Properties in {place}'**
+  String resultsTitleAll(String place);
+
+  /// No description provided for @aroundYou.
+  ///
+  /// In en, this message translates to:
+  /// **'around you'**
+  String get aroundYou;
+
+  /// No description provided for @nearPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'near {place}'**
+  String nearPlace(String place);
+
+  /// No description provided for @resultsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 home, every lister identity-checked. Inspections are always free.} other{{count} homes, every lister identity-checked. Inspections are always free.}}'**
+  String resultsSubtitle(int count);
+
+  /// No description provided for @sortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort: {how}'**
+  String sortLabel(String how);
+
+  /// No description provided for @sortNewest.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest first'**
+  String get sortNewest;
+
+  /// No description provided for @sortNearest.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearest first'**
+  String get sortNearest;
+
+  /// No description provided for @sortCheapest.
+  ///
+  /// In en, this message translates to:
+  /// **'Lowest price first'**
+  String get sortCheapest;
+
+  /// No description provided for @sortDearest.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest price first'**
+  String get sortDearest;
+
+  /// No description provided for @anyPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Any price'**
+  String get anyPrice;
+
+  /// No description provided for @bedroomsFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Bedrooms'**
+  String get bedroomsFilter;
+
+  /// No description provided for @furnishedFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Furnished'**
+  String get furnishedFilter;
+
+  /// No description provided for @moreFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'More filters'**
+  String get moreFilters;
+
+  /// No description provided for @perYearShort.
+  ///
+  /// In en, this message translates to:
+  /// **'/year'**
+  String get perYearShort;
+
+  /// No description provided for @perMonthShort.
+  ///
+  /// In en, this message translates to:
+  /// **'/month'**
+  String get perMonthShort;
+
+  /// No description provided for @perWeekShort.
+  ///
+  /// In en, this message translates to:
+  /// **'/week'**
+  String get perWeekShort;
+
+  /// No description provided for @perNightShort.
+  ///
+  /// In en, this message translates to:
+  /// **'/night'**
+  String get perNightShort;
+
+  /// No description provided for @beds.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 bed} other{{count} beds}}'**
+  String beds(int count);
+
+  /// No description provided for @rooms.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 room} other{{count} rooms}}'**
+  String rooms(int count);
+
+  /// No description provided for @baths.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 bath} other{{count} baths}}'**
+  String baths(int count);
+
+  /// No description provided for @verifiedLister.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified lister'**
+  String get verifiedLister;
+
+  /// No description provided for @ownerVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner verified'**
+  String get ownerVerified;
+
+  /// No description provided for @saveHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Save this home'**
+  String get saveHome;
+
+  /// No description provided for @unsaveHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from saved'**
+  String get unsaveHome;
+
+  /// No description provided for @getAlertsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get alerts for this search'**
+  String get getAlertsTitle;
+
+  /// No description provided for @getAlertsText.
+  ///
+  /// In en, this message translates to:
+  /// **'We tell you the moment a new home {place} matches this search.'**
+  String getAlertsText(String place);
+
+  /// No description provided for @saveThisSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Save this search'**
+  String get saveThisSearch;
+
+  /// No description provided for @showingOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing {shown} of {total} homes'**
+  String showingOf(int shown, int total);
+
+  /// No description provided for @showMoreHomes.
+  ///
+  /// In en, this message translates to:
+  /// **'Show more homes'**
+  String get showMoreHomes;
+
+  /// No description provided for @whyRentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Why rent on FindHouseQuick'**
+  String get whyRentTitle;
+
+  /// No description provided for @whyRent1.
+  ///
+  /// In en, this message translates to:
+  /// **'Every landlord and agent has proved who they are'**
+  String get whyRent1;
+
+  /// No description provided for @whyRent2.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspections are always free'**
+  String get whyRent2;
+
+  /// No description provided for @whyRent3.
+  ///
+  /// In en, this message translates to:
+  /// **'Rent and every fee are shown before you call'**
+  String get whyRent3;
+
+  /// No description provided for @whyRent4.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos taken on site, room by room'**
+  String get whyRent4;
+
+  /// No description provided for @newlyListedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Newly listed in {place}'**
+  String newlyListedIn(String place);
+
+  /// No description provided for @addedLast7Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Added in the last 7 days'**
+  String get addedLast7Days;
+
+  /// No description provided for @seeAllNew.
+  ///
+  /// In en, this message translates to:
+  /// **'See all new homes'**
+  String get seeAllNew;
+
+  /// No description provided for @popularAreasIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular areas in {place}'**
+  String popularAreasIn(String place);
+
+  /// No description provided for @areaWithCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{area} ({count})'**
+  String areaWithCount(String area, int count);
+
+  /// No description provided for @filters.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get filters;
+
+  /// No description provided for @clearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get clearAll;
+
+  /// No description provided for @lookingFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for'**
+  String get lookingFor;
+
+  /// No description provided for @rentPerYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Rent per year'**
+  String get rentPerYear;
+
+  /// No description provided for @pricePerNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Price per night'**
+  String get pricePerNight;
+
+  /// No description provided for @lowest.
+  ///
+  /// In en, this message translates to:
+  /// **'Lowest'**
+  String get lowest;
+
+  /// No description provided for @highest.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest'**
+  String get highest;
+
+  /// No description provided for @noMinimum.
+  ///
+  /// In en, this message translates to:
+  /// **'No minimum'**
+  String get noMinimum;
+
+  /// No description provided for @noMaximum.
+  ///
+  /// In en, this message translates to:
+  /// **'No maximum'**
+  String get noMaximum;
+
+  /// No description provided for @bedroomsAny.
+  ///
+  /// In en, this message translates to:
+  /// **'Any'**
+  String get bedroomsAny;
+
+  /// No description provided for @bedroomsAtLeast.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}+'**
+  String bedroomsAtLeast(int n);
+
+  /// No description provided for @propertyType.
+  ///
+  /// In en, this message translates to:
+  /// **'Property type'**
+  String get propertyType;
+
+  /// No description provided for @furnishing.
+  ///
+  /// In en, this message translates to:
+  /// **'Furnishing'**
+  String get furnishing;
+
+  /// No description provided for @furnUNFURNISHED.
+  ///
+  /// In en, this message translates to:
+  /// **'Unfurnished'**
+  String get furnUNFURNISHED;
+
+  /// No description provided for @furnSEMI_FURNISHED.
+  ///
+  /// In en, this message translates to:
+  /// **'Semi-furnished'**
+  String get furnSEMI_FURNISHED;
+
+  /// No description provided for @furnFURNISHED.
+  ///
+  /// In en, this message translates to:
+  /// **'Furnished'**
+  String get furnFURNISHED;
+
+  /// No description provided for @verifiedOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified listers only'**
+  String get verifiedOnly;
+
+  /// No description provided for @verifiedOnlyText.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner or authority checked by our team'**
+  String get verifiedOnlyText;
+
+  /// No description provided for @showHomes.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No homes match} =1{Show 1 home} other{Show {count} homes}}'**
+  String showHomes(int count);
+
+  /// No description provided for @errorRentRange.
+  ///
+  /// In en, this message translates to:
+  /// **'The lowest rent must be less than the highest'**
+  String get errorRentRange;
+
+  /// No description provided for @places.
+  ///
+  /// In en, this message translates to:
+  /// **'Places'**
+  String get places;
+
+  /// No description provided for @recentSearches.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent searches'**
+  String get recentSearches;
+
+  /// No description provided for @clearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get clearSearch;
+
+  /// No description provided for @landmarkHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Many addresses are not exact, so search by a landmark people know and set how far from it to look.'**
+  String get landmarkHint;
+
+  /// No description provided for @howFar.
+  ///
+  /// In en, this message translates to:
+  /// **'How far from it'**
+  String get howFar;
+
+  /// No description provided for @withinM.
+  ///
+  /// In en, this message translates to:
+  /// **'{m} m'**
+  String withinM(int m);
+
+  /// No description provided for @withinKm.
+  ///
+  /// In en, this message translates to:
+  /// **'{km} km'**
+  String withinKm(int km);
+
+  /// No description provided for @placeWithin.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} · {distance}'**
+  String placeWithin(String place, String distance);
+
+  /// No description provided for @noPlacesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No places match. Try the name of an area or a landmark nearby.'**
+  String get noPlacesFound;
+
+  /// No description provided for @noResultsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No homes match yet'**
+  String get noResultsTitle;
+
+  /// No description provided for @noResultsTextNear.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing within {distance} of {place} fits all your filters right now. Try one of these, or get an alert when a match is listed.'**
+  String noResultsTextNear(String distance, String place);
+
+  /// No description provided for @noResultsTextArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing in {place} fits all your filters right now. Try one of these, or get an alert when a match is listed.'**
+  String noResultsTextArea(String place);
+
+  /// No description provided for @searchUpTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Search up to {distance} away ({count} homes)'**
+  String searchUpTo(String distance, int count);
+
+  /// No description provided for @removeFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove the {filter} filter ({count} homes)'**
+  String removeFilter(String filter, int count);
+
+  /// No description provided for @removeAllFilters.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all filters ({count} homes)'**
+  String removeAllFilters(int count);
+
+  /// No description provided for @alertMeWhenListed.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert me when one is listed'**
+  String get alertMeWhenListed;
+
+  /// No description provided for @saveThisArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Save this area'**
+  String get saveThisArea;
+
+  /// No description provided for @nameThisSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Name this search'**
+  String get nameThisSearch;
+
+  /// No description provided for @matching.
+  ///
+  /// In en, this message translates to:
+  /// **'Matching'**
+  String get matching;
+
+  /// No description provided for @alertMeHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert me about new homes here'**
+  String get alertMeHere;
+
+  /// No description provided for @alertMeHereText.
+  ///
+  /// In en, this message translates to:
+  /// **'By notification, as set in your notification settings'**
+  String get alertMeHereText;
+
+  /// No description provided for @saveArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Save area'**
+  String get saveArea;
+
+  /// No description provided for @areaSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Area saved. We will tell you when a matching home is listed.'**
+  String get areaSaved;
+
+  /// No description provided for @errorSearchName.
+  ///
+  /// In en, this message translates to:
+  /// **'Please give this search a name'**
+  String get errorSearchName;
+
+  /// No description provided for @errorTooManyAreas.
+  ///
+  /// In en, this message translates to:
+  /// **'You have saved the most areas allowed. Delete one in Saved to add another.'**
+  String get errorTooManyAreas;
+
+  /// No description provided for @withinOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Within {distance} of {place}'**
+  String withinOf(String distance, String place);
+
+  /// No description provided for @upToRent.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {amount} a year'**
+  String upToRent(String amount);
+
+  /// No description provided for @fromRent.
+  ///
+  /// In en, this message translates to:
+  /// **'From {amount} a year'**
+  String fromRent(String amount);
+
+  /// No description provided for @bedroomsPlus.
+  ///
+  /// In en, this message translates to:
+  /// **'{n}+ bedrooms'**
+  String bedroomsPlus(int n);
+
+  /// No description provided for @homesIn.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 home in {place}} other{{count} homes in {place}}}'**
+  String homesIn(int count, String place);
+
+  /// No description provided for @seeEveryPhotoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'See every photo, the map and distances'**
+  String get seeEveryPhotoTitle;
+
+  /// No description provided for @seeEveryPhotoText.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a free account to see every photo, the map and distances, and to save homes.'**
+  String get seeEveryPhotoText;
+
+  /// No description provided for @createFreeAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a free account'**
+  String get createFreeAccount;
+
+  /// No description provided for @locationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show homes around you?'**
+  String get locationTitle;
+
+  /// No description provided for @locationText.
+  ///
+  /// In en, this message translates to:
+  /// **'FindHouseQuick uses your phone\'s location to show homes near where you are, and how far each one is.'**
+  String get locationText;
+
+  /// No description provided for @locationPoint1.
+  ///
+  /// In en, this message translates to:
+  /// **'Only while you use the app'**
+  String get locationPoint1;
+
+  /// No description provided for @locationPoint2.
+  ///
+  /// In en, this message translates to:
+  /// **'Never saved or shared with landlords'**
+  String get locationPoint2;
+
+  /// No description provided for @locationPoint3.
+  ///
+  /// In en, this message translates to:
+  /// **'You can turn it off at any time in your phone settings'**
+  String get locationPoint3;
+
+  /// No description provided for @allowLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow location'**
+  String get allowLocation;
+
+  /// No description provided for @searchByAreaInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by area instead'**
+  String get searchByAreaInstead;
+
+  /// No description provided for @locationDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Location is turned off for FindHouseQuick. You can turn it on in your phone settings, or search by area.'**
+  String get locationDenied;
+
+  /// No description provided for @locationUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Your location could not be found. Search by area instead.'**
+  String get locationUnavailable;
+
+  /// No description provided for @openSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get openSettings;
+
+  /// No description provided for @searchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The homes could not be loaded. Check your connection and try again.'**
+  String get searchFailed;
+
+  /// No description provided for @signInToSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to save homes'**
+  String get signInToSave;
+
+  /// No description provided for @beingBuiltTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This part of the app is on its way'**
+  String get beingBuiltTitle;
+
+  /// No description provided for @beingBuiltText.
+  ///
+  /// In en, this message translates to:
+  /// **'It is being built now and arrives in a coming update.'**
+  String get beingBuiltText;
+
+  /// No description provided for @noHomesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No homes are listed here yet.'**
+  String get noHomesYet;
+
+  /// No description provided for @bedroomsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 bedroom} other{{count} bedrooms}}'**
+  String bedroomsCount(int count);
+
+  /// No description provided for @toiletsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 toilet} other{{count} toilets}}'**
+  String toiletsCount(int count);
 }
 
 class _AppTextsDelegate extends LocalizationsDelegate<AppTexts> {

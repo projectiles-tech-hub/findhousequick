@@ -892,4 +892,531 @@ class AppTextsEn extends AppTexts {
   @override
   String get confirmFirst =>
       'Confirm your phone number and email address first';
+
+  @override
+  String goodMorning(String name) {
+    return 'Good morning, $name';
+  }
+
+  @override
+  String goodAfternoon(String name) {
+    return 'Good afternoon, $name';
+  }
+
+  @override
+  String goodEvening(String name) {
+    return 'Good evening, $name';
+  }
+
+  @override
+  String get alerts => 'Alerts';
+
+  @override
+  String get searchHint => 'Search area, street or landmark';
+
+  @override
+  String get homesAroundMe => 'Homes around me';
+
+  @override
+  String get homesAroundMeText =>
+      'See what is available near where you are now';
+
+  @override
+  String get nearYourPlaces => 'Near your places';
+
+  @override
+  String get whatLookingFor => 'What are you looking for?';
+
+  @override
+  String get catHomes => 'Homes to rent';
+
+  @override
+  String get catShops => 'Shops and offices';
+
+  @override
+  String get catShortLets => 'Short lets';
+
+  @override
+  String get catHomesShort => 'Homes';
+
+  @override
+  String newIn(String area) {
+    return 'New in $area';
+  }
+
+  @override
+  String get seeAll => 'See all';
+
+  @override
+  String kmAway(String km) {
+    return '$km km away';
+  }
+
+  @override
+  String mAway(int m) {
+    return '$m m away';
+  }
+
+  @override
+  String resultsTitleHomes(String place) {
+    return 'Homes to rent in $place';
+  }
+
+  @override
+  String resultsTitleShops(String place) {
+    return 'Shops and offices in $place';
+  }
+
+  @override
+  String resultsTitleShortLets(String place) {
+    return 'Short lets in $place';
+  }
+
+  @override
+  String resultsTitleAll(String place) {
+    return 'Properties in $place';
+  }
+
+  @override
+  String get aroundYou => 'around you';
+
+  @override
+  String nearPlace(String place) {
+    return 'near $place';
+  }
+
+  @override
+  String resultsSubtitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count homes, every lister identity-checked. Inspections are always free.',
+      one:
+          '1 home, every lister identity-checked. Inspections are always free.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sortLabel(String how) {
+    return 'Sort: $how';
+  }
+
+  @override
+  String get sortNewest => 'Newest first';
+
+  @override
+  String get sortNearest => 'Nearest first';
+
+  @override
+  String get sortCheapest => 'Lowest price first';
+
+  @override
+  String get sortDearest => 'Highest price first';
+
+  @override
+  String get anyPrice => 'Any price';
+
+  @override
+  String get bedroomsFilter => 'Bedrooms';
+
+  @override
+  String get furnishedFilter => 'Furnished';
+
+  @override
+  String get moreFilters => 'More filters';
+
+  @override
+  String get perYearShort => '/year';
+
+  @override
+  String get perMonthShort => '/month';
+
+  @override
+  String get perWeekShort => '/week';
+
+  @override
+  String get perNightShort => '/night';
+
+  @override
+  String beds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count beds',
+      one: '1 bed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rooms(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rooms',
+      one: '1 room',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String baths(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count baths',
+      one: '1 bath',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get verifiedLister => 'Verified lister';
+
+  @override
+  String get ownerVerified => 'Owner verified';
+
+  @override
+  String get saveHome => 'Save this home';
+
+  @override
+  String get unsaveHome => 'Remove from saved';
+
+  @override
+  String get getAlertsTitle => 'Get alerts for this search';
+
+  @override
+  String getAlertsText(String place) {
+    return 'We tell you the moment a new home $place matches this search.';
+  }
+
+  @override
+  String get saveThisSearch => 'Save this search';
+
+  @override
+  String showingOf(int shown, int total) {
+    return 'Showing $shown of $total homes';
+  }
+
+  @override
+  String get showMoreHomes => 'Show more homes';
+
+  @override
+  String get whyRentTitle => 'Why rent on FindHouseQuick';
+
+  @override
+  String get whyRent1 => 'Every landlord and agent has proved who they are';
+
+  @override
+  String get whyRent2 => 'Inspections are always free';
+
+  @override
+  String get whyRent3 => 'Rent and every fee are shown before you call';
+
+  @override
+  String get whyRent4 => 'Photos taken on site, room by room';
+
+  @override
+  String newlyListedIn(String place) {
+    return 'Newly listed in $place';
+  }
+
+  @override
+  String get addedLast7Days => 'Added in the last 7 days';
+
+  @override
+  String get seeAllNew => 'See all new homes';
+
+  @override
+  String popularAreasIn(String place) {
+    return 'Popular areas in $place';
+  }
+
+  @override
+  String areaWithCount(String area, int count) {
+    return '$area ($count)';
+  }
+
+  @override
+  String get filters => 'Filters';
+
+  @override
+  String get clearAll => 'Clear all';
+
+  @override
+  String get lookingFor => 'Looking for';
+
+  @override
+  String get rentPerYear => 'Rent per year';
+
+  @override
+  String get pricePerNight => 'Price per night';
+
+  @override
+  String get lowest => 'Lowest';
+
+  @override
+  String get highest => 'Highest';
+
+  @override
+  String get noMinimum => 'No minimum';
+
+  @override
+  String get noMaximum => 'No maximum';
+
+  @override
+  String get bedroomsAny => 'Any';
+
+  @override
+  String bedroomsAtLeast(int n) {
+    return '$n+';
+  }
+
+  @override
+  String get propertyType => 'Property type';
+
+  @override
+  String get furnishing => 'Furnishing';
+
+  @override
+  String get furnUNFURNISHED => 'Unfurnished';
+
+  @override
+  String get furnSEMI_FURNISHED => 'Semi-furnished';
+
+  @override
+  String get furnFURNISHED => 'Furnished';
+
+  @override
+  String get verifiedOnly => 'Verified listers only';
+
+  @override
+  String get verifiedOnlyText => 'Owner or authority checked by our team';
+
+  @override
+  String showHomes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Show $count homes',
+      one: 'Show 1 home',
+      zero: 'No homes match',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get errorRentRange => 'The lowest rent must be less than the highest';
+
+  @override
+  String get places => 'Places';
+
+  @override
+  String get recentSearches => 'Recent searches';
+
+  @override
+  String get clearSearch => 'Clear search';
+
+  @override
+  String get landmarkHint =>
+      'Many addresses are not exact, so search by a landmark people know and set how far from it to look.';
+
+  @override
+  String get howFar => 'How far from it';
+
+  @override
+  String withinM(int m) {
+    return '$m m';
+  }
+
+  @override
+  String withinKm(int km) {
+    return '$km km';
+  }
+
+  @override
+  String placeWithin(String place, String distance) {
+    return '$place · $distance';
+  }
+
+  @override
+  String get noPlacesFound =>
+      'No places match. Try the name of an area or a landmark nearby.';
+
+  @override
+  String get noResultsTitle => 'No homes match yet';
+
+  @override
+  String noResultsTextNear(String distance, String place) {
+    return 'Nothing within $distance of $place fits all your filters right now. Try one of these, or get an alert when a match is listed.';
+  }
+
+  @override
+  String noResultsTextArea(String place) {
+    return 'Nothing in $place fits all your filters right now. Try one of these, or get an alert when a match is listed.';
+  }
+
+  @override
+  String searchUpTo(String distance, int count) {
+    return 'Search up to $distance away ($count homes)';
+  }
+
+  @override
+  String removeFilter(String filter, int count) {
+    return 'Remove the $filter filter ($count homes)';
+  }
+
+  @override
+  String removeAllFilters(int count) {
+    return 'Remove all filters ($count homes)';
+  }
+
+  @override
+  String get alertMeWhenListed => 'Alert me when one is listed';
+
+  @override
+  String get saveThisArea => 'Save this area';
+
+  @override
+  String get nameThisSearch => 'Name this search';
+
+  @override
+  String get matching => 'Matching';
+
+  @override
+  String get alertMeHere => 'Alert me about new homes here';
+
+  @override
+  String get alertMeHereText =>
+      'By notification, as set in your notification settings';
+
+  @override
+  String get saveArea => 'Save area';
+
+  @override
+  String get areaSaved =>
+      'Area saved. We will tell you when a matching home is listed.';
+
+  @override
+  String get errorSearchName => 'Please give this search a name';
+
+  @override
+  String get errorTooManyAreas =>
+      'You have saved the most areas allowed. Delete one in Saved to add another.';
+
+  @override
+  String withinOf(String distance, String place) {
+    return 'Within $distance of $place';
+  }
+
+  @override
+  String upToRent(String amount) {
+    return 'Up to $amount a year';
+  }
+
+  @override
+  String fromRent(String amount) {
+    return 'From $amount a year';
+  }
+
+  @override
+  String bedroomsPlus(int n) {
+    return '$n+ bedrooms';
+  }
+
+  @override
+  String homesIn(int count, String place) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count homes in $place',
+      one: '1 home in $place',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get seeEveryPhotoTitle => 'See every photo, the map and distances';
+
+  @override
+  String get seeEveryPhotoText =>
+      'Create a free account to see every photo, the map and distances, and to save homes.';
+
+  @override
+  String get createFreeAccount => 'Create a free account';
+
+  @override
+  String get locationTitle => 'Show homes around you?';
+
+  @override
+  String get locationText =>
+      'FindHouseQuick uses your phone\'s location to show homes near where you are, and how far each one is.';
+
+  @override
+  String get locationPoint1 => 'Only while you use the app';
+
+  @override
+  String get locationPoint2 => 'Never saved or shared with landlords';
+
+  @override
+  String get locationPoint3 =>
+      'You can turn it off at any time in your phone settings';
+
+  @override
+  String get allowLocation => 'Allow location';
+
+  @override
+  String get searchByAreaInstead => 'Search by area instead';
+
+  @override
+  String get locationDenied =>
+      'Location is turned off for FindHouseQuick. You can turn it on in your phone settings, or search by area.';
+
+  @override
+  String get locationUnavailable =>
+      'Your location could not be found. Search by area instead.';
+
+  @override
+  String get openSettings => 'Open settings';
+
+  @override
+  String get searchFailed =>
+      'The homes could not be loaded. Check your connection and try again.';
+
+  @override
+  String get signInToSave => 'Sign in to save homes';
+
+  @override
+  String get beingBuiltTitle => 'This part of the app is on its way';
+
+  @override
+  String get beingBuiltText =>
+      'It is being built now and arrives in a coming update.';
+
+  @override
+  String get noHomesYet => 'No homes are listed here yet.';
+
+  @override
+  String bedroomsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count bedrooms',
+      one: '1 bedroom',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String toiletsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count toilets',
+      one: '1 toilet',
+    );
+    return '$_temp0';
+  }
 }

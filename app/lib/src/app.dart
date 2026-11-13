@@ -9,7 +9,10 @@ import 'accounts/welcome_screen.dart';
 import 'design/gallery_screen.dart';
 import 'design/tokens.dart';
 import 'design/wide.dart';
+import 'design/app_icon.dart';
 import 'home/home_screen.dart';
+import 'home/main_shell.dart';
+import 'search/search_screens.dart';
 import 'l10n/languages.dart';
 import 'l10n/locale.dart';
 import 'session/session.dart';
@@ -24,7 +27,22 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
       initialLocation: initialLocation,
       routes: [
         GoRoute(path: '/', builder: (context, state) => const _StartGate()),
-        GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, shell) => MainShell(shell: shell),
+          branches: [
+            StatefulShellBranch(routes: [GoRoute(path: '/home', builder: (context, state) => const SearchHomeScreen())]),
+            StatefulShellBranch(routes: [GoRoute(path: '/saved', builder: (context, state) => ComingTab(title: context.texts.tabSaved, icon: AppIcons.heart))]),
+            StatefulShellBranch(routes: [GoRoute(path: '/messages', builder: (context, state) => ComingTab(title: context.texts.tabMessages, icon: AppIcons.chat))]),
+            StatefulShellBranch(routes: [GoRoute(path: '/inspections', builder: (context, state) => ComingTab(title: context.texts.tabInspections, icon: AppIcons.calendar))]),
+            // Until the Me screen is built (part 6), the Me tab keeps the temporary screen with Verification and Sign out.
+            StatefulShellBranch(routes: [GoRoute(path: '/me', builder: (context, state) => const HomeScreen())]),
+          ],
+        ),
+        GoRoute(path: '/search/results', builder: (context, state) => const ResultsScreen()),
+        GoRoute(path: '/search/filters', builder: (context, state) => const FiltersScreen()),
+        GoRoute(path: '/search/place', builder: (context, state) => const PlaceSearchScreen()),
+        GoRoute(path: '/search/save-area', builder: (context, state) => const SaveAreaScreen()),
+        GoRoute(path: '/search/location', builder: (context, state) => const LocationPermissionScreen()),
         GoRoute(
           path: '/sign-up',
           builder: (context, state) => WhoAreYouScreen(preselect: state.uri.queryParameters['as'], invitationCode: state.uri.queryParameters['invitation']),
@@ -85,7 +103,11 @@ class _StartGate extends ConsumerWidget {
     if (session.isLoading && !session.hasValue) {
       return const Scaffold(backgroundColor: AppColors.surface, body: Center(child: CircularProgressIndicator(color: AppColors.green700)));
     }
-    return session.value?.signedIn == true ? const HomeScreen() : const WelcomeScreen();
+    if (session.value?.signedIn == true) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => context.go('/home'));
+      return const Scaffold(backgroundColor: AppColors.surface);
+    }
+    return const WelcomeScreen();
   }
 }
 

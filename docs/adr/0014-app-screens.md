@@ -20,7 +20,7 @@ decides a verification level, a fee, a limit or a switch itself.
 | --- | --- | --- |
 | 1 | The foundation: design values, the icon set, the shared parts, the words, and the sign-in session | 00 Design system |
 | 2 | Sign-up, sign-in and verification, in three pull requests: (a) the phone layouts of screens 1 to 9; (b) the wide layouts of screens 1 to 9; (c) verification, screens 12 to 21 | Screens 1 to 9 and 12 to 21 |
-| 3 | Search, the map, the property page and saved items; with screens 10 (location permission) and 11 (not signed in), which belong to search | Screens 10, 11, 22 to 36 and the saved group |
+| 3 | Search, the map, the property page and saved items, in four pull requests: (a) search on the phone, screens 10, 11, 22 and 25 to 29; (b) the map, screens 23 and 24, and the website layouts of the search screens; (c) the property page, screens 30 to 36; (d) saved items, screens 37 to 39 | Screens 10, 11, 22 to 39 |
 | 4 | Messages, calls and inspections | The messages, calls and inspections groups |
 | 5 | Listing a property, agents and authority | Screens 50 to 65 and the agents group |
 | 6 | Me and settings, and the scout screens | The me and settings group; screens 81 to 87 |
@@ -164,11 +164,42 @@ anything it works out; the shared parts are also checked by eye against the desi
 - Flutter's translation tool still writes the old names into the file it makes from the texts; that one warning
   is switched off in that file only (`app/l10n.yaml`).
 
+### 12. Search on the phone (part 3a, as built)
+
+- The main screens sit in a frame with the bottom bar (`app/lib/src/home/main_shell.dart`): Search, Saved (or
+  Properties for landlords and agents), Messages, Inspections and Me. Someone looking around without an account
+  sees the search screens without the bar, as in screen 11.
+- Tabs whose screens come in later parts (Saved, Messages, Inspections) say plainly that they are on their way.
+  The Me tab keeps the temporary screen with Verification and Sign out until part 6.
+- Screen 22, Home: the search box, "Homes around me", the user's saved places, the kinds of property switched on
+  where they are, and the newest homes in the busiest area. The bell (alerts) is left out until notifications
+  have a screen (part 4).
+- Screen 25, List of results, with screen 28, No results, in its place when nothing matches. No results offers a
+  wider search and the same search without one filter, each with how many homes it finds, worked out by asking
+  the server. "Show on map" waits for the map (part 3b). The design's "Own a property", "Newly listed",
+  "Popular areas" and "More from FindHouseQuick" sections are left out of this part; "Why rent on
+  FindHouseQuick" is in.
+- Screen 26, Filters: the counts on its button come from the server as the filters change. The property types
+  come from the country's reference list; the furnishing choices from the country settings.
+- Screen 27, Search by area or landmark: places come from the server's place search (`GET /search/places`) and
+  areas from the popular areas. A row of distances (500 m, 1 km, 3 km, 5 km) is added above the places, because
+  the screen's own words ask the user to "set how far from it to look" and the design has no other way to do so.
+  Recent searches are kept on the phone only, never "around me" locations (Specification 15.2).
+- Screen 29, Save this area: the area is the circle the search used, around the user or a landmark; saving is
+  offered only for those searches. The map picture of the area waits for the maps provider; until then the area
+  is described in words.
+- Screen 10, Location permission, is shown once, before the phone first asks; the location is read for that one
+  search and never stored.
+- Screen 11, Not signed in: the homes in the switched-on city and the invitation to create an account.
+- A listing opens on the public website (page 108) until the property page is built in part 3c.
+- These screens use the phone layout on wide screens, in a column 600 wide, until their website layouts are
+  built (part 3b).
+
 ## Consequences
 
 - The app now needs the font file and five more packages (`flutter_svg`, `flutter_secure_storage`, `intl`,
-  `flutter_localizations`, `url_launcher` to open the terms and privacy pages, and `image_picker` and `crypto`
-  for photos of ID documents).
+  `flutter_localizations`, `url_launcher` to open the terms and privacy pages, `image_picker` and `crypto`
+  for photos of ID documents, and `geolocator` for "around me").
 - On the web, a browser has no protected storage like a phone's; the package encrypts the keys in the browser's
   own storage. This is the usual arrangement for a web app and is looked at again with the security review.
 - Pidgin shows English in the app until Projectiles Tech Hub supplies the Pidgin wording (decision 83).

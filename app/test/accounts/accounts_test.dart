@@ -245,7 +245,9 @@ void main() {
     await tester.tap(find.widgetWithText(TextButton, 'Sign in'));
     await tester.pumpAndSettle();
     expect(server.body('/auth/login'), {'email': 'osaro@example.com', 'password': 'correct horse 9'});
-    expect(find.text('Sign out'), findsOneWidget);
+    // The home screen, greeting the user, with the bottom bar.
+    expect(find.textContaining(', Osaro'), findsOneWidget);
+    expect(find.text('Inspections'), findsOneWidget);
   });
 
   group('website layouts (768 and over)', () {

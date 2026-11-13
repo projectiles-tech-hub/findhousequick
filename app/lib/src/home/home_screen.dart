@@ -9,8 +9,8 @@ import '../design/buttons.dart';
 import '../l10n/languages.dart';
 import '../session/session.dart';
 
-/// Release 0 start screen: confirms the app can reach the server and shows the switches in force.
-/// Replaced by the search screen in Release 1.
+/// The temporary screen on the Me tab: Verification and Sign out, and the switches in force. Replaced by the Me
+/// screen in step 6 part 6.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 

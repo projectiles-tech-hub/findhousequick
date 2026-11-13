@@ -253,6 +253,17 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
     moved to them, so the app and those packages now use the same copy.
   - Packages brought to their newest compatible versions. Users see no change.
 
+- **Release 1 step 6 part 3a, search on the phone (screens 10, 11, 22 and 25 to 29)**: complete. Pull request #61.
+  Built on pull request #60. As built: `docs/adr/0014-app-screens.md`, section 12.
+  - The bottom bar and the main screens frame; Home; List of results with No results; Filters; Search by area or
+    landmark; Save this area; Location permission; Not signed in.
+  - Tested with 8 new widget tests and checked by eye at 360 wide in a browser. The development database has no
+    listings, so the browser check used a stand-in server with sample listings; the requests the app sends are
+    checked by the tests against the API design.
+  - Still to do: the map and "around me" on the map (screens 23 and 24) and the website layouts (part 3b); the
+    property page (part 3c, until then a listing opens on the public website); saved items (part 3d); the
+    sections of screen 25 left out (see ADR 0014); the bell on Home (with notifications, part 4).
+
 - **Maps providers (decision 81)**: complete. Merged in pull request #56 on 11 November 2026. How it is built is in
   `docs/adr/0015-maps-providers.md`.
   - The server has an adapter for Google Maps and one for OpenStreetMap, for place search, nearby amenities and
@@ -361,7 +372,9 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
    staff screens with switch messages, return times and dependency warnings (decision 53). In seven parts
    (`docs/adr/0014-app-screens.md`). Part 1, the foundation: done (pull request #55). Part 2a, sign-up and sign-in on the phone
    (screens 1 to 9): done (pull request #57). Part 2b, their website layouts: done (pull request #58); all three
-   merged on 11 November 2026. Part 2c, verification: done (pull request #59). Flutter upgraded to 3.50.0 (pull request #60). Next: then part 3, search, the map, the property page and saved items; part 4,
+   merged on 11 November 2026. Part 2c, verification: done (pull request #59). Flutter upgraded to 3.50.0 (pull request #60). Part 3a, search on the phone: done
+   (pull request #61). Next: part 3b, the map and the website layouts of search; then part 3c, the property page;
+   part 3d, saved items; then part 4,
    messages, calls and inspections; part 5, listing a property; part 6, me, settings and scouts; part 7, staff.
 
 ## Later releases (decided)
