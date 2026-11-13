@@ -47,6 +47,13 @@ const envSchema = z.object({
    * server and serves uploads through the API; it is for development and tests only and is refused in production.
    */
   STORAGE_PROVIDER: z.enum(['local']).default('local'),
+  /**
+   * The service that finds faces, number plates, documents and family photographs to blur in property photos
+   * (Specification 15.3). "none" finds nothing; a real provider must be set before real users sign up.
+   */
+  PRIVATE_REGIONS_PROVIDER: z.enum(['none']).default('none'),
+  /** The secret that makes the hidden watermark in display photos (Specification 15.3). At least 32 characters. */
+  HIDDEN_MARK_KEY: z.string().min(32).default('development-only-hidden-mark-key-change-me'),
   /** Folder used by the "local" storage provider. */
   STORAGE_LOCAL_DIR: z.string().default('.private-storage'),
   /** The API's own address as the apps reach it, used in upload links, e.g. https://api.findhousequick.com. */
@@ -117,6 +124,9 @@ const envSchema = z.object({
   }
   if (env.NODE_ENV === 'production' && env.SMS_PROVIDER === 'log') {
     ctx.addIssue({ code: 'custom', path: ['SMS_PROVIDER'], message: 'The "log" SMS provider cannot be used in production' });
+  }
+  if (env.NODE_ENV === 'production' && env.HIDDEN_MARK_KEY.startsWith('development-only')) {
+    ctx.addIssue({ code: 'custom', path: ['HIDDEN_MARK_KEY'], message: 'Set HIDDEN_MARK_KEY to a long random secret in production' });
   }
   if (env.NODE_ENV === 'production' && env.STORAGE_PROVIDER === 'local') {
     ctx.addIssue({ code: 'custom', path: ['STORAGE_PROVIDER'], message: 'The "local" storage provider cannot be used in production' });

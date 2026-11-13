@@ -3186,7 +3186,15 @@ components:
                   partCode: { type: string }
                   partLabel: { type: string }
                   media: { type: array, items: { $ref: "#/components/schemas/MediaItem" } }
-            walkthrough: { $ref: "#/components/schemas/MediaItem" }
+            walkthrough:
+              type: [object, "null"]
+              description: The watermarked copy of the walkthrough video (at most 720 high), behind a 15-minute link; null until one is ready.
+              properties:
+                id: { $ref: "#/components/schemas/Id" }
+                durationSeconds: { type: [integer, "null"] }
+                capturedAt: { type: string, format: date-time }
+                url: { type: [string, "null"] }
+                expiresAt: { type: [string, "null"], format: date-time }
             savedPlaceDistances:
               type: array
               description: Travel distance to the viewer's saved places (decision 48).

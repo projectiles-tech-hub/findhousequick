@@ -12,6 +12,7 @@ import { JobsModule } from './jobs/jobs.module.js';
 import { EmailModule } from './integrations/email/email.module.js';
 import { IdentityProviderModule } from './integrations/identity/identity.module.js';
 import { StorageModule } from './integrations/storage/storage.module.js';
+import { PrivacyIntegrationModule } from './integrations/privacy/privacy.module.js';
 import { ReviewModule } from './review/review.module.js';
 import { PropertiesModule } from './properties/properties.module.js';
 import { ListingsModule } from './listings/listings.module.js';
@@ -48,6 +49,7 @@ import { PrivacyModule } from './privacy/privacy.module.js';
     EmailModule,
     IdentityProviderModule,
     StorageModule,
+    PrivacyIntegrationModule,
     MapsModule,
     PushModule,
     CallsProviderModule,

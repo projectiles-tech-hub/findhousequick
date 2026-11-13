@@ -308,8 +308,8 @@ export class SearchService {
         .filter((p) => p.mediaKind === 'PHOTO')
         .map((p) => ({ partCode: p.code, partLabel: p.label, note: p.note, media: items.filter((i) => i.partCode === p.code) }))
         .filter((g) => g.media.length > 0),
-      // Shown once its watermarked copy exists (ADR 0009).
-      walkthrough: null,
+      // The watermarked copy of the walkthrough video, behind a 15-minute link (ADR 0009).
+      walkthrough: await this.walkthrough(l.unitId),
       savedPlaceDistances,
       nearbyAmenities: await this.amenities(card.approximateLocation, row.countryCode, settings),
       lister,
@@ -334,6 +334,17 @@ export class SearchService {
       .map((a) => ({ kind: a.kind, name: a.name, distanceM: roundedDistance(metresBetween(at, a.location)) }))
       .sort((x, y) => x.distanceM - y.distanceM)
       .slice(0, m.amenityLimit);
+  }
+
+  private async walkthrough(unitId: string) {
+    const video = await this.prisma.mediaAsset.findFirst({
+      where: { unitId, kind: 'VIDEO', status: 'READY', unitPart: { code: 'walkthrough' } },
+      include: { unitPart: true },
+      orderBy: { capturedAt: 'desc' },
+    });
+    if (!video || !(video.variants as Record<string, string> | null)?.video) return null;
+    const item = await this.media.toItem(video);
+    return { id: item.id, durationSeconds: item.durationSeconds, capturedAt: item.capturedAt, url: item.display?.video ?? null, expiresAt: item.display?.expiresAt ?? null };
   }
 
   // -------------------------------------------------------------------
