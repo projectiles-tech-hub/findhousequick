@@ -166,6 +166,33 @@ describe('Messaging, calls and notifications (API, step 5 part 3)', () => {
     });
   });
 
+  describe('blocking (decision 88)', () => {
+    it('stops messages, calls and bookings both ways, cancels booked inspections, and lifts on unblock', async () => {
+      const { lister, tenant, listing: l, conversation } = await chat();
+      const booked = await prisma.inspection.create({ data: { listingId: l.id, tenantId: tenant.id, hostId: lister.id, scheduledAt: new Date(Date.now() + 86_400_000), status: 'CONFIRMED' } });
+      const after = (await api().post(`/v1/conversations/${conversation.id}/block`).set(bearer(lister.token)).send({ report: { details: 'Rude messages' } }).expect(200)).body;
+      expect(after).toMatchObject({ block: 'BLOCKED_BY_YOU', canSend: false });
+
+      // The blocked tenant is told only that no more messages can be sent.
+      const theirs = (await api().get('/v1/conversations').set(bearer(tenant.token)).expect(200)).body.items.find((c: { id: string }) => c.id === conversation.id);
+      expect(theirs).toMatchObject({ block: 'CANNOT_REPLY', canSend: false });
+      const refused = await api().post(`/v1/conversations/${conversation.id}/messages`).set(bearer(tenant.token)).send({ body: 'Hello?' }).expect(403);
+      expect(refused.body).toMatchObject({ code: 'BLOCKED', message: 'You can no longer send messages in this conversation.' });
+      await api().post(`/v1/conversations/${conversation.id}/messages`).set(bearer(lister.token)).send({ body: 'Hi' }).expect(403);
+      await api().post(`/v1/conversations/${conversation.id}/calls`).set(bearer(tenant.token)).expect(403);
+      expect((await prisma.inspection.findUniqueOrThrow({ where: { id: booked.id } })).status).toBe('CANCELLED');
+      expect(await prisma.reviewTask.count({ where: { type: 'REPORT', entityType: 'User', entityId: tenant.id } })).toBe(1);
+
+      const list = (await api().get('/v1/me/blocks').set(bearer(lister.token)).expect(200)).body;
+      expect(list.items).toEqual([expect.objectContaining({ userId: tenant.id })]);
+      await api().delete(`/v1/me/blocks/${tenant.id}`).set(bearer(lister.token)).expect(204);
+      await api().delete(`/v1/me/blocks/${tenant.id}`).set(bearer(lister.token)).expect(404);
+      await api().post(`/v1/conversations/${conversation.id}/messages`).set(bearer(tenant.token)).send({ body: 'Hello again' }).expect(201);
+      // The block stays on record after unblocking.
+      expect(await prisma.userBlock.count({ where: { blockerId: lister.id, blockedId: tenant.id } })).toBe(1);
+    });
+  });
+
   describe('calls', () => {
     it('rings, answers and ends a call, leaving a line in the chat', async () => {
       const { lister, tenant, conversation } = await chat();

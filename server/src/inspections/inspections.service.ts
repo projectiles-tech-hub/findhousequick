@@ -11,6 +11,7 @@ import { NotificationsService } from '../notifications/notifications.service.js'
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ReportsService } from '../reports/reports.service.js';
 import { availabilitySchema, freeSlots, localDate, type Availability } from './slots.js';
+import { blockBetween } from '../messaging/blocks.js';
 
 const PAGE_SIZE = 20;
 const OPEN = ['REQUESTED', 'CONFIRMED'] as const;
@@ -82,6 +83,8 @@ export class InspectionsService {
     if (place.hostId === user.id || (await this.listings.mayManage(user, listingId))) {
       throw apiError(400, 'OWN_LISTING', 'You cannot book an inspection of your own listing.');
     }
+    // Not between two people where either has blocked the other (decision 88).
+    if (await blockBetween(this.prisma, user.id, place.hostId)) throw apiError(403, 'BLOCKED', 'You cannot book an inspection of this listing.');
     const already = await this.prisma.inspection.count({ where: { listingId, tenantId: user.id, status: { in: [...OPEN] } } });
     if (already) throw apiError(409, 'ALREADY_BOOKED', 'You already have an inspection booked for this listing. Reschedule or cancel it instead.');
     await this.assertFree(place, scheduledAt);

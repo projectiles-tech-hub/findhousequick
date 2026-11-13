@@ -2,7 +2,7 @@
 // Icons are drawn on a 24 by 24 grid with a line of 2.
 
 /// Every icon in the set.
-enum AppIcons { search, map, home, heart, chat, phone, bell, person, filter, location, check, close, back, forward, camera, calendar, help, eye, globe, bed, bath, send, menu, plus, shieldCheck, upload, mail, power, water, money, image, people, lock, homeFilled, mapFilled, heartFilled, chatFilled, bellFilled, personFilled, locationFilled, calendarFilled, shieldCheckFilled, share, play }
+enum AppIcons { search, map, home, heart, chat, phone, bell, person, filter, location, check, close, back, forward, camera, calendar, help, eye, globe, bed, bath, send, menu, plus, shieldCheck, upload, mail, power, water, money, image, people, lock, homeFilled, mapFilled, heartFilled, chatFilled, bellFilled, personFilled, locationFilled, calendarFilled, shieldCheckFilled, share, play, more, block }
 
 const Map<AppIcons, String> appIconShapes = {
   AppIcons.search: '<ellipse cx="10.75" cy="10.75" rx="6.25" ry="6.25" fill="none" stroke="{c}" stroke-width="2"/><path d="M15.4 15.4L20 20" fill="none" stroke="{c}" stroke-width="2"/>',
@@ -49,4 +49,6 @@ const Map<AppIcons, String> appIconShapes = {
   AppIcons.shieldCheckFilled: '<path d="M12 3.25L19 5.9L19 11.1C19 15.4 16.1 18.9 12 20.75C7.9 18.9 5 15.4 5 11.1L5 5.9Z" fill="{c}" stroke="{c}" stroke-width="2"/><path d="M9 12L11.1 14.1L15.25 9.9" fill="none" stroke="{k}" stroke-width="2"/>',
   AppIcons.share: '<ellipse cx="6" cy="12" rx="2.5" ry="2.5" fill="none" stroke="{c}" stroke-width="2"/><ellipse cx="18" cy="6" rx="2.5" ry="2.5" fill="none" stroke="{c}" stroke-width="2"/><ellipse cx="18" cy="18" rx="2.5" ry="2.5" fill="none" stroke="{c}" stroke-width="2"/><path d="M8.2 10.8L15.8 7.2M8.2 13.2L15.8 16.8" fill="none" stroke="{c}" stroke-width="2"/>',
   AppIcons.play: '<ellipse cx="12" cy="12" rx="9" ry="9" fill="none" stroke="{c}" stroke-width="2"/><path d="M10 8.5L15 12L10 15.5L10 8.5Z" fill="{c}" stroke="none"/>',
+  AppIcons.more: '<ellipse cx="5" cy="12" rx="1.75" ry="1.75" fill="{c}" stroke="none"/><ellipse cx="12" cy="12" rx="1.75" ry="1.75" fill="{c}" stroke="none"/><ellipse cx="19" cy="12" rx="1.75" ry="1.75" fill="{c}" stroke="none"/>',
+  AppIcons.block: '<ellipse cx="12" cy="12" rx="8.25" ry="8.25" fill="none" stroke="{c}" stroke-width="2"/><path d="M6.2 6.2L17.8 17.8" fill="none" stroke="{c}" stroke-width="2"/>',
 };

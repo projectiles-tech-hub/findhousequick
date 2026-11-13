@@ -1481,10 +1481,10 @@ class AppTextsPcm extends AppTexts {
   String get whoCanRent => 'Who can rent';
 
   @override
-  String get verifyToBook => 'Verify to book an inspection';
+  String get verifyToBook => 'Verify your identity to book inspections';
 
   @override
-  String get verifyToChat => 'Verify to chat with the lister';
+  String get verifyToChat => 'Verify your identity to message landlords';
 
   @override
   String get homeGoneTitle => 'This home is no longer listed';
@@ -1769,4 +1769,9 @@ class AppTextsPcm extends AppTexts {
 
   @override
   String get nearby => 'Nearby';
+
+  @override
+  String sheetVerifyBookText(String idType) {
+    return 'Landlords and agents only meet verified tenants, so everyone knows who they are dealing with. It takes a few minutes: your $idType and a quick face check.';
+  }
 }

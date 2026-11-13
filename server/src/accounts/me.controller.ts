@@ -1,11 +1,11 @@
-import { Body, Controller, Get, HttpCode, Patch, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Patch, Post, Req } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBearerAuth, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import { contextFromRequest, type RequestUser } from '../controls/request-context.js';
 import { AccountsService } from './accounts.service.js';
 import { CurrentUser } from './auth.js';
-import { ContactCodeDto, ContactConfirmDto, UpdateMeDto } from './dto.js';
+import { ContactCodeDto, ContactConfirmDto, DeleteMeDto, UpdateMeDto } from './dto.js';
 
 @ApiTags('Accounts')
 @ApiBearerAuth()
@@ -25,6 +25,20 @@ export class MeController {
   @ApiOkResponse({ description: 'Updated user' })
   update(@CurrentUser() user: RequestUser, @Body() dto: UpdateMeDto, @Req() req: Request) {
     return this.accounts.updateMe(user.id, dto, contextFromRequest(req));
+  }
+
+  @Delete()
+  @HttpCode(204)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @ApiOperation({
+    summary: 'Delete the account (decision 87)',
+    description:
+      'Closed at once and signed out on every device. A landlord\'s or agent\'s live listings stop showing; upcoming ' +
+      'inspections are cancelled. FindHouseQuick keeps its own records, seen only by authorised staff (Specification 15.2).',
+  })
+  @ApiResponse({ status: 400, description: 'The box was not ticked' })
+  async deleteMe(@CurrentUser() user: RequestUser, @Body() dto: DeleteMeDto): Promise<void> {
+    await this.accounts.deleteMe(user.id, dto.reason);
   }
 
   @Post('contacts/code')

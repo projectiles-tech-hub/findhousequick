@@ -1434,3 +1434,17 @@ model MapsAnswer {
 
   @@index([expiresAt])
 }
+
+/// One user blocking another in chat (decision 88; Specification 7.1). Kept after unblocking, as a record.
+model UserBlock {
+  id             String    @id @default(uuid(7)) @db.Uuid
+  blockerId      String    @db.Uuid
+  blockedId      String    @db.Uuid
+  /// The conversation it was done from.
+  conversationId String?   @db.Uuid
+  createdAt      DateTime  @default(now())
+  unblockedAt    DateTime?
+
+  @@index([blockerId, unblockedAt])
+  @@index([blockedId, unblockedAt])
+}

@@ -75,7 +75,8 @@ class PointsBox extends StatelessWidget {
 
 /// Screen 13, Verify to continue: slides up when someone who is not yet verified tries something that needs it.
 /// Returns true when the user chose "Verify now".
-Future<bool> showVerifySheet(BuildContext context, {required String title, required String idType}) async {
+/// Screen 13, Verify to continue. [text] replaces the words under the title, as in the booking version (Penpot 11b).
+Future<bool> showVerifySheet(BuildContext context, {required String title, required String idType, String? text}) async {
   final chosen = await showModalBottomSheet<bool>(
     context: context,
     backgroundColor: AppColors.surface,
@@ -106,7 +107,7 @@ Future<bool> showVerifySheet(BuildContext context, {required String title, requi
               const SizedBox(height: 16),
               Semantics(header: true, child: Text(title, style: AppText.title.copyWith(height: 27 / 22))),
               const SizedBox(height: 12),
-              Text(t.sheetVerifyText(idType), style: AppText.body.copyWith(color: AppColors.ink600, height: 19.5 / 16)),
+              Text(text ?? t.sheetVerifyText(idType), style: AppText.body.copyWith(color: AppColors.ink600, height: 19.5 / 16)),
               const SizedBox(height: 20),
               AppButton(label: t.verifyNow, onPressed: () => Navigator.of(sheet).pop(true)),
               const SizedBox(height: 12),

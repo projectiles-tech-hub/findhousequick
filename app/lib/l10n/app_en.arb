@@ -837,8 +837,8 @@
   "factAvailableFrom": "Available from",
   "factPhotosTaken": "Photos taken",
   "whoCanRent": "Who can rent",
-  "verifyToBook": "Verify to book an inspection",
-  "verifyToChat": "Verify to chat with the lister",
+  "verifyToBook": "Verify your identity to book inspections",
+  "verifyToChat": "Verify your identity to message landlords",
   "homeGoneTitle": "This home is no longer listed",
   "homeGoneText": "It may have been rented, or the lister took it down. There are more homes like it.",
   "viewLimitTitle": "Sign in to keep viewing homes",
@@ -1003,5 +1003,13 @@
     }
   },
   "photosByRoomText": "Every part of the home, photographed on site through the FindHouseQuick app.",
-  "nearby": "Nearby"
+  "nearby": "Nearby",
+  "sheetVerifyBookText": "Landlords and agents only meet verified tenants, so everyone knows who they are dealing with. It takes a few minutes: your {idType} and a quick face check.",
+  "@sheetVerifyBookText": {
+    "placeholders": {
+      "idType": {
+        "type": "String"
+      }
+    }
+  }
 }

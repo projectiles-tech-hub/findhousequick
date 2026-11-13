@@ -119,8 +119,10 @@ The country settings used by identity checks (ADR 0007):
 | `maps.keepAnswersDays` | 30 | Days an answer from the maps provider is kept before it is asked again; fewer days cost more | Check the provider's terms on keeping answers |
 | `inspections.reminderHoursBefore` | 3 | Hours before a confirmed inspection that the tenant and the lister are reminded | A starting value |
 | `inspections.followUpHoursAfter` | 2 | Hours after a completed inspection's time that both are asked the follow-up questions (Specification 14.2) | A starting value |
+| `verification.blocksForReview` | 5 | How many different people must block someone before the trust team is asked to look at them (decision 88) | 2 to 100. A starting value |
 
 The feature switch `verification.identity_check` (critical) turns identity checks on or off, like any other switch.
+The feature switch `contact.blocking` (on by default) lets users block each other in a conversation (decision 88).
 
 The country settings used at sign-up (ADR 0014):
 

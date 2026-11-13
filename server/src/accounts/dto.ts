@@ -3,6 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
+  Equals,
   ArrayMinSize,
   ArrayUnique,
   IsArray,
@@ -232,4 +233,16 @@ export class ContactConfirmDto extends ContactCodeDto {
   @IsString()
   @MaxLength(128)
   currentPassword?: string;
+}
+
+export class DeleteMeDto {
+  @ApiProperty({ description: '"I understand this cannot be undone", ticked (screen 79)' })
+  @Equals(true, { message: 'Tick "I understand this cannot be undone" first.' })
+  understood!: boolean;
+
+  @ApiPropertyOptional({ description: 'Why the user is leaving, if they say' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  reason?: string;
 }

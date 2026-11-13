@@ -207,7 +207,7 @@ void main() {
     expect(find.text('Usually replies within 2 hours'), findsOneWidget);
     await tester.tap(find.text('Chat with the lister'));
     await tester.pumpAndSettle();
-    expect(find.text('Verify to chat with the lister'), findsOneWidget);
+    expect(find.text('Verify your identity to message landlords'), findsOneWidget);
   });
 
   testWidgets('a listing that has gone says so and offers to keep looking', (tester) async {
