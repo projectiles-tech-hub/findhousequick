@@ -9,6 +9,7 @@ import '../controls/controls.dart';
 import '../design/app_icon.dart';
 import '../design/buttons.dart';
 import '../design/tokens.dart';
+import '../design/website_frame.dart';
 import '../design/wide.dart';
 import '../l10n/languages.dart';
 import '../providers.dart';
@@ -171,30 +172,42 @@ class _PageProblem extends StatelessWidget {
         : limit
         ? (t.viewLimitTitle, t.viewLimitText)
         : (t.somethingWentWrong, t.noConnectionMessage);
+    // As designed in Figma (30a and 30b): the app bar with only the back button, then the words and one button.
+    final words = <Widget>[
+        Semantics(header: true, child: Text(title, style: AppText.title.copyWith(height: 26 / 22))),
+        const SizedBox(height: 12),
+        Text(text, style: AppText.body.copyWith(color: AppColors.ink600, height: 19 / 16)),
+        const SizedBox(height: 24),
+        if (limit)
+          PageButton(label: t.signIn, onPressed: () => context.push('/sign-in'))
+        else if (gone)
+          PageButton(label: t.startLooking, onPressed: () => context.go('/home'))
+        else
+          PageButton(label: t.tryAgain, onPressed: onRetry),
+    ];
+    if (AppWide.of(context)) {
+      return WebsiteFrame(
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: SizedBox(width: 560, child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: words)),
+          ),
+        ],
+      );
+    }
+    final body = ListView(padding: const EdgeInsets.all(16), children: words);
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(
-        backgroundColor: AppColors.surface,
-        elevation: 0,
-        leading: AppIconButton(icon: AppIcons.back, label: t.back, onPressed: () => context.canPop() ? context.pop() : context.go('/home')),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Semantics(
-            header: true,
-            child: Text(title, style: AppText.title.copyWith(height: 27 / 22)),
-          ),
-          const SizedBox(height: 12),
-          Text(text, style: AppText.body.copyWith(color: AppColors.ink600)),
-          const SizedBox(height: 24),
-          if (limit)
-            AppButton(label: t.signIn, onPressed: () => context.push('/sign-in'))
-          else if (gone)
-            AppButton(label: t.startLooking, onPressed: () => context.go('/home'))
-          else
-            AppButton(label: t.tryAgain, onPressed: onRetry),
-        ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            SizedBox(
+              height: 56,
+              child: Row(children: [const SizedBox(width: 4), AppIconButton(icon: AppIcons.back, label: t.back, onPressed: () => context.canPop() ? context.pop() : context.go('/home'))]),
+            ),
+            Expanded(child: body),
+          ],
+        ),
       ),
     );
   }
