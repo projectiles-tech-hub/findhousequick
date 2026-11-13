@@ -1419,4 +1419,342 @@ class AppTextsPcm extends AppTexts {
     );
     return '$_temp0';
   }
+
+  @override
+  String get feeAgency => 'Agency fee';
+
+  @override
+  String get feeLegal => 'Legal or agreement fee';
+
+  @override
+  String get feeCaution => 'Caution deposit';
+
+  @override
+  String get feeService => 'Service charge';
+
+  @override
+  String get groundFloor => 'Ground floor';
+
+  @override
+  String get basement => 'Basement';
+
+  @override
+  String floorNumber(String n) {
+    String _temp0 = intl.Intl.selectLogic(n, {
+      '1': 'First floor',
+      '2': 'Second floor',
+      '3': 'Third floor',
+      '4': 'Fourth floor',
+      '5': 'Fifth floor',
+      '6': 'Sixth floor',
+      '7': 'Seventh floor',
+      '8': 'Eighth floor',
+      '9': 'Ninth floor',
+      '10': 'Tenth floor',
+      'other': 'Floor $n',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get factBedrooms => 'Bedrooms';
+
+  @override
+  String get factBathrooms => 'Bathrooms';
+
+  @override
+  String get factToilets => 'Toilets';
+
+  @override
+  String get factFloor => 'Floor';
+
+  @override
+  String get factFloorArea => 'Floor area';
+
+  @override
+  String get factAvailableFrom => 'Available from';
+
+  @override
+  String get factPhotosTaken => 'Photos taken';
+
+  @override
+  String get whoCanRent => 'Who can rent';
+
+  @override
+  String get verifyToBook => 'Verify to book an inspection';
+
+  @override
+  String get verifyToChat => 'Verify to chat with the lister';
+
+  @override
+  String get homeGoneTitle => 'This home is no longer listed';
+
+  @override
+  String get homeGoneText =>
+      'It may have been rented, or the lister took it down. There are more homes like it.';
+
+  @override
+  String get viewLimitTitle => 'Sign in to keep viewing homes';
+
+  @override
+  String get viewLimitText =>
+      'You have opened a great many homes this hour. Create a free account or sign in to carry on.';
+
+  @override
+  String get inspectionsAreFree => 'Inspections are free';
+
+  @override
+  String get bookFreeInspection => 'Book a free inspection';
+
+  @override
+  String get chatWithLister => 'Chat with the lister';
+
+  @override
+  String get whatYouPay => 'What you pay';
+
+  @override
+  String get totalToMoveIn => 'Total to move in';
+
+  @override
+  String get totalLabel => 'Total';
+
+  @override
+  String get rentOneYear => '1 year';
+
+  @override
+  String get rentOneMonth => '1 month';
+
+  @override
+  String get rentOneWeek => '1 week';
+
+  @override
+  String get rentOneNight => '1 night';
+
+  @override
+  String rentFor(String period) {
+    return 'Rent ($period)';
+  }
+
+  @override
+  String get noHiddenFees =>
+      'Inspections are free. No fee may be charged that is not shown here.';
+
+  @override
+  String get verifiedLandlord => 'Verified landlord';
+
+  @override
+  String get verifiedAgent => 'Verified agent';
+
+  @override
+  String repliesMinutes(int n) {
+    return 'Usually replies within $n minutes';
+  }
+
+  @override
+  String repliesHours(int n) {
+    String _temp0 = intl.Intl.pluralLogic(
+      n,
+      locale: localeName,
+      other: 'Usually replies within $n hours',
+      one: 'Usually replies within 1 hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get photosByRoom => 'Photos by room';
+
+  @override
+  String get video => 'Video';
+
+  @override
+  String get walkthroughVideo => 'Walkthrough video';
+
+  @override
+  String get walkthroughText => 'One continuous take through the whole home';
+
+  @override
+  String get keyDetails => 'Key details';
+
+  @override
+  String get aboutThisHome => 'About this home';
+
+  @override
+  String get location => 'Location';
+
+  @override
+  String get approximateArea => 'Approximate area';
+
+  @override
+  String get exactAddressLater =>
+      'The exact address and directions are shared once an inspection is confirmed.';
+
+  @override
+  String get homesGoQuickly => 'Homes like this go quickly';
+
+  @override
+  String alertSimilarIn(String area) {
+    return 'Get an alert when a similar home is listed in $area.';
+  }
+
+  @override
+  String getAlertsFor(String area) {
+    return 'Get alerts for $area';
+  }
+
+  @override
+  String get similarHomesNearby => 'Similar homes nearby';
+
+  @override
+  String similarHomesText(int n) {
+    return '$n bedroom homes at a similar rent';
+  }
+
+  @override
+  String get seeAllSimilar => 'See all similar homes';
+
+  @override
+  String moreHomesIn(String area) {
+    return 'More homes in $area';
+  }
+
+  @override
+  String seeAllHomesIn(String area) {
+    return 'See all homes in $area';
+  }
+
+  @override
+  String get moreFromUs => 'More from FindHouseQuick';
+
+  @override
+  String get moreChecked => 'Identity-checked listers';
+
+  @override
+  String get moreCheckedText =>
+      'Every landlord and agent proves who they are before a home goes live.';
+
+  @override
+  String get moreCheckedLink => 'How we check';
+
+  @override
+  String get moreFree => 'Free inspections';
+
+  @override
+  String get moreFreeText =>
+      'Book a time in the app. Nobody may charge you to see a home.';
+
+  @override
+  String get moreFreeLink => 'Booking an inspection';
+
+  @override
+  String get moreList => 'List your property free';
+
+  @override
+  String get moreListText =>
+      'Landlords and agents list for free and manage tenants, rent and receipts.';
+
+  @override
+  String get moreListLink => 'List your property';
+
+  @override
+  String get moreScout => 'Become a scout';
+
+  @override
+  String get moreScoutText =>
+      'Spot a vacant property, invite the landlord, and earn a reward when it is rented.';
+
+  @override
+  String get moreScoutLink => 'Start scouting';
+
+  @override
+  String seeAllPhotos(int n) {
+    return 'See all $n photos';
+  }
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get compare => 'Compare';
+
+  @override
+  String get report => 'Report';
+
+  @override
+  String approximatePlace(String place) {
+    return '$place (approximate area)';
+  }
+
+  @override
+  String get searchButton => 'Search';
+
+  @override
+  String get everyListerProves =>
+      'Every landlord and agent proves who they are before they can list';
+
+  @override
+  String get listYourProperty => 'List your property';
+
+  @override
+  String get becomeScout => 'Become a scout';
+
+  @override
+  String get help => 'Help';
+
+  @override
+  String get homesToRent => 'Homes to rent';
+
+  @override
+  String get footerFind => 'Find a place';
+
+  @override
+  String get footerList => 'List and earn';
+
+  @override
+  String get listAProperty => 'List a property';
+
+  @override
+  String get forAgents => 'For agents';
+
+  @override
+  String get helpCentre => 'Help centre';
+
+  @override
+  String get reportAListing => 'Report a listing';
+
+  @override
+  String get termsOfUse => 'Terms of use';
+
+  @override
+  String get privacyPolicy => 'Privacy policy';
+
+  @override
+  String get footerAbout =>
+      'Houses, flats, shops and short lets to rent, from landlords and agents whose identity we have checked.';
+
+  @override
+  String copyright(String year) {
+    return '© $year Projectiles Tech Hub Limited';
+  }
+
+  @override
+  String get crumbHome => 'Home';
+
+  @override
+  String get savedLabel => 'Saved';
+
+  @override
+  String get saveLabel => 'Save';
+
+  @override
+  String get periodPerYear => 'per year';
+
+  @override
+  String get periodPerMonth => 'per month';
+
+  @override
+  String get periodPerWeek => 'per week';
+
+  @override
+  String get periodPerNight => 'per night';
 }

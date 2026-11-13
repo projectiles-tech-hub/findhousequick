@@ -5,6 +5,7 @@ import { GoogleMapsAdapter } from './google-maps.adapter.js';
 import { MAPS, type Fetch, type Maps, type MapsProvider } from './maps-provider.js';
 import { NoneMapsAdapter } from './none-maps.adapter.js';
 import { OpenStreetMapAdapter } from './openstreetmap.adapter.js';
+import { GoogleTiles, NoTiles, OpenStreetMapTiles, type MapTiles } from './map-tiles.js';
 
 export type MapsSettings = Pick<
   Env,
@@ -18,6 +19,10 @@ export type MapsSettings = Pick<
   | 'OSM_AMENITIES_URL'
   | 'OSM_ROUTES_URL'
   | 'OSM_USER_AGENT'
+  | 'MAPS_TILES_PROVIDER'
+  | 'GOOGLE_MAPS_TILES_KEY'
+  | 'OSM_TILES_URL'
+  | 'OSM_TILES_ATTRIBUTION'
 >;
 
 /**
@@ -48,6 +53,16 @@ export function buildMaps(env: MapsSettings, doFetch: Fetch = fetch): Maps {
   };
 }
 
+export const MAP_TILES = Symbol('MAP_TILES');
+
+/** Picks who draws the map picture in the apps: MAPS_TILES_PROVIDER, or MAPS_PROVIDER when that is not set. */
+export function buildMapTiles(env: MapsSettings, language: string, region: string, doFetch: Fetch = fetch): MapTiles {
+  const which = env.MAPS_TILES_PROVIDER ?? env.MAPS_PROVIDER;
+  if (which === 'google' && env.GOOGLE_MAPS_TILES_KEY) return new GoogleTiles(env.GOOGLE_MAPS_TILES_KEY, language, region, env.MAPS_TIMEOUT_MS, doFetch);
+  if (which === 'openstreetmap' && env.OSM_TILES_URL) return new OpenStreetMapTiles(env.OSM_TILES_URL, env.OSM_TILES_ATTRIBUTION);
+  return new NoTiles();
+}
+
 /** Provides the maps services named in the server settings. */
 @Global()
 @Module({
@@ -67,9 +82,32 @@ export function buildMaps(env: MapsSettings, doFetch: Fetch = fetch): Maps {
           OSM_AMENITIES_URL: config.get('OSM_AMENITIES_URL', { infer: true }),
           OSM_ROUTES_URL: config.get('OSM_ROUTES_URL', { infer: true }),
           OSM_USER_AGENT: config.get('OSM_USER_AGENT', { infer: true }),
+          MAPS_TILES_PROVIDER: config.get('MAPS_TILES_PROVIDER', { infer: true }),
+          GOOGLE_MAPS_TILES_KEY: config.get('GOOGLE_MAPS_TILES_KEY', { infer: true }),
+          OSM_TILES_URL: config.get('OSM_TILES_URL', { infer: true }),
+          OSM_TILES_ATTRIBUTION: config.get('OSM_TILES_ATTRIBUTION', { infer: true }),
         }),
     },
+    {
+      provide: MAP_TILES,
+      inject: [ConfigService],
+      // Google's tile session is made in one language and region; the first country's are used until a second
+      // country goes live (then one session per country is made).
+      useFactory: (config: ConfigService<Env, true>): MapTiles =>
+        buildMapTiles(
+          {
+            MAPS_PROVIDER: config.get('MAPS_PROVIDER', { infer: true }),
+            MAPS_TILES_PROVIDER: config.get('MAPS_TILES_PROVIDER', { infer: true }),
+            GOOGLE_MAPS_TILES_KEY: config.get('GOOGLE_MAPS_TILES_KEY', { infer: true }),
+            OSM_TILES_URL: config.get('OSM_TILES_URL', { infer: true }),
+            OSM_TILES_ATTRIBUTION: config.get('OSM_TILES_ATTRIBUTION', { infer: true }),
+            MAPS_TIMEOUT_MS: config.get('MAPS_TIMEOUT_MS', { infer: true }),
+          } as MapsSettings,
+          'en',
+          'NG',
+        ),
+    },
   ],
-  exports: [MAPS],
+  exports: [MAPS, MAP_TILES],
 })
 export class MapsModule {}

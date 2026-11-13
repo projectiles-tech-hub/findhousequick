@@ -17,6 +17,7 @@ import 'l10n/languages.dart';
 import 'l10n/locale.dart';
 import 'session/session.dart';
 import 'theme/theme.dart';
+import 'property/property_screen.dart';
 import 'verification/verification_screens.dart';
 
 /// Set with --dart-define=PARTS_GALLERY=true to open the page of shared parts at /parts. Off in every released build.
@@ -43,6 +44,8 @@ GoRouter buildRouter({String initialLocation = '/'}) => GoRouter(
         GoRoute(path: '/search/place', builder: (context, state) => const PlaceSearchScreen()),
         GoRoute(path: '/search/save-area', builder: (context, state) => const SaveAreaScreen()),
         GoRoute(path: '/search/location', builder: (context, state) => const LocationPermissionScreen()),
+        // The same address as the public website's page for the listing, so a shared link opens in either.
+        GoRoute(path: '/homes/:id', builder: (context, state) => PropertyScreen(listingId: state.pathParameters['id']!)),
         GoRoute(
           path: '/sign-up',
           builder: (context, state) => WhoAreYouScreen(preselect: state.uri.queryParameters['as'], invitationCode: state.uri.queryParameters['invitation']),

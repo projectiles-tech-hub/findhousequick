@@ -99,6 +99,11 @@ describe('Search, the property page and saved items (API, step 5 part 2)', () =>
   });
 
   describe('search', () => {
+    it('says where the map picture comes from, or that there is none, to signed-out visitors too', async () => {
+      const res = (await api().get('/v1/maps/tiles').expect(200)).body;
+      expect(res).toEqual({ source: null });
+    });
+
     it('finds live listings around a point, nearest first, with approximate positions and rounded distances', async () => {
       const landlord = await person(['LANDLORD']);
       const near = await liveListing(landlord, at(300));

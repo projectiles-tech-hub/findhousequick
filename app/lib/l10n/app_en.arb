@@ -814,5 +814,184 @@
         "type": "int"
       }
     }
-  }
+  },
+  "feeAgency": "Agency fee",
+  "feeLegal": "Legal or agreement fee",
+  "feeCaution": "Caution deposit",
+  "feeService": "Service charge",
+  "groundFloor": "Ground floor",
+  "basement": "Basement",
+  "floorNumber": "{n, select, 1{First floor} 2{Second floor} 3{Third floor} 4{Fourth floor} 5{Fifth floor} 6{Sixth floor} 7{Seventh floor} 8{Eighth floor} 9{Ninth floor} 10{Tenth floor} other{Floor {n}}}",
+  "@floorNumber": {
+    "placeholders": {
+      "n": {
+        "type": "String"
+      }
+    }
+  },
+  "factBedrooms": "Bedrooms",
+  "factBathrooms": "Bathrooms",
+  "factToilets": "Toilets",
+  "factFloor": "Floor",
+  "factFloorArea": "Floor area",
+  "factAvailableFrom": "Available from",
+  "factPhotosTaken": "Photos taken",
+  "whoCanRent": "Who can rent",
+  "verifyToBook": "Verify to book an inspection",
+  "verifyToChat": "Verify to chat with the lister",
+  "homeGoneTitle": "This home is no longer listed",
+  "homeGoneText": "It may have been rented, or the lister took it down. There are more homes like it.",
+  "viewLimitTitle": "Sign in to keep viewing homes",
+  "viewLimitText": "You have opened a great many homes this hour. Create a free account or sign in to carry on.",
+  "inspectionsAreFree": "Inspections are free",
+  "bookFreeInspection": "Book a free inspection",
+  "chatWithLister": "Chat with the lister",
+  "whatYouPay": "What you pay",
+  "totalToMoveIn": "Total to move in",
+  "totalLabel": "Total",
+  "rentOneYear": "1 year",
+  "rentOneMonth": "1 month",
+  "rentOneWeek": "1 week",
+  "rentOneNight": "1 night",
+  "rentFor": "Rent ({period})",
+  "@rentFor": {
+    "placeholders": {
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "noHiddenFees": "Inspections are free. No fee may be charged that is not shown here.",
+  "verifiedLandlord": "Verified landlord",
+  "verifiedAgent": "Verified agent",
+  "repliesMinutes": "Usually replies within {n} minutes",
+  "@repliesMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "repliesHours": "{n, plural, =1{Usually replies within 1 hour} other{Usually replies within {n} hours}}",
+  "@repliesHours": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "photosByRoom": "Photos by room",
+  "video": "Video",
+  "walkthroughVideo": "Walkthrough video",
+  "walkthroughText": "One continuous take through the whole home",
+  "keyDetails": "Key details",
+  "aboutThisHome": "About this home",
+  "location": "Location",
+  "approximateArea": "Approximate area",
+  "exactAddressLater": "The exact address and directions are shared once an inspection is confirmed.",
+  "homesGoQuickly": "Homes like this go quickly",
+  "alertSimilarIn": "Get an alert when a similar home is listed in {area}.",
+  "@alertSimilarIn": {
+    "placeholders": {
+      "area": {
+        "type": "String"
+      }
+    }
+  },
+  "getAlertsFor": "Get alerts for {area}",
+  "@getAlertsFor": {
+    "placeholders": {
+      "area": {
+        "type": "String"
+      }
+    }
+  },
+  "similarHomesNearby": "Similar homes nearby",
+  "similarHomesText": "{n} bedroom homes at a similar rent",
+  "@similarHomesText": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "seeAllSimilar": "See all similar homes",
+  "moreHomesIn": "More homes in {area}",
+  "@moreHomesIn": {
+    "placeholders": {
+      "area": {
+        "type": "String"
+      }
+    }
+  },
+  "seeAllHomesIn": "See all homes in {area}",
+  "@seeAllHomesIn": {
+    "placeholders": {
+      "area": {
+        "type": "String"
+      }
+    }
+  },
+  "moreFromUs": "More from FindHouseQuick",
+  "moreChecked": "Identity-checked listers",
+  "moreCheckedText": "Every landlord and agent proves who they are before a home goes live.",
+  "moreCheckedLink": "How we check",
+  "moreFree": "Free inspections",
+  "moreFreeText": "Book a time in the app. Nobody may charge you to see a home.",
+  "moreFreeLink": "Booking an inspection",
+  "moreList": "List your property free",
+  "moreListText": "Landlords and agents list for free and manage tenants, rent and receipts.",
+  "moreListLink": "List your property",
+  "moreScout": "Become a scout",
+  "moreScoutText": "Spot a vacant property, invite the landlord, and earn a reward when it is rented.",
+  "moreScoutLink": "Start scouting",
+  "seeAllPhotos": "See all {n} photos",
+  "@seeAllPhotos": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "share": "Share",
+  "compare": "Compare",
+  "report": "Report",
+  "approximatePlace": "{place} (approximate area)",
+  "@approximatePlace": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "searchButton": "Search",
+  "everyListerProves": "Every landlord and agent proves who they are before they can list",
+  "listYourProperty": "List your property",
+  "becomeScout": "Become a scout",
+  "help": "Help",
+  "homesToRent": "Homes to rent",
+  "footerFind": "Find a place",
+  "footerList": "List and earn",
+  "listAProperty": "List a property",
+  "forAgents": "For agents",
+  "helpCentre": "Help centre",
+  "reportAListing": "Report a listing",
+  "termsOfUse": "Terms of use",
+  "privacyPolicy": "Privacy policy",
+  "footerAbout": "Houses, flats, shops and short lets to rent, from landlords and agents whose identity we have checked.",
+  "copyright": "© {year} Projectiles Tech Hub Limited",
+  "crumbHome": "Home",
+  "savedLabel": "Saved",
+  "saveLabel": "Save",
+  "@copyright": {
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "periodPerYear": "per year",
+  "periodPerMonth": "per month",
+  "periodPerWeek": "per week",
+  "periodPerNight": "per night"
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Inject, Param, ParseUUIDPipe, Post, Put, Query, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CurrentUser, Public } from '../accounts/auth.js';
@@ -7,6 +7,8 @@ import type { RequestUser } from '../controls/request-context.js';
 import { contextFromRequest } from '../controls/request-context.js';
 import { RequireFeature } from '../controls/require-feature.guard.js';
 import { AreasQuery, PlacesQuery, RelatedQuery, SavedPlaceDto, SavedSearchDto, SearchListingsQuery } from './dto.js';
+import { MAP_TILES } from '../integrations/maps/maps.module.js';
+import type { MapTiles } from '../integrations/maps/map-tiles.js';
 import { SavedService } from './saved.service.js';
 import { SearchService } from './search.service.js';
 
@@ -16,7 +18,21 @@ export class SearchController {
   constructor(
     private readonly search: SearchService,
     private readonly saved: SavedService,
+    @Inject(MAP_TILES) private readonly tiles: MapTiles,
   ) {}
+
+  @Get('maps/tiles')
+  @Public()
+  @ApiOperation({
+    summary: 'Where the apps fetch the map picture from',
+    description:
+      'The tile address (with {z}, {x} and {y}), the credit to show on the map, the highest zoom, and until when the ' +
+      'address works. `source` is null when no map provider is set; the apps then say the map is not available (decision 81).',
+  })
+  @ApiOkResponse({ description: '{ source }' })
+  async mapTiles() {
+    return { source: await this.tiles.source() };
+  }
 
   @Get('search/listings')
   @Public()

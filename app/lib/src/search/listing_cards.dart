@@ -1,14 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../design/app_icon.dart';
 import '../design/chips.dart';
 import '../design/tokens.dart';
 import '../l10n/languages.dart';
 import '../listings/listing_collage.dart' show formatMoney, rentPeriodText;
-import '../providers.dart';
 import '../session/session.dart';
 import 'search_api.dart';
 import 'search_state.dart';
@@ -23,10 +21,8 @@ String radiusText(AppTexts t, int metres) => metres < 1000 ? t.withinM(metres) :
 
 String periodShort(AppTexts t, String period) => switch (period) { 'MONTH' => t.perMonthShort, 'WEEK' => t.perWeekShort, 'NIGHT' => t.perNightShort, _ => t.perYearShort };
 
-/// Opens a listing. The property page is built in the next part of the app (part 3c); until then the listing opens
-/// on the public website, whose page for it is approved (page 108).
-void openListing(WidgetRef ref, String id) =>
-    launchUrl(Uri.parse('${ref.read(appConfigProvider).webUrl}/homes/$id'), webOnlyWindowName: '_blank');
+/// Opens a listing on the property page (screen 30).
+void openListing(BuildContext context, String id) => context.push('/homes/$id');
 
 Widget _photo(String? url, {required double radius}) {
   const placeholder = ColoredBox(color: AppColors.divider, child: Center(child: AppIcon(AppIcons.camera, color: AppColors.ink400)));
@@ -61,7 +57,7 @@ class ResultCard extends ConsumerWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.medium), side: const BorderSide(color: AppColors.divider)),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => openListing(ref, listing.id),
+          onTap: () => openListing(context, listing.id),
           child: SizedBox(
             width: width,
             child: Column(
@@ -153,7 +149,7 @@ class CompactCard extends ConsumerWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.medium), side: const BorderSide(color: AppColors.divider)),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => openListing(ref, listing.id),
+          onTap: () => openListing(context, listing.id),
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Row(

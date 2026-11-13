@@ -1538,6 +1538,32 @@ paths:
                     description: { type: string }
                     location: { $ref: "#/components/schemas/LatLng" }
 
+  /maps/tiles:
+    get:
+      tags: [Search]
+      summary: Where the apps fetch the map picture from
+      description: |
+        The map picture is made of square images ("tiles"). This says where to fetch them, the credit to show on the
+        map and until when the address works (Google's address lasts about two weeks; ask again after `expiresAt`).
+        `source` is null when no map provider is set, and the apps show that the map is not available (decision 81).
+      security: [{}, { bearer: [] }]
+      responses:
+        "200":
+          description: The tile source, or null.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  source:
+                    type: [object, "null"]
+                    properties:
+                      provider: { type: string, enum: [google, openstreetmap] }
+                      urlTemplate: { type: string, description: "With {z}, {x} and {y}" }
+                      attribution: { type: string }
+                      maxZoom: { type: integer }
+                      expiresAt: { type: [string, "null"], format: date-time }
+
   # ------------------------------------------------------------------
   # Saved searches and favourites
   # ------------------------------------------------------------------

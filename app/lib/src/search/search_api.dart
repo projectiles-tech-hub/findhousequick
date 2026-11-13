@@ -150,6 +150,7 @@ class ListingCardData {
     this.distanceM,
     this.badges = const [],
     this.publishedAt,
+    this.location,
   });
 
   final String id;
@@ -165,6 +166,9 @@ class ListingCardData {
   final int? distanceM;
   final List<String> badges;
   final DateTime? publishedAt;
+
+  /// Approximate until an inspection is confirmed (Specification 4.3); where the map pin goes.
+  final LatLng? location;
 
   bool get listerVerified => badges.contains('OWNER_VERIFIED') || badges.contains('AUTHORITY_VERIFIED');
   String get place => [area, city].where((s) => s.isNotEmpty).join(', ');
@@ -185,6 +189,7 @@ class ListingCardData {
       distanceM: (j['distanceM'] as num?)?.toInt(),
       badges: ((j['badges'] as List?) ?? const []).cast<String>(),
       publishedAt: j['publishedAt'] == null ? null : DateTime.tryParse(j['publishedAt'] as String),
+      location: j['approximateLocation'] is Map ? LatLng.fromJson((j['approximateLocation'] as Map).cast<String, dynamic>()) : null,
     );
   }
 }
@@ -194,6 +199,28 @@ class SearchPage {
   final List<ListingCardData> items;
   final int total;
   final String? nextCursor;
+}
+
+/// A group of listings shown as one pin when the map is zoomed out.
+class MapCluster {
+  const MapCluster({required this.centre, required this.count});
+  final LatLng centre;
+  final int count;
+}
+
+class MapPage {
+  const MapPage({required this.items, required this.clusters});
+  final List<ListingCardData> items;
+  final List<MapCluster> clusters;
+}
+
+/// Where the map picture comes from (GET /maps/tiles).
+class TileSource {
+  const TileSource({required this.urlTemplate, required this.attribution, required this.maxZoom, this.expiresAt});
+  final String urlTemplate;
+  final String attribution;
+  final int maxZoom;
+  final DateTime? expiresAt;
 }
 
 class PlaceResult {
@@ -244,6 +271,36 @@ class SearchApi {
   }
 
   /// Only how many homes match, for the button on the filters screen and the suggestions when nothing matches.
+  /// The listings inside the part of the map on screen; zoomed out, they come back grouped.
+  Future<MapPage> mapArea({required LatLng south, required LatLng north, required double zoom, required SearchFilters filters}) async {
+    // Only the filters: the part of the map takes the place of a centre, area or city.
+    final params = SearchQuery(place: const SearchPlace.city(''), filters: filters).toParams()
+      ..remove('city')
+      ..remove('sort')
+      ..['bbox'] = [south.lat, south.lng, north.lat, north.lng].map((v) => v.toStringAsFixed(5)).join(',')
+      ..['zoom'] = zoom.floor().clamp(1, 22);
+    final j = await _api.getJson('/search/listings', query: params);
+    return MapPage(
+      items: [for (final i in (j['items'] as List? ?? const [])) ListingCardData.fromJson((i as Map).cast<String, dynamic>())],
+      clusters: [
+        for (final c in (j['clusters'] as List? ?? const []))
+          MapCluster(centre: LatLng.fromJson(((c as Map)['centre'] as Map).cast<String, dynamic>()), count: (c['count'] as num).toInt()),
+      ],
+    );
+  }
+
+  /// Null when no map provider is set on the server.
+  Future<TileSource?> tileSource() async {
+    final s = (await _api.getJson('/maps/tiles'))['source'];
+    if (s is! Map) return null;
+    return TileSource(
+      urlTemplate: s['urlTemplate'] as String,
+      attribution: s['attribution'] as String,
+      maxZoom: (s['maxZoom'] as num).toInt(),
+      expiresAt: s['expiresAt'] == null ? null : DateTime.tryParse(s['expiresAt'] as String),
+    );
+  }
+
   Future<int> count(SearchQuery query) async => (await search(query)).total;
 
   Future<List<PlaceResult>> places(String text) async {

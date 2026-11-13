@@ -2413,6 +2413,576 @@ abstract class AppTexts {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 toilet} other{{count} toilets}}'**
   String toiletsCount(int count);
+
+  /// No description provided for @feeAgency.
+  ///
+  /// In en, this message translates to:
+  /// **'Agency fee'**
+  String get feeAgency;
+
+  /// No description provided for @feeLegal.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal or agreement fee'**
+  String get feeLegal;
+
+  /// No description provided for @feeCaution.
+  ///
+  /// In en, this message translates to:
+  /// **'Caution deposit'**
+  String get feeCaution;
+
+  /// No description provided for @feeService.
+  ///
+  /// In en, this message translates to:
+  /// **'Service charge'**
+  String get feeService;
+
+  /// No description provided for @groundFloor.
+  ///
+  /// In en, this message translates to:
+  /// **'Ground floor'**
+  String get groundFloor;
+
+  /// No description provided for @basement.
+  ///
+  /// In en, this message translates to:
+  /// **'Basement'**
+  String get basement;
+
+  /// No description provided for @floorNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, select, 1{First floor} 2{Second floor} 3{Third floor} 4{Fourth floor} 5{Fifth floor} 6{Sixth floor} 7{Seventh floor} 8{Eighth floor} 9{Ninth floor} 10{Tenth floor} other{Floor {n}}}'**
+  String floorNumber(String n);
+
+  /// No description provided for @factBedrooms.
+  ///
+  /// In en, this message translates to:
+  /// **'Bedrooms'**
+  String get factBedrooms;
+
+  /// No description provided for @factBathrooms.
+  ///
+  /// In en, this message translates to:
+  /// **'Bathrooms'**
+  String get factBathrooms;
+
+  /// No description provided for @factToilets.
+  ///
+  /// In en, this message translates to:
+  /// **'Toilets'**
+  String get factToilets;
+
+  /// No description provided for @factFloor.
+  ///
+  /// In en, this message translates to:
+  /// **'Floor'**
+  String get factFloor;
+
+  /// No description provided for @factFloorArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Floor area'**
+  String get factFloorArea;
+
+  /// No description provided for @factAvailableFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Available from'**
+  String get factAvailableFrom;
+
+  /// No description provided for @factPhotosTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos taken'**
+  String get factPhotosTaken;
+
+  /// No description provided for @whoCanRent.
+  ///
+  /// In en, this message translates to:
+  /// **'Who can rent'**
+  String get whoCanRent;
+
+  /// No description provided for @verifyToBook.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify to book an inspection'**
+  String get verifyToBook;
+
+  /// No description provided for @verifyToChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify to chat with the lister'**
+  String get verifyToChat;
+
+  /// No description provided for @homeGoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This home is no longer listed'**
+  String get homeGoneTitle;
+
+  /// No description provided for @homeGoneText.
+  ///
+  /// In en, this message translates to:
+  /// **'It may have been rented, or the lister took it down. There are more homes like it.'**
+  String get homeGoneText;
+
+  /// No description provided for @viewLimitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to keep viewing homes'**
+  String get viewLimitTitle;
+
+  /// No description provided for @viewLimitText.
+  ///
+  /// In en, this message translates to:
+  /// **'You have opened a great many homes this hour. Create a free account or sign in to carry on.'**
+  String get viewLimitText;
+
+  /// No description provided for @inspectionsAreFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspections are free'**
+  String get inspectionsAreFree;
+
+  /// No description provided for @bookFreeInspection.
+  ///
+  /// In en, this message translates to:
+  /// **'Book a free inspection'**
+  String get bookFreeInspection;
+
+  /// No description provided for @chatWithLister.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat with the lister'**
+  String get chatWithLister;
+
+  /// No description provided for @whatYouPay.
+  ///
+  /// In en, this message translates to:
+  /// **'What you pay'**
+  String get whatYouPay;
+
+  /// No description provided for @totalToMoveIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Total to move in'**
+  String get totalToMoveIn;
+
+  /// No description provided for @totalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get totalLabel;
+
+  /// No description provided for @rentOneYear.
+  ///
+  /// In en, this message translates to:
+  /// **'1 year'**
+  String get rentOneYear;
+
+  /// No description provided for @rentOneMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'1 month'**
+  String get rentOneMonth;
+
+  /// No description provided for @rentOneWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'1 week'**
+  String get rentOneWeek;
+
+  /// No description provided for @rentOneNight.
+  ///
+  /// In en, this message translates to:
+  /// **'1 night'**
+  String get rentOneNight;
+
+  /// No description provided for @rentFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Rent ({period})'**
+  String rentFor(String period);
+
+  /// No description provided for @noHiddenFees.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspections are free. No fee may be charged that is not shown here.'**
+  String get noHiddenFees;
+
+  /// No description provided for @verifiedLandlord.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified landlord'**
+  String get verifiedLandlord;
+
+  /// No description provided for @verifiedAgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified agent'**
+  String get verifiedAgent;
+
+  /// No description provided for @repliesMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Usually replies within {n} minutes'**
+  String repliesMinutes(int n);
+
+  /// No description provided for @repliesHours.
+  ///
+  /// In en, this message translates to:
+  /// **'{n, plural, =1{Usually replies within 1 hour} other{Usually replies within {n} hours}}'**
+  String repliesHours(int n);
+
+  /// No description provided for @photosByRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos by room'**
+  String get photosByRoom;
+
+  /// No description provided for @video.
+  ///
+  /// In en, this message translates to:
+  /// **'Video'**
+  String get video;
+
+  /// No description provided for @walkthroughVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Walkthrough video'**
+  String get walkthroughVideo;
+
+  /// No description provided for @walkthroughText.
+  ///
+  /// In en, this message translates to:
+  /// **'One continuous take through the whole home'**
+  String get walkthroughText;
+
+  /// No description provided for @keyDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Key details'**
+  String get keyDetails;
+
+  /// No description provided for @aboutThisHome.
+  ///
+  /// In en, this message translates to:
+  /// **'About this home'**
+  String get aboutThisHome;
+
+  /// No description provided for @location.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get location;
+
+  /// No description provided for @approximateArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Approximate area'**
+  String get approximateArea;
+
+  /// No description provided for @exactAddressLater.
+  ///
+  /// In en, this message translates to:
+  /// **'The exact address and directions are shared once an inspection is confirmed.'**
+  String get exactAddressLater;
+
+  /// No description provided for @homesGoQuickly.
+  ///
+  /// In en, this message translates to:
+  /// **'Homes like this go quickly'**
+  String get homesGoQuickly;
+
+  /// No description provided for @alertSimilarIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Get an alert when a similar home is listed in {area}.'**
+  String alertSimilarIn(String area);
+
+  /// No description provided for @getAlertsFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Get alerts for {area}'**
+  String getAlertsFor(String area);
+
+  /// No description provided for @similarHomesNearby.
+  ///
+  /// In en, this message translates to:
+  /// **'Similar homes nearby'**
+  String get similarHomesNearby;
+
+  /// No description provided for @similarHomesText.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} bedroom homes at a similar rent'**
+  String similarHomesText(int n);
+
+  /// No description provided for @seeAllSimilar.
+  ///
+  /// In en, this message translates to:
+  /// **'See all similar homes'**
+  String get seeAllSimilar;
+
+  /// No description provided for @moreHomesIn.
+  ///
+  /// In en, this message translates to:
+  /// **'More homes in {area}'**
+  String moreHomesIn(String area);
+
+  /// No description provided for @seeAllHomesIn.
+  ///
+  /// In en, this message translates to:
+  /// **'See all homes in {area}'**
+  String seeAllHomesIn(String area);
+
+  /// No description provided for @moreFromUs.
+  ///
+  /// In en, this message translates to:
+  /// **'More from FindHouseQuick'**
+  String get moreFromUs;
+
+  /// No description provided for @moreChecked.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity-checked listers'**
+  String get moreChecked;
+
+  /// No description provided for @moreCheckedText.
+  ///
+  /// In en, this message translates to:
+  /// **'Every landlord and agent proves who they are before a home goes live.'**
+  String get moreCheckedText;
+
+  /// No description provided for @moreCheckedLink.
+  ///
+  /// In en, this message translates to:
+  /// **'How we check'**
+  String get moreCheckedLink;
+
+  /// No description provided for @moreFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free inspections'**
+  String get moreFree;
+
+  /// No description provided for @moreFreeText.
+  ///
+  /// In en, this message translates to:
+  /// **'Book a time in the app. Nobody may charge you to see a home.'**
+  String get moreFreeText;
+
+  /// No description provided for @moreFreeLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Booking an inspection'**
+  String get moreFreeLink;
+
+  /// No description provided for @moreList.
+  ///
+  /// In en, this message translates to:
+  /// **'List your property free'**
+  String get moreList;
+
+  /// No description provided for @moreListText.
+  ///
+  /// In en, this message translates to:
+  /// **'Landlords and agents list for free and manage tenants, rent and receipts.'**
+  String get moreListText;
+
+  /// No description provided for @moreListLink.
+  ///
+  /// In en, this message translates to:
+  /// **'List your property'**
+  String get moreListLink;
+
+  /// No description provided for @moreScout.
+  ///
+  /// In en, this message translates to:
+  /// **'Become a scout'**
+  String get moreScout;
+
+  /// No description provided for @moreScoutText.
+  ///
+  /// In en, this message translates to:
+  /// **'Spot a vacant property, invite the landlord, and earn a reward when it is rented.'**
+  String get moreScoutText;
+
+  /// No description provided for @moreScoutLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Start scouting'**
+  String get moreScoutLink;
+
+  /// No description provided for @seeAllPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'See all {n} photos'**
+  String seeAllPhotos(int n);
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @compare.
+  ///
+  /// In en, this message translates to:
+  /// **'Compare'**
+  String get compare;
+
+  /// No description provided for @report.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get report;
+
+  /// No description provided for @approximatePlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{place} (approximate area)'**
+  String approximatePlace(String place);
+
+  /// No description provided for @searchButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get searchButton;
+
+  /// No description provided for @everyListerProves.
+  ///
+  /// In en, this message translates to:
+  /// **'Every landlord and agent proves who they are before they can list'**
+  String get everyListerProves;
+
+  /// No description provided for @listYourProperty.
+  ///
+  /// In en, this message translates to:
+  /// **'List your property'**
+  String get listYourProperty;
+
+  /// No description provided for @becomeScout.
+  ///
+  /// In en, this message translates to:
+  /// **'Become a scout'**
+  String get becomeScout;
+
+  /// No description provided for @help.
+  ///
+  /// In en, this message translates to:
+  /// **'Help'**
+  String get help;
+
+  /// No description provided for @homesToRent.
+  ///
+  /// In en, this message translates to:
+  /// **'Homes to rent'**
+  String get homesToRent;
+
+  /// No description provided for @footerFind.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a place'**
+  String get footerFind;
+
+  /// No description provided for @footerList.
+  ///
+  /// In en, this message translates to:
+  /// **'List and earn'**
+  String get footerList;
+
+  /// No description provided for @listAProperty.
+  ///
+  /// In en, this message translates to:
+  /// **'List a property'**
+  String get listAProperty;
+
+  /// No description provided for @forAgents.
+  ///
+  /// In en, this message translates to:
+  /// **'For agents'**
+  String get forAgents;
+
+  /// No description provided for @helpCentre.
+  ///
+  /// In en, this message translates to:
+  /// **'Help centre'**
+  String get helpCentre;
+
+  /// No description provided for @reportAListing.
+  ///
+  /// In en, this message translates to:
+  /// **'Report a listing'**
+  String get reportAListing;
+
+  /// No description provided for @termsOfUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of use'**
+  String get termsOfUse;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get privacyPolicy;
+
+  /// No description provided for @footerAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'Houses, flats, shops and short lets to rent, from landlords and agents whose identity we have checked.'**
+  String get footerAbout;
+
+  /// No description provided for @copyright.
+  ///
+  /// In en, this message translates to:
+  /// **'© {year} Projectiles Tech Hub Limited'**
+  String copyright(String year);
+
+  /// No description provided for @crumbHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get crumbHome;
+
+  /// No description provided for @savedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get savedLabel;
+
+  /// No description provided for @saveLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveLabel;
+
+  /// No description provided for @periodPerYear.
+  ///
+  /// In en, this message translates to:
+  /// **'per year'**
+  String get periodPerYear;
+
+  /// No description provided for @periodPerMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'per month'**
+  String get periodPerMonth;
+
+  /// No description provided for @periodPerWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'per week'**
+  String get periodPerWeek;
+
+  /// No description provided for @periodPerNight.
+  ///
+  /// In en, this message translates to:
+  /// **'per night'**
+  String get periodPerNight;
 }
 
 class _AppTextsDelegate extends LocalizationsDelegate<AppTexts> {

@@ -44,4 +44,6 @@ export const ICONS = {
   locationFilled: '<path d="M12 20.75C12 20.75 5.25 15 5.25 9.75C5.25 6.022 8.272 3 12 3C15.728 3 18.75 6.022 18.75 9.75C18.75 15 12 20.75 12 20.75Z" fill="currentColor"/><ellipse cx="12" cy="9.75" rx="2.5" ry="2.5" fill="var(--icon-cut, #fff)" stroke="none"/>',
   calendarFilled: '<rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="currentColor"/><path d="M8 3L8 6.75M16 3L16 6.75"/><path d="M3.5 10L20.5 10" stroke="var(--icon-cut, #fff)" stroke-width="1.5"/><path d="M8 14.25L8.01 14.25M12 14.25L12.01 14.25M16 14.25L16.01 14.25M8 17.25L8.01 17.25M12 17.25L12.01 17.25" stroke="var(--icon-cut, #fff)" stroke-width="2"/>',
   shieldCheckFilled: '<path d="M12 3.25L19 5.9L19 11.1C19 15.4 16.1 18.9 12 20.75C7.9 18.9 5 15.4 5 11.1L5 5.9Z" fill="currentColor"/><path d="M9 12L11.1 14.1L15.25 9.9" stroke="var(--icon-cut, #fff)" stroke-width="2"/>',
+  share: '<ellipse cx="6" cy="12" rx="2.5" ry="2.5"/><ellipse cx="18" cy="6" rx="2.5" ry="2.5"/><ellipse cx="18" cy="18" rx="2.5" ry="2.5"/><path d="M8.2 10.8L15.8 7.2M8.2 13.2L15.8 16.8"/>',
+  play: '<ellipse cx="12" cy="12" rx="9" ry="9"/><path d="M10 8.5L15 12L10 15.5L10 8.5Z" fill="currentColor"/>',
 } as const;

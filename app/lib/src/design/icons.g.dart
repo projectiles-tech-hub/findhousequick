@@ -2,7 +2,7 @@
 // Icons are drawn on a 24 by 24 grid with a line of 2.
 
 /// Every icon in the set.
-enum AppIcons { search, map, home, heart, chat, phone, bell, person, filter, location, check, close, back, forward, camera, calendar, help, eye, globe, bed, bath, send, menu, plus, shieldCheck, upload, mail, power, water, money, image, people, lock, homeFilled, mapFilled, heartFilled, chatFilled, bellFilled, personFilled, locationFilled, calendarFilled, shieldCheckFilled }
+enum AppIcons { search, map, home, heart, chat, phone, bell, person, filter, location, check, close, back, forward, camera, calendar, help, eye, globe, bed, bath, send, menu, plus, shieldCheck, upload, mail, power, water, money, image, people, lock, homeFilled, mapFilled, heartFilled, chatFilled, bellFilled, personFilled, locationFilled, calendarFilled, shieldCheckFilled, share, play }
 
 const Map<AppIcons, String> appIconShapes = {
   AppIcons.search: '<ellipse cx="10.75" cy="10.75" rx="6.25" ry="6.25" fill="none" stroke="{c}" stroke-width="2"/><path d="M15.4 15.4L20 20" fill="none" stroke="{c}" stroke-width="2"/>',
@@ -47,4 +47,6 @@ const Map<AppIcons, String> appIconShapes = {
   AppIcons.locationFilled: '<path d="M12 20.75C12 20.75 5.25 15 5.25 9.75C5.25 6.022 8.272 3 12 3C15.728 3 18.75 6.022 18.75 9.75C18.75 15 12 20.75 12 20.75Z" fill="{c}" stroke="{c}" stroke-width="2"/><ellipse cx="12" cy="9.75" rx="2.5" ry="2.5" fill="{k}" stroke="none"/>',
   AppIcons.calendarFilled: '<rect x="3.5" y="5" width="17" height="15.5" rx="2.5" fill="{c}" stroke="{c}" stroke-width="2"/><path d="M8 3L8 6.75M16 3L16 6.75" fill="none" stroke="{c}" stroke-width="2"/><path d="M3.5 10L20.5 10" fill="none" stroke="{k}" stroke-width="1.5"/><path d="M8 14.25L8.01 14.25M12 14.25L12.01 14.25M16 14.25L16.01 14.25M8 17.25L8.01 17.25M12 17.25L12.01 17.25" fill="none" stroke="{k}" stroke-width="2"/>',
   AppIcons.shieldCheckFilled: '<path d="M12 3.25L19 5.9L19 11.1C19 15.4 16.1 18.9 12 20.75C7.9 18.9 5 15.4 5 11.1L5 5.9Z" fill="{c}" stroke="{c}" stroke-width="2"/><path d="M9 12L11.1 14.1L15.25 9.9" fill="none" stroke="{k}" stroke-width="2"/>',
+  AppIcons.share: '<ellipse cx="6" cy="12" rx="2.5" ry="2.5" fill="none" stroke="{c}" stroke-width="2"/><ellipse cx="18" cy="6" rx="2.5" ry="2.5" fill="none" stroke="{c}" stroke-width="2"/><ellipse cx="18" cy="18" rx="2.5" ry="2.5" fill="none" stroke="{c}" stroke-width="2"/><path d="M8.2 10.8L15.8 7.2M8.2 13.2L15.8 16.8" fill="none" stroke="{c}" stroke-width="2"/>',
+  AppIcons.play: '<ellipse cx="12" cy="12" rx="9" ry="9" fill="none" stroke="{c}" stroke-width="2"/><path d="M10 8.5L15 12L10 15.5L10 8.5Z" fill="{c}" stroke="none"/>',
 };
