@@ -404,6 +404,34 @@ export class AccountsService {
   }
 
   /** Counts a password attempt, then checks it (see claimPasswordAttempt). Throws `wrong()` if incorrect. */
+  /**
+   * Deletes the account at the user's request (decision 87; Specification 15.2): closed at once, signed out on every
+   * device, and a landlord's or agent's live listings stop showing. Upcoming inspections are cancelled. The records stay
+   * with FindHouseQuick, seen only by authorised staff; nothing about the user is shown to anyone any more.
+   */
+  async deleteMe(userId: string, reason: string | undefined): Promise<void> {
+    const now = new Date();
+    const listings = await this.prisma.listing.findMany({
+      where: { status: { in: ['LIVE', 'PAUSED', 'SUBMITTED', 'IN_REVIEW'] }, OR: [{ createdById: userId }, { unit: { building: { ownerId: userId } } }] },
+      select: { id: true },
+    });
+    const inspections = await this.prisma.inspection.findMany({
+      where: { status: { in: ['REQUESTED', 'CONFIRMED'] }, OR: [{ tenantId: userId }, { hostId: userId }, { listingId: { in: listings.map((l) => l.id) } }] },
+      select: { id: true },
+    });
+    await this.prisma.$transaction([
+      this.prisma.user.update({ where: { id: userId }, data: { status: 'DELETED' } }),
+      this.prisma.listing.updateMany({ where: { id: { in: listings.map((l) => l.id) } }, data: { status: 'REMOVED' } }),
+      this.prisma.inspection.updateMany({ where: { id: { in: inspections.map((i) => i.id) } }, data: { status: 'CANCELLED', cancelReason: 'ACCOUNT_DELETED', closedById: userId } }),
+      this.prisma.pushDevice.deleteMany({ where: { userId } }),
+      this.prisma.savedSearch.deleteMany({ where: { userId } }),
+      this.prisma.auditLog.create({
+        data: { actorId: userId, action: 'account.deleted', entityType: 'User', entityId: userId, metadata: { reason: reason?.trim() || null, listingsRemoved: listings.map((l) => l.id), inspectionsCancelled: inspections.length, at: now.toISOString() } },
+      }),
+    ]);
+    await this.sessions.endAllForUser(userId);
+  }
+
   private async checkPassword(userId: string, hash: string, password: string, wrong: () => Error): Promise<void> {
     const attempt = await this.claimPasswordAttempt(userId);
     if (attempt === null) {

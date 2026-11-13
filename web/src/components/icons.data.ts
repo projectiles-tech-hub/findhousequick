@@ -46,4 +46,6 @@ export const ICONS = {
   shieldCheckFilled: '<path d="M12 3.25L19 5.9L19 11.1C19 15.4 16.1 18.9 12 20.75C7.9 18.9 5 15.4 5 11.1L5 5.9Z" fill="currentColor"/><path d="M9 12L11.1 14.1L15.25 9.9" stroke="var(--icon-cut, #fff)" stroke-width="2"/>',
   share: '<ellipse cx="6" cy="12" rx="2.5" ry="2.5"/><ellipse cx="18" cy="6" rx="2.5" ry="2.5"/><ellipse cx="18" cy="18" rx="2.5" ry="2.5"/><path d="M8.2 10.8L15.8 7.2M8.2 13.2L15.8 16.8"/>',
   play: '<ellipse cx="12" cy="12" rx="9" ry="9"/><path d="M10 8.5L15 12L10 15.5L10 8.5Z" fill="currentColor"/>',
+  more: '<ellipse cx="5" cy="12" rx="1.75" ry="1.75" fill="currentColor"/><ellipse cx="12" cy="12" rx="1.75" ry="1.75" fill="currentColor"/><ellipse cx="19" cy="12" rx="1.75" ry="1.75" fill="currentColor"/>',
+  block: '<ellipse cx="12" cy="12" rx="8.25" ry="8.25"/><path d="M6.2 6.2L17.8 17.8"/>',
 } as const;

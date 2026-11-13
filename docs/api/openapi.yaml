@@ -458,10 +458,28 @@ paths:
         "401": { $ref: "#/components/responses/Unauthorized" }
     delete:
       tags: [Accounts]
-      summary: Request account deletion
-      description: Personal data is deleted except records the law requires to be kept (e.g. payment records), which are retained for the legal period only.
+      summary: Delete the account (decision 87) (built)
+      description: |
+        The account is closed at once and the user is signed out on every device; there is no waiting period. A
+        landlord's or agent's listings (live, paused or waiting for review) are removed from the platform straight
+        away, and upcoming inspections are cancelled with both sides told. Conversations stay readable for the other
+        person, shown as "Deleted account" (otherParty.deleted), but nobody can reply. Push devices and saved searches
+        are deleted. FindHouseQuick keeps its own records (the account row, listings, payments, reports and the audit
+        log), seen only by authorised staff, for the periods in the privacy policy (Specification 15.2).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [understood]
+              properties:
+                understood: { type: boolean, const: true, description: '"I understand this cannot be undone", ticked (screen 79)' }
+                reason: { type: string, maxLength: 500, description: "Why the user is leaving, if they say" }
       responses:
-        "202": { description: Deletion scheduled. }
+        "204": { description: Deleted. }
+        "400": { description: The box was not ticked. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
 
   /me/contacts/code:
     post:
@@ -1786,6 +1804,56 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Conversation" }
+
+  /conversations/{conversationId}/block:
+    post:
+      tags: [Messaging]
+      summary: Block the other person in a conversation (decision 88) (built)
+      description: |
+        Neither person can then message or call the other, or book an inspection with the other (403 BLOCKED);
+        inspections booked between them are cancelled and both are told the inspection was cancelled. The blocked
+        person is not told about the block: their conversation shows block CANNOT_REPLY. Send `report` to report the
+        person to the trust team in the same step. When the country's verification.blocksForReview different people
+        have blocked someone, a review task is opened for the trust team.
+      x-feature: contact.blocking
+      parameters: [{ $ref: "#/components/parameters/ConversationId" }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                report:
+                  type: object
+                  description: Present when "Also report" is ticked.
+                  properties:
+                    details: { type: string, maxLength: 1000 }
+      responses:
+        "200":
+          description: The conversation, with block BLOCKED_BY_YOU.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Conversation" }
+        "404": { description: Not a conversation of the user. }
+
+  /me/blocks:
+    get:
+      tags: [Messaging]
+      summary: The people the user has blocked, newest first (screen 71b) (built)
+      responses:
+        "200":
+          description: "{ items: [{ userId, displayName, blockedAt }] }"
+
+  /me/blocks/{userId}:
+    delete:
+      tags: [Messaging]
+      summary: Unblock someone (screen 71c) (built)
+      description: Messages and calls work again. Inspections that were cancelled stay cancelled. The other person is not told.
+      parameters:
+        - { name: userId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+      responses:
+        "204": { description: Unblocked. }
+        "404": { description: The user had not blocked this person (NOT_BLOCKED). }
 
   /conversations/{conversationId}/calls:
     post:
@@ -3267,8 +3335,14 @@ components:
           type: object
           properties:
             id: { $ref: "#/components/schemas/Id" }
-            displayName: { type: string }
-            phone: { type: [string, "null"], description: Only after both sides agree to share }
+            displayName: { type: [string, "null"], description: Null when the account was deleted }
+            phone: { type: [string, "null"], description: Only after both sides agree to share; null when the account was deleted }
+            deleted: { type: boolean, description: The other person deleted their account (decision 87) }
+        canSend: { type: boolean, description: False when either side blocked the other or the other account was deleted }
+        block:
+          type: [string, "null"]
+          enum: [BLOCKED_BY_YOU, CANNOT_REPLY, null]
+          description: BLOCKED_BY_YOU when the user blocked the other person; CANNOT_REPLY when the other person blocked the user (who is not told why) (decision 88)
         phoneSharing:
           type: object
           properties:

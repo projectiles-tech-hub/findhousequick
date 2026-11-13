@@ -26,6 +26,16 @@ Part 3 of step 5 (ADR 0009) lets a tenant and a lister talk. It follows:
 - **Sharing phone numbers** (switch `contact.phone_reveal`). Allowed once the tenant has an inspection of the
   listing that is requested, confirmed or completed. Each side agrees separately; the numbers appear only when both
   have agreed, and that moment is written to the audit log.
+- **Blocking** (decision 88; switch `contact.blocking`). Either person in a conversation can block the other
+  (`POST /conversations/{id}/block`). Blocks are kept in their own table (`UserBlock`) with when they were made and
+  undone, so the history is never lost. While a block stands, neither can message, call or book an inspection with
+  the other (403 `BLOCKED`), whichever side blocked; inspections booked between them are cancelled with the reason
+  `BLOCKED` and both are told the inspection was cancelled. The person who blocked sees `block: BLOCKED_BY_YOU`;
+  the blocked person sees only `CANNOT_REPLY` and is never told why. Ticking "Also report" opens a report task for
+  the trust team in the same step. When `verification.blocksForReview` different people have blocked the same
+  person, a review task is opened (one at a time). Every block and unblock is written to the audit log.
+- **Deleted accounts** (decision 87). The other person's conversations stay readable, shown as "Deleted account",
+  with no name or phone and `canSend` false.
 
 ### Calls inside the app (decision 44)
 
@@ -79,4 +89,4 @@ match. The listing's exact position is used for the match but never sent.
 
 - Real push and calling adapters: after the accounts are opened.
 - Notifications for inspections and verification results: with the parts that produce them.
-- Blocking another user and reporting a conversation: with reports, in part 4.
+- Reporting a conversation on its own (without blocking): with the report screens.

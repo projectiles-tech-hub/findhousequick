@@ -180,6 +180,23 @@ describe('Search, the property page and saved items (API, step 5 part 2)', () =>
     });
   });
 
+  describe('deleting an account (decision 87)', () => {
+    it("takes a landlord's live listings out of sight at once, signs them out, and keeps the records", async () => {
+      const landlord = await person(['LANDLORD']);
+      const listing = await liveListing(landlord, at(50_000));
+      await api().get(`/v1/listings/${listing.id}`).set('X-Device-Id', `dev-${run}-del`).expect(200);
+      await api().delete('/v1/me').set(bearer(landlord.token)).send({ understood: false }).expect(400);
+      await api().delete('/v1/me').set(bearer(landlord.token)).send({ understood: true, reason: 'Sold the house' }).expect(204);
+
+      await api().get(`/v1/listings/${listing.id}`).set('X-Device-Id', `dev-${run}-del2`).expect(404);
+      await api().get('/v1/me').set(bearer(landlord.token)).expect(401);
+      const user = await prisma.user.findUniqueOrThrow({ where: { id: landlord.id } });
+      expect(user).toMatchObject({ status: 'DELETED', firstName: 'Efosa' });
+      expect((await prisma.listing.findUniqueOrThrow({ where: { id: listing.id } })).status).toBe('REMOVED');
+      expect(await prisma.auditLog.count({ where: { action: 'account.deleted', entityId: landlord.id } })).toBe(1);
+    });
+  });
+
   describe('the maps provider (ADR 0015)', () => {
     it('adds its places after our own, and lists amenities near the approximate position, asking each question once', async () => {
       const maps = app.get<Maps>(MAPS);

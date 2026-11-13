@@ -263,6 +263,17 @@ Updated: 13 November 2026. Read this after CLAUDE.md at the start of every build
     property page (part 3c, until then a listing opens on the public website); saved items (part 3d); the
     sections of screen 25 left out (see ADR 0014); the bell on Home (with notifications, part 4).
 
+- **Blocking and deleting an account (decisions 86 to 88)**: in pull request #63 (built on #62).
+  Product Specification 1.11 (7.1, 15.2, 17.1). As built: ADR 0011 (Chat), `docs/api/openapi.yaml`.
+  - Blocking in a conversation (`POST /conversations/{id}/block`, `GET /me/blocks`, `DELETE /me/blocks/{userId}`),
+    behind the new switch `contact.blocking`; new country setting `verification.blocksForReview`.
+  - Deleting an account (`DELETE /me`): closed at once, listings removed, inspections cancelled, records kept.
+  - Designs for review in Figma: 41a to 41e, 71a to 71c and 79, phone, and the website layouts of 41b, 41c, 71b
+    and 79 with the website header (decision 86). The app screens for these are built once the designs are approved.
+  - Screen 13's titles corrected to the Penpot wording; a booking version of the sheet (Penpot board 11b).
+  - Still to do: check the website layouts of 41 against the Penpot website layout of screen 41 when Penpot can be
+    reached; the More and Block icons added to the Penpot icon set; the app screens once approved.
+
 - **Release 1 step 6 parts 3b and 3c, first half, and smaller pieces left from steps 1 to 5**: in pull request #62,
   built on pull request #61. As built: `docs/adr/0014-app-screens.md` section 13; ADRs 0009 and 0015.
   - Decision 85: the distance row on screen 27 stays; the Penpot design of screen 27 updated (phone).
@@ -323,18 +334,15 @@ Updated: 13 November 2026. Read this after CLAUDE.md at the start of every build
   and, before it goes live, state estate agency rules and withholding tax. The release is settled (decision 72).
 - Which detection service to use for automatic blurring of faces, number plates, documents and family photographs
   (Google Cloud Vision, Amazon Rekognition or another). It must be set before real users sign up (ADR 0009).
-- Which header every signed-in website page uses: the property page's (Figma) and the search pages' (Penpot)
-  differ. Until decided, each page is built with the header in its own design.
-- Account deletion (`DELETE /me`, Specification 15.2): what happens to a landlord's live listings and to
-  conversations, whether there is a waiting period in which the user can change their mind, and which records are
-  kept for the legal period.
+- Whether the phone number and email of a deleted account may be used to open a new account. For now they stay
+  on the closed account, so they cannot be reused.
 - Decisions Log open points: the five escrow settings, escrow legal structure, launch city, partner API,
   mention of the Agent Emma channel in the launch plan, budget, hiring.
 
 ## Next: Release 1, in this order
 
-1. ~~**Accounts**~~: done (pull request #4). Still to do from the accounts area: `DELETE /me` (account deletion),
-   which needs Emmanuel's decisions (see "Waiting for Emmanuel"); `POST /me/data-export` was built in pull request #62. A real SMS adapter (Termii or Twilio) once an account
+1. ~~**Accounts**~~: done (pull request #4). Still to do from the accounts area: nothing on the server (`DELETE /me` built
+   in pull request #63, decision 87; `POST /me/data-export` built in pull request #62). A real SMS adapter (Termii or Twilio) once an account
    is opened. App sign-in screens.
 2. ~~**Staff accounts and roles**~~, and the admin feature-rule endpoints: done (pull request #7).
    Still to do from this area: admin screens in the app. Two-step login for ordinary users is for a later release

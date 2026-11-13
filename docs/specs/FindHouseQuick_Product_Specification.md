@@ -6,7 +6,7 @@ Projectiles Tech Hub Limited
 
 Emmanuel Chukwuka Oraegbu, Managing Director
 
-Version 1.10 \| 2 November 2026
+Version 1.11 \| 13 November 2026
 
 # Contents
 
@@ -426,6 +426,16 @@ When a duplicate is flagged:
 
 - Phone numbers stay hidden until an inspection is booked and both sides agree to share them.
 
+- **Blocking (decision 88):** in a conversation, a tenant or a landlord or agent can block the other person. Before blocking, the user is told what will happen and can also report the person in the same step.
+
+- Once blocked, neither of them can send messages to or call the other, in any conversation. The blocked person cannot book an inspection of the blocker's listings, and inspections already booked between them are cancelled; both are told the inspection is cancelled.
+
+- The blocked person is not told that they were blocked: the conversation shows that no more messages can be sent in it. The person who blocked sees that they blocked the other person, with a button to unblock.
+
+- Blocked people are listed in the account settings, where each can be unblocked at any time. Blocking hides no listing from search.
+
+- Blocks are recorded. The trust team is shown an account that many different people have blocked, for review; a block on its own leads to no penalty.
+
 ## 7.2 Inspections
 
 - Tenants book inspections by choosing a time slot; the landlord or agent confirms.
@@ -766,6 +776,10 @@ Some users will try to complete rentals outside the platform to avoid fees. The 
 
 - Users can see, correct, download and delete their information from their account settings. Records that the law requires to be kept, such as payment records, are retained for the legal period only.
 
+- **Deleting an account (decision 87):** the account is closed at once. The user is signed out on every device and their name and details are no longer shown to anyone. A landlord's or agent's live listings stop showing at once, and upcoming inspections are cancelled with the other person told. Conversations show that the account has been deleted.
+
+- FindHouseQuick keeps its own records of the account, its listings, conversations, reports and any enforcement, visible only to authorised staff, for the period the law requires. A verified identity that was banned stays banned on any new account (decision 51).
+
 - Any data breach is reported to the regulator and to affected users within the time the law requires (72 hours in Nigeria).
 
 ## 15.3 Protection of Property Images and Videos
@@ -879,7 +893,7 @@ Every feature of the platform can be switched on or off by authorised staff from
 |--------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Search             | Around me search; map search; landmark search; saved area alerts; compare                                                                                   |
 | Listings           | Long-term residential rentals; commercial rentals; short lets; 360-degree photos; floor plans                                                               |
-| Contact            | Chat; phone number reveal; inspection booking; inspection safety sharing                                                                                    |
+| Contact            | Chat; phone number reveal; inspection booking; inspection safety sharing; blocking                                                                          |
 | Verification       | Each automatic check individually (satellite, survey plan match, document reading, stolen photo check, registry check); random audits; required site visits |
 | Money              | Escrow; completed rental fee; card payments; bank transfer payments; rent financing                                                                         |
 | Management         | Property management; digital tenancy agreements; rent reminders; maintenance requests; caretaker role                                                       |
@@ -1048,16 +1062,17 @@ Tenants only come to a platform that already has listings, so landlords and agen
 
 This specification is kept as one document and updated in place; earlier versions remain in the code repository history (decision 60). Every decision recorded in the Decisions Log that changes what the platform does is written into this document, with the decision number.
 
-| Version               | What changed                                                                                                                                                                                                                                                                                                                                                                                                                                |
-|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.3, 22 October 2026  | The version given at the start of the build. It reflects decisions 1 to 23 of the Decisions Log.                                                                                                                                                                                                                                                                                                                                            |
-| 1.4, 23 October 2026  | Includes decisions 24 to 63, listed below with where each appears.                                                                                                                                                                                                                                                                                                                                                                          |
-| 1.5, 23 October 2026  | Includes decision 64: any action beyond browsing needs level 1 (Section 3.1).                                                                                                                                                                                                                                                                                                                                                               |
-| 1.6, 24 October 2026  | Includes decisions 65 to 71: scouts and the referral reward (decisions 70 and 71; Sections 2, 3.6, 8.3, 16.1, 17.1, 20 and 21), and decisions 65 to 69, listed below.                                                                                                                                                                                                                                                                       |
-| 1.7, 24 October 2026  | Includes decisions 72 and 73: scouts built in Release 1, with rewards paid once the completed rental fee exists (Section 3.6); every screen of the app on the website and desktop software (Section 1.4).                                                                                                                                                                                                                                   |
-| 1.8, 25 October 2026  | Includes decision 74: the website is responsive, designed at desktop and tablet widths, and the desktop software runs in a resizable window (Section 1.4).                                                                                                                                                                                                                                                                                  |
-| 1.9, 27 October 2026  | Decisions 73 and 74 changed: the desktop software is for staff only; tenants, landlords, agents and scouts use the phone app and the website (Section 1.4).                                                                                                                                                                                                                                                                                 |
-| 1.10, 2 November 2026 | Includes decisions 75 to 80: signed-out visitors view listings in full, without the lister (Sections 3.1 and 5.4); property media may advertise FindHouseQuick itself, and may be sold, shared with other companies and used to train artificial intelligence (Section 15.3); the public search results and listing pages also show other properties and services, also for signed-in users on the website and the phone app (Section 5.4). |
+| Version                | What changed                                                                                                                                                                                                                                                                                                                                                                                                                                |
+|------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3, 22 October 2026   | The version given at the start of the build. It reflects decisions 1 to 23 of the Decisions Log.                                                                                                                                                                                                                                                                                                                                            |
+| 1.4, 23 October 2026   | Includes decisions 24 to 63, listed below with where each appears.                                                                                                                                                                                                                                                                                                                                                                          |
+| 1.5, 23 October 2026   | Includes decision 64: any action beyond browsing needs level 1 (Section 3.1).                                                                                                                                                                                                                                                                                                                                                               |
+| 1.6, 24 October 2026   | Includes decisions 65 to 71: scouts and the referral reward (decisions 70 and 71; Sections 2, 3.6, 8.3, 16.1, 17.1, 20 and 21), and decisions 65 to 69, listed below.                                                                                                                                                                                                                                                                       |
+| 1.7, 24 October 2026   | Includes decisions 72 and 73: scouts built in Release 1, with rewards paid once the completed rental fee exists (Section 3.6); every screen of the app on the website and desktop software (Section 1.4).                                                                                                                                                                                                                                   |
+| 1.8, 25 October 2026   | Includes decision 74: the website is responsive, designed at desktop and tablet widths, and the desktop software runs in a resizable window (Section 1.4).                                                                                                                                                                                                                                                                                  |
+| 1.9, 27 October 2026   | Decisions 73 and 74 changed: the desktop software is for staff only; tenants, landlords, agents and scouts use the phone app and the website (Section 1.4).                                                                                                                                                                                                                                                                                 |
+| 1.10, 2 November 2026  | Includes decisions 75 to 80: signed-out visitors view listings in full, without the lister (Sections 3.1 and 5.4); property media may advertise FindHouseQuick itself, and may be sold, shared with other companies and used to train artificial intelligence (Section 15.3); the public search results and listing pages also show other properties and services, also for signed-in users on the website and the phone app (Section 5.4). |
+| 1.11, 13 November 2026 | Includes decisions 87 and 88: deleting an account closes it at once and a lister's live listings stop showing, with FindHouseQuick keeping its own records (Section 15.2); blocking another user in chat (Sections 7.1 and 17.1). Decision 86 (one header on every website page) is a design decision and changes nothing here.                                                                                                             |
 
 Decisions 24 to 73 in versions 1.4 to 1.7. Some confirm what this specification already said, or only set when something is built; they are listed so that every decision can be traced. Decisions about how the platform is built, rather than what it does, are in the Technical Architecture and the architecture decision records.
 

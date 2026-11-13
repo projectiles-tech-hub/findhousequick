@@ -122,7 +122,7 @@ Future<void> contactAction(BuildContext context, WidgetRef ref, {required bool b
   }
   if ((session.me?.verificationLevel ?? 0) < 2) {
     final String idType = ref.read(controlsProvider).value?.country?.acceptedIdTypes.firstOrNull ?? 'ID';
-    final go = await showVerifySheet(context, title: book ? t.verifyToBook : t.verifyToChat, idType: idType);
+    final go = await showVerifySheet(context, title: book ? t.verifyToBook : t.verifyToChat, idType: idType, text: book ? t.sheetVerifyBookText(idType) : null);
     if (go && context.mounted) await context.push('/verification');
     return;
   }

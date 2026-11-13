@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsIn, IsOptional, IsString, IsUUID, MaxLength, MinLength, ValidateNested } from 'class-validator';
 
 export class StartConversationDto {
   @ApiProperty()
@@ -40,4 +41,20 @@ export class CallStatusDto {
   @ApiProperty({ enum: ['ANSWER', 'DECLINE', 'END'] })
   @IsIn(['ANSWER', 'DECLINE', 'END'])
   action!: 'ANSWER' | 'DECLINE' | 'END';
+}
+
+export class BlockReportDto {
+  @ApiPropertyOptional({ description: 'What happened, for the trust team' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  details?: string;
+}
+
+export class BlockDto {
+  @ApiPropertyOptional({ type: BlockReportDto, description: 'Also report the person to the trust team' })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => BlockReportDto)
+  report?: BlockReportDto;
 }

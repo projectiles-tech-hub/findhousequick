@@ -2507,13 +2507,13 @@ abstract class AppTexts {
   /// No description provided for @verifyToBook.
   ///
   /// In en, this message translates to:
-  /// **'Verify to book an inspection'**
+  /// **'Verify your identity to book inspections'**
   String get verifyToBook;
 
   /// No description provided for @verifyToChat.
   ///
   /// In en, this message translates to:
-  /// **'Verify to chat with the lister'**
+  /// **'Verify your identity to message landlords'**
   String get verifyToChat;
 
   /// No description provided for @homeGoneTitle.
@@ -3001,6 +3001,12 @@ abstract class AppTexts {
   /// In en, this message translates to:
   /// **'Nearby'**
   String get nearby;
+
+  /// No description provided for @sheetVerifyBookText.
+  ///
+  /// In en, this message translates to:
+  /// **'Landlords and agents only meet verified tenants, so everyone knows who they are dealing with. It takes a few minutes: your {idType} and a quick face check.'**
+  String sheetVerifyBookText(String idType);
 }
 
 class _AppTextsDelegate extends LocalizationsDelegate<AppTexts> {

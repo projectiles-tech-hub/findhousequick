@@ -7,6 +7,7 @@ import { LiveService } from '../live/live.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { ConversationsService } from './conversations.service.js';
+import { blockBetween } from './blocks.js';
 
 /** A call nobody answers within this time is missed. */
 export const RING_SECONDS = 60;
@@ -33,6 +34,7 @@ export class CallsService {
   async start(user: RequestUser, conversationId: string) {
     const c = await this.conversations.participantOf(user, conversationId);
     const calleeId = c.tenantId === user.id ? c.listerId : c.tenantId;
+    if (await blockBetween(this.prisma, user.id, calleeId)) throw apiError(403, 'BLOCKED', 'You cannot call this person.');
     const open = await this.prisma.call.count({ where: { conversationId, status: { in: ['RINGING', 'ANSWERED'] } } });
     if (open) throw apiError(409, 'CALL_IN_PROGRESS', 'A call in this conversation is already in progress.');
     const call = await this.prisma.call.create({ data: { conversationId, callerId: user.id, calleeId } });

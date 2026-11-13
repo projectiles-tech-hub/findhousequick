@@ -50,6 +50,7 @@ export const FEATURES = [
   f('contact.in_app_call', 'Voice calls inside the app, with phone numbers hidden (decision 44)', { on: true }),
   f('contact.inspection_booking', 'Inspection booking', { on: true }),
   f('contact.inspection_safety_share', 'Share inspection details with a trusted contact', { on: true }),
+  f('contact.blocking', 'Block another user in chat (decision 88)', { on: true }),
 
   // Verification
   f('verification.identity_check', 'Identity check: NIN or national equivalent, selfie and liveness', { critical: true, on: true }),

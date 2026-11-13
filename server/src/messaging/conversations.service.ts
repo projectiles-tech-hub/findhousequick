@@ -8,6 +8,7 @@ import { LiveService } from '../live/live.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { checkMessage, WARNING } from './monitoring.js';
+import { blockBetween } from './blocks.js';
 
 const PAGE_SIZE = 30;
 /** Inspections in these states count as "booked" for sharing phone numbers (Specification 6.1). */
@@ -33,6 +34,7 @@ export class ConversationsService {
     const listing = await this.prisma.listing.findUnique({ where: { id: listingId }, select: { status: true, createdById: true } });
     if (!listing || listing.status !== 'LIVE') throw new NotFoundException('Listing not found.');
     if (listing.createdById === user.id) throw apiError(400, 'OWN_LISTING', 'You cannot start a conversation about your own listing.');
+    if (await blockBetween(this.prisma, user.id, listing.createdById)) throw apiError(403, 'BLOCKED', 'You cannot message this person.');
     const conversation = await this.prisma.conversation.upsert({
       where: { listingId_tenantId_listerId: { listingId, tenantId: user.id, listerId: listing.createdById } },
       create: { listingId, tenantId: user.id, listerId: listing.createdById, tenantReadAt: new Date() },
@@ -82,6 +84,10 @@ export class ConversationsService {
     const c = await this.participantOf(user, conversationId);
     const text = body.trim();
     if (!text) throw apiError(400, 'BAD_REQUEST', 'A message cannot be empty.');
+    // While either has blocked the other, nothing more is sent (decision 88). The words do not say who blocked whom.
+    if (await blockBetween(this.prisma, user.id, c.tenantId === user.id ? c.listerId : c.tenantId)) {
+      throw apiError(403, 'BLOCKED', 'You can no longer send messages in this conversation.');
+    }
     const flags = (await this.controls.isEnabled('trust.chat_monitoring', ctx)) ? checkMessage(text) : [];
     const now = new Date();
     const message = await this.prisma.$transaction(async (tx) => {
@@ -154,17 +160,23 @@ export class ConversationsService {
     const iAmTenant = c.tenantId === user.id;
     const otherId = iAmTenant ? c.listerId : c.tenantId;
     const readAt = iAmTenant ? c.tenantReadAt : c.listerReadAt;
-    const [other, unreadCount] = await Promise.all([
-      this.prisma.user.findUniqueOrThrow({ where: { id: otherId }, select: { firstName: true, lastName: true, phone: true } }),
+    const [other, unreadCount, block] = await Promise.all([
+      this.prisma.user.findUniqueOrThrow({ where: { id: otherId }, select: { firstName: true, lastName: true, phone: true, status: true } }),
       this.prisma.message.count({ where: { conversationId: c.id, senderId: { not: user.id }, ...(readAt ? { createdAt: { gt: readAt } } : {}) } }),
+      blockBetween(this.prisma, user.id, otherId),
     ]);
+    const deleted = other.status === 'DELETED';
     const myConsent = iAmTenant ? c.tenantPhoneConsentAt : c.listerPhoneConsentAt;
     const theirConsent = iAmTenant ? c.listerPhoneConsentAt : c.tenantPhoneConsentAt;
     return {
       id: c.id,
       listingId: c.listingId,
       role: iAmTenant ? 'TENANT' : 'LISTER',
-      otherParty: { id: otherId, displayName: `${other.firstName} ${other.lastName}`.trim(), phone: c.phonesSharedAt ? other.phone : null },
+      // A deleted account shows no name or number (decision 87).
+      otherParty: { id: otherId, displayName: deleted ? null : `${other.firstName} ${other.lastName}`.trim(), phone: c.phonesSharedAt && !deleted ? other.phone : null, deleted },
+      /** BLOCKED_BY_YOU shows "You blocked ..." with Unblock; CANNOT_REPLY tells the other side only that no more messages can be sent. */
+      canSend: !block && !deleted,
+      block: block === 'BY_YOU' ? 'BLOCKED_BY_YOU' : block === 'BY_THEM' ? 'CANNOT_REPLY' : null,
       phoneSharing: { youAgreed: !!myConsent, theyAgreed: !!theirConsent, shared: !!c.phonesSharedAt },
       lastMessage: c.messages[0] ? toMessage(c.messages[0]) : null,
       lastMessageAt: c.lastMessageAt,

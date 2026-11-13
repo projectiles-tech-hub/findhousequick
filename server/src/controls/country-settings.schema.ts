@@ -149,6 +149,8 @@ export const countrySettingsSchema = z.object({
           tenantMismatch: z.number().int().min(0).max(100).default(20),
         })
         .prefault({}),
+      /** Different people blocking one account before it goes to the trust team for review (decision 88). */
+      blocksForReview: z.number().int().min(2).max(100).default(5),
       /** Two photo fingerprints (64 bits) differing in this many bits or fewer count as the same photo. */
       photoMatchBits: z.number().int().min(0).max(16).default(6),
     })

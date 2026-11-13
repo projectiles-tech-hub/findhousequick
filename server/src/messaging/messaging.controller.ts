@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Query, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../accounts/auth.js';
@@ -7,7 +7,8 @@ import { contextFromRequest, type RequestUser } from '../controls/request-contex
 import { RequireFeature } from '../controls/require-feature.guard.js';
 import { CallsService } from './calls.service.js';
 import { ConversationsService } from './conversations.service.js';
-import { CallStatusDto, CursorQuery, MessagesQuery, SendMessageDto, StartConversationDto } from './dto.js';
+import { BlocksService } from './blocks.service.js';
+import { BlockDto, CallStatusDto, CursorQuery, MessagesQuery, SendMessageDto, StartConversationDto } from './dto.js';
 
 @ApiTags('Messaging')
 @ApiBearerAuth()
@@ -16,7 +17,37 @@ export class MessagingController {
   constructor(
     private readonly conversations: ConversationsService,
     private readonly calls: CallsService,
+    private readonly blocks: BlocksService,
   ) {}
+
+  @Post('conversations/:conversationId/block')
+  @HttpCode(200)
+  @RequireFeature('contact.blocking')
+  @ApiOperation({
+    summary: 'Block the other person in a conversation (decision 88)',
+    description:
+      'Neither can then message or call the other, nor book an inspection with the other; inspections booked between them ' +
+      'are cancelled. The blocked person is not told. Send `report` to report them to the trust team in the same step.',
+  })
+  @ApiOkResponse({ description: 'The conversation, with block BLOCKED_BY_YOU' })
+  block(@CurrentUser() user: RequestUser, @Param('conversationId', ParseUUIDPipe) conversationId: string, @Body() dto: BlockDto) {
+    return this.blocks.block(user, conversationId, dto.report);
+  }
+
+  @Get('me/blocks')
+  @ApiOperation({ summary: 'The people the user has blocked, newest first' })
+  @ApiOkResponse({ description: '{ items: [{ userId, displayName, blockedAt }] }' })
+  blocked(@CurrentUser() user: RequestUser) {
+    return this.blocks.list(user);
+  }
+
+  @Delete('me/blocks/:userId')
+  @HttpCode(204)
+  @ApiOperation({ summary: 'Unblock someone' })
+  @ApiResponse({ status: 404, description: 'NOT_BLOCKED' })
+  async unblock(@CurrentUser() user: RequestUser, @Param('userId', ParseUUIDPipe) userId: string): Promise<void> {
+    await this.blocks.unblock(user, userId);
+  }
 
   @Post('conversations')
   @RequireFeature('contact.chat')
