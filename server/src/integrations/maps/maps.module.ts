@@ -6,6 +6,7 @@ import { MAPS, type Fetch, type Maps, type MapsProvider } from './maps-provider.
 import { NoneMapsAdapter } from './none-maps.adapter.js';
 import { OpenStreetMapAdapter } from './openstreetmap.adapter.js';
 import { GoogleTiles, NoTiles, OpenStreetMapTiles, type MapTiles } from './map-tiles.js';
+import { MapsAnswers } from './maps-answers.js';
 
 export type MapsSettings = Pick<
   Env,
@@ -56,9 +57,9 @@ export function buildMaps(env: MapsSettings, doFetch: Fetch = fetch): Maps {
 export const MAP_TILES = Symbol('MAP_TILES');
 
 /** Picks who draws the map picture in the apps: MAPS_TILES_PROVIDER, or MAPS_PROVIDER when that is not set. */
-export function buildMapTiles(env: MapsSettings, language: string, region: string, doFetch: Fetch = fetch): MapTiles {
+export function buildMapTiles(env: MapsSettings, doFetch: Fetch = fetch): MapTiles {
   const which = env.MAPS_TILES_PROVIDER ?? env.MAPS_PROVIDER;
-  if (which === 'google' && env.GOOGLE_MAPS_TILES_KEY) return new GoogleTiles(env.GOOGLE_MAPS_TILES_KEY, language, region, env.MAPS_TIMEOUT_MS, doFetch);
+  if (which === 'google' && env.GOOGLE_MAPS_TILES_KEY) return new GoogleTiles(env.GOOGLE_MAPS_TILES_KEY, env.MAPS_TIMEOUT_MS, doFetch);
   if (which === 'openstreetmap' && env.OSM_TILES_URL) return new OpenStreetMapTiles(env.OSM_TILES_URL, env.OSM_TILES_ATTRIBUTION);
   return new NoTiles();
 }
@@ -91,8 +92,6 @@ export function buildMapTiles(env: MapsSettings, language: string, region: strin
     {
       provide: MAP_TILES,
       inject: [ConfigService],
-      // Google's tile session is made in one language and region; the first country's are used until a second
-      // country goes live (then one session per country is made).
       useFactory: (config: ConfigService<Env, true>): MapTiles =>
         buildMapTiles(
           {
@@ -103,11 +102,10 @@ export function buildMapTiles(env: MapsSettings, language: string, region: strin
             OSM_TILES_ATTRIBUTION: config.get('OSM_TILES_ATTRIBUTION', { infer: true }),
             MAPS_TIMEOUT_MS: config.get('MAPS_TIMEOUT_MS', { infer: true }),
           } as MapsSettings,
-          'en',
-          'NG',
         ),
     },
+    MapsAnswers,
   ],
-  exports: [MAPS, MAP_TILES],
+  exports: [MAPS, MAP_TILES, MapsAnswers],
 })
 export class MapsModule {}

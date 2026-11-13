@@ -16,14 +16,21 @@ export interface TileSource {
   expiresAt: string | null;
 }
 
+/** Whom the map is for: Google draws place names in this language and with this country's borders and labels. */
+export interface TileAudience {
+  language: string;
+  /** ISO 3166 two-letter country code. */
+  region: string;
+}
+
 export interface MapTiles {
   readonly provider: string;
-  source(): Promise<TileSource | null>;
+  source(audience: TileAudience): Promise<TileSource | null>;
 }
 
 export class NoTiles implements MapTiles {
   readonly provider = 'none';
-  source(): Promise<TileSource | null> {
+  source(_audience: TileAudience): Promise<TileSource | null> {
     return Promise.resolve(null);
   }
 }
@@ -36,7 +43,7 @@ export class OpenStreetMapTiles implements MapTiles {
     private readonly attribution: string,
   ) {}
 
-  source(): Promise<TileSource | null> {
+  source(_audience: TileAudience): Promise<TileSource | null> {
     return Promise.resolve({ provider: 'openstreetmap', urlTemplate: this.urlTemplate, attribution: this.attribution, maxZoom: 19, expiresAt: null });
   }
 }
@@ -48,35 +55,37 @@ export class OpenStreetMapTiles implements MapTiles {
  */
 export class GoogleTiles implements MapTiles {
   readonly provider = 'google';
-  private cached: TileSource | null = null;
+  /** One session per language and country, made when first asked for. */
+  private readonly cached = new Map<string, TileSource>();
 
   constructor(
     private readonly key: string,
-    private readonly language: string,
-    private readonly region: string,
     private readonly timeoutMs: number,
     private readonly doFetch: Fetch = fetch,
   ) {}
 
-  async source(): Promise<TileSource | null> {
+  async source(audience: TileAudience): Promise<TileSource | null> {
+    const id = `${audience.language}:${audience.region}`;
+    const kept = this.cached.get(id);
     // Made again a day before it runs out.
-    if (this.cached?.expiresAt && Date.parse(this.cached.expiresAt) - Date.now() > 24 * 3600 * 1000) return this.cached;
+    if (kept?.expiresAt && Date.parse(kept.expiresAt) - Date.now() > 24 * 3600 * 1000) return kept;
     const answer = (await callJson(
       this.provider,
       this.doFetch,
       `https://tile.googleapis.com/v1/createSession?key=${encodeURIComponent(this.key)}`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mapType: 'roadmap', language: this.language, region: this.region }) },
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mapType: 'roadmap', language: audience.language, region: audience.region }) },
       this.timeoutMs,
     )) as { session?: string; expiry?: string };
     if (!answer.session) return null;
     const expiresAt = answer.expiry ? new Date(Number(answer.expiry) * 1000).toISOString() : null;
-    this.cached = {
+    const source: TileSource = {
       provider: 'google',
       urlTemplate: `https://tile.googleapis.com/v1/2dtiles/{z}/{x}/{y}?session=${encodeURIComponent(answer.session)}&key=${encodeURIComponent(this.key)}`,
       attribution: 'Map data © Google',
       maxZoom: 21,
       expiresAt,
     };
-    return this.cached;
+    this.cached.set(id, source);
+    return source;
   }
 }

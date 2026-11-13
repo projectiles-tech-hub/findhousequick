@@ -6,6 +6,7 @@ import { uuidv7 } from '../src/common/ids.js';
 import { ControlsService } from '../src/controls/controls.service.js';
 import type { UserType } from '../src/generated/prisma/client.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
+import { MAPS, type Maps } from '../src/integrations/maps/maps-provider.js';
 import { createTestApp } from './helpers.js';
 
 const PASSWORD = 'a good long password';
@@ -176,6 +177,49 @@ describe('Search, the property page and saved items (API, step 5 part 2)', () =>
       await liveListing(landlord, at(30_000), { area: `Placearea${run}` });
       const res = (await api().get(`/v1/search/places?q=Placearea${run}`).expect(200)).body;
       expect(res[0]).toMatchObject({ name: `Placearea${run}`, description: 'Area in Benin City' });
+    });
+  });
+
+  describe('the maps provider (ADR 0015)', () => {
+    it('adds its places after our own, and lists amenities near the approximate position, asking each question once', async () => {
+      const maps = app.get<Maps>(MAPS);
+      const saved = { places: maps.places, amenities: maps.amenities };
+      let placeCalls = 0;
+      let amenityCalls = 0;
+      maps.places = {
+        provider: 'test',
+        searchPlaces: async () => {
+          placeCalls++;
+          return [{ name: `Faraway Gate ${run}`, description: 'Landmark, Benin City', location: { lat: 6.4, lng: 5.6 } }];
+        },
+      };
+      maps.amenities = {
+        provider: 'test',
+        nearbyAmenities: async (q) => {
+          amenityCalls++;
+          return [
+            { kind: 'market', name: 'Oba Market', location: { lat: q.at.lat + 0.008, lng: q.at.lng }, distanceM: 0 },
+            { kind: 'school', name: 'Model School', location: { lat: q.at.lat + 0.003, lng: q.at.lng }, distanceM: 0 },
+          ];
+        },
+      };
+      try {
+        const first = (await api().get(`/v1/search/places?q=faraway ${run}`).set('X-Country', 'NG').expect(200)).body;
+        expect(first).toEqual([expect.objectContaining({ name: `Faraway Gate ${run}` })]);
+        await api().get(`/v1/search/places?q=Faraway  ${run}`).set('X-Country', 'NG').expect(200);
+        expect(placeCalls).toBe(1);
+
+        const landlord = await person(['LANDLORD']);
+        const listing = await liveListing(landlord, at(45_000));
+        const page = (await api().get(`/v1/listings/${listing.id}`).set('X-Device-Id', `dev-${run}-maps`).expect(200)).body;
+        expect(page.nearbyAmenities.map((a: { name: string }) => a.name)).toEqual(['Model School', 'Oba Market']);
+        expect(page.nearbyAmenities[0].distanceM % 100).toBe(0);
+        await api().get(`/v1/listings/${listing.id}`).set('X-Device-Id', `dev-${run}-maps2`).expect(200);
+        expect(amenityCalls).toBe(1);
+      } finally {
+        maps.places = saved.places;
+        maps.amenities = saved.amenities;
+      }
     });
   });
 

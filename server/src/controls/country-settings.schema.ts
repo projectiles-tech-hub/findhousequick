@@ -154,6 +154,21 @@ export const countrySettingsSchema = z.object({
     })
     .prefault({}),
 
+  /** What the maps provider is asked for in this country (ADR 0015). */
+  maps: z
+    .object({
+      /** The kinds of amenity shown near a property, from the platform's own list. */
+      amenityKinds: z
+        .array(z.enum(['school', 'hospital', 'pharmacy', 'market', 'bank', 'fuel_station', 'bus_stop', 'place_of_worship', 'police']))
+        .default(['school', 'hospital', 'market', 'bus_stop', 'bank']),
+      /** How far from a property amenities are looked for, and how many are shown. */
+      amenityRadiusMetres: z.number().int().min(200).max(10_000).default(2000),
+      amenityLimit: z.number().int().min(0).max(20).default(8),
+      /** Days an answer from the provider is kept before it is asked again. */
+      keepAnswersDays: z.number().int().min(1).max(365).default(30),
+    })
+    .prefault({}),
+
   /** How long personal data is kept (decision 55). Null means not yet set (open point 15). */
   retention: z
     .object({

@@ -1425,3 +1425,12 @@ model DataExport {
   @@index([userId, requestedAt])
   @@index([status])
 }
+
+/// Answers from the maps provider, kept for a time so the same question is not paid for twice (ADR 0015).
+model MapsAnswer {
+  key       String   @id
+  value     Json
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}

@@ -1533,8 +1533,8 @@ paths:
       tags: [Search]
       summary: Find areas and landmarks by name (for landmark search)
       description: |
-        Area names and landmarks typed in by listers, starting with the text, in switched-on cities.
-        Full place search needs the maps provider (ADR 0010). Built in step 5, part 2.
+        Area names and landmarks typed in by listers, starting with the text, in switched-on cities; then, from
+        three letters, the maps provider's places in the country (ADR 0015), kept for maps.keepAnswersDays. Up to 10.
       security: [{}, { bearer: [] }]
       parameters:
         - name: q
@@ -3199,6 +3199,7 @@ components:
                   travelMinutes: { type: [integer, "null"] }
             nearbyAmenities:
               type: array
+              description: From the maps provider (ADR 0015); kinds, distance and number are country settings. Measured from the approximate position, rounded to 100 m, nearest first; empty with no provider.
               items:
                 type: object
                 properties:

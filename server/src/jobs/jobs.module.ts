@@ -12,6 +12,7 @@ import { PrivacyModule } from '../privacy/privacy.module.js';
 import { DataExportService } from '../privacy/data-export.service.js';
 import { InspectionsModule } from '../inspections/inspections.module.js';
 import { InspectionsService } from '../inspections/inspections.service.js';
+import { MapsAnswers } from '../integrations/maps/maps-answers.js';
 
 export { redisConnection };
 
@@ -41,6 +42,7 @@ export class JobsRunner implements OnApplicationBootstrap, OnApplicationShutdown
     private readonly calls: CallsService,
     private readonly dataExports: DataExportService,
     private readonly inspections: InspectionsService,
+    private readonly mapsAnswers: MapsAnswers,
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
@@ -59,7 +61,11 @@ export class JobsRunner implements OnApplicationBootstrap, OnApplicationShutdown
     this.worker = new Worker(
       QUEUE,
       async (job) => {
-        if (job.name === PURGE_DOCUMENTS) return this.retention.purgeExpiredDocuments();
+        if (job.name === PURGE_DOCUMENTS) {
+          // Also clears maps answers past their time (ADR 0015).
+          await this.mapsAnswers.purge();
+          return this.retention.purgeExpiredDocuments();
+        }
         if (job.name === EXPIRE_LISTINGS) return this.listings.expireOverdue();
         if (job.name === MISSED_CALLS) return this.calls.sweepUnanswered();
         if (job.name === DATA_EXPORTS) return this.dataExports.run();

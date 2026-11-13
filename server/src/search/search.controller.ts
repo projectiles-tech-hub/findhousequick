@@ -30,8 +30,8 @@ export class SearchController {
       'address works. `source` is null when no map provider is set; the apps then say the map is not available (decision 81).',
   })
   @ApiOkResponse({ description: '{ source }' })
-  async mapTiles() {
-    return { source: await this.tiles.source() };
+  async mapTiles(@Req() req: Request) {
+    return { source: await this.search.tileSource(this.tiles, contextFromRequest(req)) };
   }
 
   @Get('search/listings')
@@ -53,8 +53,8 @@ export class SearchController {
   @Public()
   @ApiOperation({ summary: 'Areas and landmarks whose names start with the text, for landmark search' })
   @ApiOkResponse({ description: 'Up to 10 places' })
-  places(@Query() q: PlacesQuery) {
-    return this.search.places(q.q);
+  places(@Query() q: PlacesQuery, @Req() req: Request) {
+    return this.search.places(q.q, contextFromRequest(req));
   }
 
   @Get('search/areas')
