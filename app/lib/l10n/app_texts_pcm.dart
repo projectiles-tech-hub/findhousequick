@@ -1757,4 +1757,16 @@ class AppTextsPcm extends AppTexts {
 
   @override
   String get periodPerNight => 'per night';
+
+  @override
+  String onSince(String month) {
+    return 'On FindHouseQuick since $month';
+  }
+
+  @override
+  String get photosByRoomText =>
+      'Every part of the home, photographed on site through the FindHouseQuick app.';
+
+  @override
+  String get nearby => 'Nearby';
 }

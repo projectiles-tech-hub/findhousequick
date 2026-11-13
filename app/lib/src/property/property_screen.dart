@@ -8,7 +8,6 @@ import '../api/api_client.dart';
 import '../controls/controls.dart';
 import '../design/app_icon.dart';
 import '../design/buttons.dart';
-import '../design/chips.dart';
 import '../design/tokens.dart';
 import '../design/wide.dart';
 import '../l10n/languages.dart';
@@ -222,13 +221,81 @@ class PropertyBox extends StatelessWidget {
   );
 }
 
-Widget boxTitle(String text) => Padding(
-  padding: const EdgeInsets.only(bottom: 12),
+/// The space between the parts of a box: 12 on the phone, 16 on the website, as drawn.
+double boxGap(BuildContext context) => AppWide.of(context) ? 16 : 12;
+
+Widget boxTitle(String text) => Builder(
+  builder: (context) => Padding(
+  padding: EdgeInsets.only(bottom: boxGap(context)),
   child: Semantics(
     header: true,
     child: Text(text, style: AppText.title.copyWith(height: 26 / 22)),
   ),
+  ),
 );
+
+/// The buttons as drawn on this page: corners of 8, 14 above and below the words, the outline 1.5 wide.
+class PageButton extends StatelessWidget {
+  const PageButton({super.key, required this.label, required this.onPressed, this.outline = false});
+  final String label;
+  final VoidCallback onPressed;
+  final bool outline;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    child: Material(
+      color: outline ? AppColors.surface : AppColors.green700,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: outline ? const BorderSide(color: AppColors.green700, width: 1.5) : BorderSide.none,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onPressed,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: AppText.button.copyWith(color: outline ? AppColors.green700 : AppColors.surface, height: 19 / 16),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+/// The small badges of this page: "Verified lister" (blue) and "Inspections are free" (amber).
+class PageBadge extends StatelessWidget {
+  const PageBadge({super.key, required this.label, required this.icon, required this.background, required this.colour});
+  final String label;
+  final AppIcons icon;
+  final Color background;
+  final Color colour;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.fromLTRB(8, 4, 10, 4),
+    decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(6)),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AppIcon(icon, size: 16, color: colour, cut: background),
+        const SizedBox(width: 4),
+        Flexible(child: Text(label, style: AppText.label.copyWith(color: colour, height: 17 / 14))),
+      ],
+    ),
+  );
+}
+
+class VerifiedBadge extends StatelessWidget {
+  const VerifiedBadge({super.key});
+
+  @override
+  Widget build(BuildContext context) =>
+      PageBadge(label: context.texts.verifiedLister, icon: AppIcons.shieldCheck, background: AppColors.infoTint, colour: AppColors.verified);
+}
 
 /// A photo of the home, or the grey box with its part's name while it loads or when it cannot be shown.
 class HomePhoto extends StatelessWidget {
@@ -251,7 +318,7 @@ class HomePhoto extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               label,
-              style: AppText.bodySmall.copyWith(color: AppColors.ink600),
+              style: AppText.label.copyWith(color: AppColors.ink600, height: 17 / 14),
               textAlign: TextAlign.center,
               maxLines: 2,
             ),
@@ -276,7 +343,7 @@ class HomePhoto extends StatelessWidget {
                     const SizedBox(height: 6),
                     Text(
                       overlay!,
-                      style: AppText.bodySmall.copyWith(color: AppColors.surface),
+                      style: AppText.label.copyWith(color: AppColors.surface, height: 17 / 14),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -294,20 +361,8 @@ class FreeBadge extends StatelessWidget {
   const FreeBadge({super.key});
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-    decoration: BoxDecoration(color: AppColors.amber100, borderRadius: BorderRadius.circular(AppRadius.small)),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const AppIcon(AppIcons.home, size: 18, color: AppColors.warning),
-        const SizedBox(width: 4),
-        Flexible(
-          child: Text(context.texts.inspectionsAreFree, style: AppText.label.copyWith(color: AppColors.warning)),
-        ),
-      ],
-    ),
-  );
+  Widget build(BuildContext context) =>
+      PageBadge(label: context.texts.inspectionsAreFree, icon: AppIcons.home, background: AppColors.amber100, colour: AppColors.warning);
 }
 
 /// An outlined chip that only shows words (rooms, nearby places).
@@ -326,7 +381,8 @@ class InfoChip extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          // 10 inside the 1 border, as drawn (39 high).
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
           child: Text(
             label,
             style: AppText.label.copyWith(color: AppColors.ink900, height: 17 / 14),
@@ -348,8 +404,8 @@ class ContactButtons extends ConsumerWidget {
     final t = context.texts;
     final controls = ref.watch(controlsProvider).value;
     final buttons = [
-      if (controls?.isOn('contact.inspection_booking') ?? true) AppButton(label: t.bookFreeInspection, onPressed: () => contactAction(context, ref, book: true)),
-      if (controls?.isOn('contact.chat') ?? false) AppButton(label: t.chatWithLister, kind: AppButtonKind.outline, onPressed: () => contactAction(context, ref, book: false)),
+      if (controls?.isOn('contact.inspection_booking') ?? true) PageButton(label: t.bookFreeInspection, onPressed: () => contactAction(context, ref, book: true)),
+      if (controls?.isOn('contact.chat') ?? false) PageButton(label: t.chatWithLister, outline: true, onPressed: () => contactAction(context, ref, book: false)),
     ];
     if (row) return Row(children: [for (final (i, b) in buttons.indexed) ...[if (i > 0) const SizedBox(width: 12), Expanded(child: b)]]);
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [for (final (i, b) in buttons.indexed) ...[if (i > 0) SizedBox(height: AppWide.of(context) ? 16 : 12), b]]);
@@ -366,12 +422,13 @@ class CostsBox extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = context.texts;
+    final g = boxGap(context);
     final locale = Localizations.localeOf(context).languageCode;
     final c = page.card;
     String money(BigInt m) => formatMoney(m, c.currency, locale);
     final grey = AppText.body.copyWith(color: AppColors.ink600, height: 19 / 16);
     Widget line(String label, String value) => Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: g),
       child: Row(
         children: [
           Expanded(child: Text(label, style: grey)),
@@ -402,22 +459,22 @@ class CostsBox extends ConsumerWidget {
             ],
           ),
           if (!side) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: g),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                if (c.listerVerified) AppTag(label: t.verifiedLister, kind: AppTagKind.verified),
+                if (c.listerVerified) const VerifiedBadge(),
                 const FreeBadge(),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: g),
             ContactButtons(row: AppWide.of(context)),
-            if (page.lister != null) ...[const SizedBox(height: 12), ListerTile(lister: page.lister!)],
+            if (page.lister != null) ...[SizedBox(height: g), ListerTile(lister: page.lister!)],
           ],
-          const SizedBox(height: 12),
+          SizedBox(height: g),
           Text(page.shortLet ? t.whatYouPay : t.totalToMoveIn, style: AppText.subtitle.copyWith(height: 22 / 18)),
-          const SizedBox(height: 12),
+          SizedBox(height: g),
           line(t.rentFor(periodWord), money(c.rentMinor)),
           for (final f in page.fees)
             line(
@@ -426,7 +483,7 @@ class CostsBox extends ConsumerWidget {
             ),
           const Divider(height: 1, color: AppColors.divider),
           Padding(
-            padding: const EdgeInsets.only(top: 13),
+            padding: EdgeInsets.only(top: g + 1),
             child: Row(
               children: [
                 Expanded(
@@ -436,7 +493,7 @@ class CostsBox extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: g),
           Container(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
             decoration: BoxDecoration(color: AppColors.amber100, borderRadius: BorderRadius.circular(AppRadius.small)),
@@ -478,7 +535,7 @@ class ListerTile extends StatelessWidget {
             height: 48,
             alignment: Alignment.center,
             decoration: const BoxDecoration(color: AppColors.green50, shape: BoxShape.circle),
-            child: Text(lister.initials, style: AppText.subtitle.copyWith(color: AppColors.green700)),
+            child: Text(lister.initials, style: AppText.subtitle.copyWith(color: AppColors.green800, height: 22 / 18)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -486,7 +543,8 @@ class ListerTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(lister.name, style: AppText.subtitle.copyWith(height: 22 / 18)),
-                if (lister.verified)
+                if (lister.verified) ...[
+                  const SizedBox(height: 2),
                   Row(
                     children: [
                       const AppIcon(AppIcons.shieldCheck, size: 16, color: AppColors.verified),
@@ -499,8 +557,16 @@ class ListerTile extends StatelessWidget {
                       ),
                     ],
                   ),
-                if (lister.replyMinutes != null)
+                ],
+                if (lister.replyMinutes != null) ...[
+                  const SizedBox(height: 2),
                   Text(lister.replyMinutes! < 60 ? t.repliesMinutes(lister.replyMinutes!) : t.repliesHours((lister.replyMinutes! / 60).round()), style: grey),
+                ],
+                // The website layouts add when the lister joined.
+                if (AppWide.of(context) && lister.memberSince != null) ...[
+                  const SizedBox(height: 2),
+                  Text(t.onSince(DateFormat('MMMM y', Localizations.localeOf(context).toLanguageTag()).format(lister.memberSince!)), style: grey),
+                ],
               ],
             ),
           ),
@@ -535,7 +601,8 @@ class FactsBox extends StatelessWidget {
                       k,
                       style: AppText.bodySmall.copyWith(color: AppColors.ink600, height: 17 / 14),
                     ),
-                    Text(v, style: AppText.body.copyWith(fontSize: 17, height: 24 / 17)),
+                    const SizedBox(height: 2),
+                    Text(v, style: AppText.subtitle.copyWith(height: 22 / 18)),
                   ],
                 ),
               ),
@@ -553,11 +620,17 @@ class PhotosByRoomBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.texts;
+    final big = MediaQuery.sizeOf(context).width >= 1100;
+    final wide = AppWide.of(context);
     return PropertyBox(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           boxTitle(t.photosByRoom),
+          if (big) ...[
+            Text(t.photosByRoomText, style: AppText.body.copyWith(color: AppColors.ink600, height: 19 / 16)),
+            SizedBox(height: boxGap(context)),
+          ],
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -570,33 +643,34 @@ class PhotosByRoomBox extends StatelessWidget {
             ],
           ),
           if (page.hasWalkthrough) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: boxGap(context)),
             InkWell(
               onTap: () => context.push('/homes/${page.card.id}/walkthrough'),
               child: Row(
                 children: [
                   Container(
-                    width: 120,
-                    height: 80,
+                    width: wide ? 200 : 120,
+                    height: wide ? 120 : 80,
                     decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(AppRadius.medium)),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const AppIcon(AppIcons.play, color: AppColors.green700),
-                        const SizedBox(height: 4),
-                        Text(t.video, style: AppText.bodySmall.copyWith(color: AppColors.ink600)),
+                        const SizedBox(height: 6),
+                        Text(big ? t.walkthroughVideo : t.video, style: AppText.label.copyWith(color: AppColors.ink600, height: 17 / 14)),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: big ? 16 : 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(t.walkthroughVideo, style: AppText.subtitle.copyWith(height: 22 / 18)),
+                        const SizedBox(height: 4),
                         Text(
                           t.walkthroughText,
-                          style: AppText.bodySmall.copyWith(color: AppColors.ink600, height: 17 / 14),
+                          style: big ? AppText.body.copyWith(color: AppColors.ink600, height: 19 / 16) : AppText.bodySmall.copyWith(color: AppColors.ink600, height: 17 / 14),
                         ),
                       ],
                     ),
@@ -616,22 +690,33 @@ class KeyDetailsBox extends StatelessWidget {
   final List<(String, String)> details;
 
   @override
-  Widget build(BuildContext context) => PropertyBox(
-    child: Column(
+  Widget build(BuildContext context) {
+    final wide = AppWide.of(context);
+    final big = MediaQuery.sizeOf(context).width >= 1100;
+    Widget item((String, String) d) => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        boxTitle(context.texts.keyDetails),
-        for (final (i, (k, v)) in details.indexed) ...[
-          if (i > 0) const SizedBox(height: 12),
-          Text(
-            k,
-            style: AppText.bodySmall.copyWith(color: AppColors.ink600, height: 17 / 14),
-          ),
-          Text(v, style: AppText.body.copyWith(fontSize: 17, height: 21 / 17)),
-        ],
+        Text(d.$1, style: AppText.bodySmall.copyWith(color: AppColors.ink600, height: 17 / 14)),
+        const SizedBox(height: 2),
+        Text(d.$2, style: AppText.body.copyWith(height: 19 / 16)),
       ],
-    ),
-  );
+    );
+    return PropertyBox(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          boxTitle(context.texts.keyDetails),
+          LayoutBuilder(
+            builder: (context, box) => Wrap(
+              spacing: 24,
+              runSpacing: big ? 16 : 12,
+              children: [for (final d in details) SizedBox(width: wide ? (box.maxWidth - 24) / 2 : box.maxWidth, child: item(d))],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class AboutBox extends StatelessWidget {
@@ -644,7 +729,7 @@ class AboutBox extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         boxTitle(context.texts.aboutThisHome),
-        Text(text, style: AppText.body.copyWith(fontSize: 17, height: 19 / 17)),
+        Text(text, style: AppText.body.copyWith(height: 19 / 16)),
       ],
     ),
   );
@@ -657,38 +742,44 @@ class LocationBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.texts;
+    final wide = AppWide.of(context);
+    final big = MediaQuery.sizeOf(context).width >= 1100;
     return PropertyBox(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           boxTitle(t.location),
           Container(
-            height: 180,
+            height: wide ? 240 : 180,
             decoration: BoxDecoration(color: AppColors.green50, borderRadius: BorderRadius.circular(AppRadius.medium)),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 100,
-                  height: 100,
+                  width: big ? 120 : 100,
+                  height: big ? 120 : 100,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: AppColors.green700.withValues(alpha: 0.15),
-                    border: Border.all(color: AppColors.green700, width: 1.5),
+                    border: Border.all(color: AppColors.green700, width: 2),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(t.approximateArea, style: AppText.label.copyWith(color: AppColors.green700)),
+                const SizedBox(height: 6),
+                Text(t.approximateArea, style: AppText.label.copyWith(color: AppColors.green800, height: 17 / 14)),
               ],
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: boxGap(context)),
           Text(
             t.exactAddressLater,
             style: AppText.body.copyWith(color: AppColors.ink600, height: 19 / 16),
           ),
           if (page.savedPlaces.isNotEmpty || page.amenities.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: boxGap(context)),
+            if (big) ...[
+              Text(t.nearby, style: AppText.subtitle.copyWith(height: 22 / 18)),
+              SizedBox(height: boxGap(context)),
+            ],
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -726,15 +817,15 @@ class AlertBox extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: boxGap(context)),
           Text(
             t.alertSimilarIn(page.card.area),
             style: AppText.body.copyWith(color: AppColors.ink600, height: 19 / 16),
           ),
-          const SizedBox(height: 12),
-          AppButton(
+          SizedBox(height: boxGap(context)),
+          PageButton(
             label: t.getAlertsFor(page.card.area),
-            kind: AppButtonKind.outline,
+            outline: true,
             onPressed: () {
               final signedIn = ref.read(sessionProvider).value?.signedIn ?? false;
               if (!signedIn) {
@@ -777,11 +868,13 @@ class HomesRow extends StatelessWidget {
         header: true,
         child: Text(title, style: AppText.title.copyWith(height: 26 / 22)),
       ),
-      if (subtitle != null)
+      if (subtitle != null) ...[
+        const SizedBox(height: 4),
         Text(
           subtitle!,
           style: AppText.body.copyWith(color: AppColors.ink600, height: 19 / 16),
         ),
+      ],
       const SizedBox(height: 12),
       SingleChildScrollView(
               // The cards scroll sideways; each is as tall as its words need.
@@ -824,6 +917,8 @@ class MoreFromCards extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = context.texts;
+    final wide = AppWide.of(context);
+    final big = MediaQuery.sizeOf(context).width >= 1100;
     final scouts = ref.watch(controlsProvider).value?.isOn('growth.scouts') ?? false;
     final cards = [
       (AppIcons.shieldCheck, t.moreChecked, t.moreCheckedText, t.moreCheckedLink, '/help#checks'),
@@ -840,17 +935,17 @@ class MoreFromCards extends ConsumerWidget {
             width: 44,
             height: 24,
             alignment: Alignment.center,
-            decoration: BoxDecoration(color: AppColors.green50, borderRadius: BorderRadius.circular(12)),
-            child: AppIcon(c.$1, size: 20, color: AppColors.green700),
+            decoration: BoxDecoration(color: AppColors.green50, borderRadius: BorderRadius.circular(22)),
+            child: AppIcon(c.$1, color: AppColors.green700, cut: AppColors.green50),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           Text(c.$2, style: AppText.subtitle.copyWith(height: 22 / 18)),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
             c.$3,
             style: AppText.body.copyWith(color: AppColors.ink600, height: 19 / 16),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           AppLinkText(label: c.$4, onTap: () => openWebsite(ref, c.$5)),
         ],
       ),
@@ -860,15 +955,16 @@ class MoreFromCards extends ConsumerWidget {
       children: [
         Semantics(
           header: true,
-          child: Text(t.moreFromUs, style: AppText.title.copyWith(height: 26 / 22)),
+          child: Text(t.moreFromUs, style: wide ? AppText.title.copyWith(fontSize: 24, height: 29 / 24) : AppText.title.copyWith(height: 26 / 22)),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: big ? 16 : 12),
         LayoutBuilder(
           builder: (context, box) {
-            final w = (box.maxWidth - 16 * (columns - 1)) / columns;
+            final space = big ? 24.0 : 16.0;
+            final w = (box.maxWidth - space * (columns - 1)) / columns;
             return Wrap(
-              spacing: 16,
-              runSpacing: 16,
+              spacing: space,
+              runSpacing: space,
               children: [for (final c in cards) SizedBox(width: w, child: card(c))],
             );
           },
@@ -951,7 +1047,7 @@ class _PhoneLayout extends ConsumerWidget {
       ),
       bottomNavigationBar: _ActionBar(page: page),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 48),
         children: [
           Semantics(
             header: true,
@@ -1009,7 +1105,7 @@ class _PhoneLayout extends ConsumerWidget {
           LocationBox(page: page),
           if (alerts) ...[gap, AlertBox(page: page)],
           if (related.similar.isNotEmpty) ...[
-            const SizedBox(height: 24),
+            gap,
             HomesRow(
               title: t.similarHomesNearby,
               subtitle: c.bedrooms != null && c.bedrooms! > 0 ? t.similarHomesText(c.bedrooms!) : null,
@@ -1019,10 +1115,10 @@ class _PhoneLayout extends ConsumerWidget {
             ),
           ],
           if (related.nearby.isNotEmpty) ...[
-            const SizedBox(height: 24),
+            gap,
             HomesRow(title: t.moreHomesIn(c.area), homes: related.nearby, linkLabel: t.seeAllHomesIn(c.area), onLink: () => _searchFrom(context, ref, page, sameBedrooms: false)),
           ],
-          const SizedBox(height: 24),
+          gap,
           const MoreFromCards(),
         ],
       ),
@@ -1064,7 +1160,7 @@ class _ActionBar extends ConsumerWidget {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
           child: Row(
             children: [
               if (chat)
@@ -1074,11 +1170,11 @@ class _ActionBar extends ConsumerWidget {
                   child: Material(
                     color: AppColors.surface,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.medium),
-                      side: const BorderSide(color: AppColors.green700, width: 2),
+                      borderRadius: BorderRadius.circular(8),
+                      side: const BorderSide(color: AppColors.green700, width: 1.5),
                     ),
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(AppRadius.medium),
+                      borderRadius: BorderRadius.circular(8),
                       onTap: () => contactAction(context, ref, book: false),
                       child: const SizedBox(
                         width: 48,
@@ -1090,7 +1186,7 @@ class _ActionBar extends ConsumerWidget {
                 ),
               if (chat && booking) const SizedBox(width: 8),
               Expanded(
-                child: booking ? AppButton(label: t.bookFreeInspection, onPressed: () => contactAction(context, ref, book: true)) : const SizedBox.shrink(),
+                child: booking ? PageButton(label: t.bookFreeInspection, onPressed: () => contactAction(context, ref, book: true)) : const SizedBox.shrink(),
               ),
             ],
           ),

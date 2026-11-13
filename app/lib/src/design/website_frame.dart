@@ -67,7 +67,7 @@ class _Header extends ConsumerWidget {
     final scouts = ref.watch(controlsProvider).value?.isOn('growth.scouts') ?? false;
     final me = ref.watch(sessionProvider).value?.me;
     final initials = me == null ? '' : [me.firstName, me.lastName].where((s) => s.isNotEmpty).map((s) => s[0].toUpperCase()).join();
-    final stripLink = AppText.bodySmall.copyWith(color: AppColors.green800, height: 17 / 14);
+    final stripLink = AppText.label.copyWith(color: AppColors.green800, height: 17 / 14);
     Widget link(String label, VoidCallback onTap, TextStyle style) => Semantics(
       link: true,
       child: InkWell(
@@ -86,14 +86,9 @@ class _Header extends ConsumerWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
         onTap: () => context.push('/search/place'),
-        child: SizedBox(
-          height: 48,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Center(
-              child: Text(t.searchButton, style: AppText.button.copyWith(color: AppColors.surface)),
-            ),
-          ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          child: Text(t.searchButton, style: AppText.button.copyWith(color: AppColors.surface, height: 19 / 16)),
         ),
       ),
     );
@@ -132,8 +127,8 @@ class _Header extends ConsumerWidget {
           ),
         ),
         Container(
-          color: AppColors.surface,
-          padding: EdgeInsets.fromLTRB(edge, big ? 16 : 14, edge, big ? 17 : 14),
+          decoration: const BoxDecoration(color: AppColors.surface, border: Border(bottom: BorderSide(color: AppColors.divider))),
+          padding: EdgeInsets.fromLTRB(edge, 16, edge, 16),
           child: Column(
             children: [
               Row(
@@ -158,19 +153,22 @@ class _Header extends ConsumerWidget {
                   avatar,
                 ],
               ),
-              if (!big) ...[
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Expanded(child: search),
-                    const SizedBox(width: 12),
-                    searchButton,
-                  ],
-                ),
-              ],
             ],
           ),
         ),
+        // At 768 the search box has a row of its own under the bar.
+        if (!big)
+          Container(
+            color: AppColors.surface,
+            padding: EdgeInsets.fromLTRB(edge, 0, edge, 12),
+            child: Row(
+              children: [
+                Expanded(child: search),
+                const SizedBox(width: 8),
+                searchButton,
+              ],
+            ),
+          ),
       ],
     );
   }
@@ -193,14 +191,14 @@ class _Logo extends StatelessWidget {
             width: 32,
             height: 22,
             alignment: Alignment.center,
-            decoration: BoxDecoration(color: AppColors.green700, borderRadius: BorderRadius.circular(6)),
-            child: Text('F', style: AppText.label.copyWith(color: AppColors.surface, height: 1)),
+            decoration: BoxDecoration(color: AppColors.green700, borderRadius: BorderRadius.circular(8)),
+            child: Text('F', style: AppText.subtitle.copyWith(color: AppColors.surface, height: 22 / 18)),
           ),
           const SizedBox(width: 8),
           ExcludeSemantics(
             child: Text(
               context.texts.appName,
-              style: AppText.title.copyWith(color: AppColors.green700, fontSize: 21, height: 26 / 21),
+              style: AppText.title.copyWith(color: AppColors.green700, height: 26 / 22),
             ),
           ),
         ],
@@ -235,15 +233,15 @@ class _SearchField extends StatelessWidget {
               // The icon gives way first if the box is ever squeezed very narrow.
               builder: (context, box) => Row(
                 children: [
-                  const SizedBox(width: 16),
-                  if (box.maxWidth >= 120) ...[const AppIcon(AppIcons.search, color: AppColors.green700), const SizedBox(width: 10)],
+                  const SizedBox(width: 14),
+                  if (box.maxWidth >= 120) ...[const AppIcon(AppIcons.search, color: AppColors.green700), const SizedBox(width: 8)],
                   Expanded(
                     child: ExcludeSemantics(
                       child: Text(
                         empty ? t.searchHint : text!,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppText.body.copyWith(color: empty ? AppColors.ink600 : AppColors.ink900, height: 20 / 16),
+                        style: AppText.body.copyWith(color: empty ? AppColors.ink600 : AppColors.ink900, height: 19 / 16),
                       ),
                     ),
                   ),
@@ -267,51 +265,53 @@ class _Footer extends ConsumerWidget {
     final big = MediaQuery.sizeOf(context).width >= 1100;
     final controls = ref.watch(controlsProvider).value;
     bool on(String k) => controls?.isOn(k) ?? false;
-    const grey = Color(0xFFB8BEC7);
-    final linkStyle = AppText.bodySmall.copyWith(color: grey, height: 17 / 14);
-    final heading = AppText.bodySmall.copyWith(color: AppColors.surface, fontWeight: FontWeight.w600, fontVariations: const [FontVariation('wght', 600)], height: 17 / 14);
-    Widget col(String title, List<(String, VoidCallback)> items) => Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Semantics(header: true, child: Text(title, style: heading)),
-        for (final (label, onTap) in items) ...[
-          const SizedBox(height: 10),
-          Semantics(
-            link: true,
-            child: InkWell(
-              onTap: onTap,
-              child: Text(label, style: linkStyle),
+    final linkStyle = AppText.bodySmall.copyWith(color: AppColors.ink400, height: 17 / 14);
+    final heading = AppText.label.copyWith(color: AppColors.surface, height: 17 / 14);
+    Widget col(String title, List<(String, VoidCallback)> items) => SizedBox(
+      width: 160,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Semantics(header: true, child: Text(title, style: heading)),
+          for (final (label, onTap) in items) ...[
+            const SizedBox(height: 10),
+            Semantics(
+              link: true,
+              child: InkWell(onTap: onTap, child: Text(label, style: linkStyle)),
             ),
-          ),
+          ],
         ],
+      ),
+    );
+    final columns = Wrap(
+      spacing: 32,
+      runSpacing: 24,
+      children: [
+        col(t.footerFind, [
+          (t.homesToRent, () => context.go('/home')),
+          if (on('listings.commercial')) (t.catShops, () => context.go('/home')),
+          if (on('listings.short_lets')) (t.catShortLets, () => context.go('/home')),
+          (t.homesAroundMe, () => context.push('/search/location')),
+        ]),
+        col(t.footerList, [
+          (t.listAProperty, () => _openSite(ref, '/help#listing')),
+          (t.forAgents, () => _openSite(ref, '/help#agents')),
+          if (on('growth.scouts')) (t.becomeScout, () => _openSite(ref, '/help#scouts')),
+        ]),
+        col(t.help, [
+          (t.helpCentre, () => _openSite(ref, '/help')),
+          (t.reportAListing, () => _openSite(ref, '/help#report')),
+          (t.termsOfUse, () => _openSite(ref, '/terms')),
+          (t.privacyPolicy, () => _openSite(ref, '/privacy')),
+        ]),
+        // "Get the app" stays hidden until the store addresses exist, as on the public website.
       ],
     );
-    final columns = [
-      col(t.footerFind, [
-        (t.homesToRent, () => context.go('/home')),
-        if (on('listings.commercial')) (t.catShops, () => context.go('/home')),
-        if (on('listings.short_lets')) (t.catShortLets, () => context.go('/home')),
-      ]),
-      col(t.footerList, [
-        (t.listAProperty, () => _openSite(ref, '/help#listing')),
-        (t.forAgents, () => _openSite(ref, '/help#agents')),
-        if (on('growth.scouts')) (t.becomeScout, () => _openSite(ref, '/help#scouts')),
-      ]),
-      col(t.help, [
-        (t.helpCentre, () => _openSite(ref, '/help')),
-        (t.reportAListing, () => _openSite(ref, '/help#report')),
-        (t.termsOfUse, () => _openSite(ref, '/terms')),
-        (t.privacyPolicy, () => _openSite(ref, '/privacy')),
-      ]),
-    ];
     final about = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          t.appName,
-          style: AppText.title.copyWith(color: AppColors.surface, fontSize: 21, height: 26 / 21),
-        ),
-        const SizedBox(height: 16),
+        Text(t.appName, style: AppText.title.copyWith(color: AppColors.surface, height: 26 / 22)),
+        const SizedBox(height: 12),
         Text(t.footerAbout, style: linkStyle),
       ],
     );
@@ -326,29 +326,26 @@ class _Footer extends ConsumerWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  flex: 5,
-                  child: Padding(padding: const EdgeInsets.only(right: 48), child: about),
-                ),
-                for (final c in columns) Expanded(flex: 2, child: c),
+                Expanded(child: about),
+                const SizedBox(width: 32),
+                SizedBox(width: 736, child: columns),
               ],
             )
           else ...[
             about,
-            const SizedBox(height: 24),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [for (final c in columns) Expanded(child: c)],
-            ),
+            const SizedBox(height: 32),
+            columns,
           ],
           const SizedBox(height: 32),
-          const Divider(height: 1, color: Color(0xFF374151)),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(child: Text(t.copyright('${DateTime.now().year}'), style: linkStyle)),
-              Text(t.languageEn, style: linkStyle),
-            ],
+          Container(
+            padding: const EdgeInsets.only(top: 20),
+            decoration: const BoxDecoration(border: Border(top: BorderSide(color: AppColors.ink600))),
+            child: Row(
+              children: [
+                Expanded(child: Text(t.copyright('${DateTime.now().year}'), style: linkStyle)),
+                Text(t.languageEn, style: linkStyle),
+              ],
+            ),
           ),
         ],
       ),

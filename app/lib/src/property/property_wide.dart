@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../controls/controls.dart';
 import '../design/app_icon.dart';
-import '../design/chips.dart';
 import '../design/tokens.dart';
 import '../design/website_frame.dart';
 import '../l10n/languages.dart';
@@ -72,10 +71,10 @@ class PropertyWideLayout extends ConsumerWidget {
           header: true,
           child: Text(
             headline(page),
-            style: AppText.display.copyWith(fontSize: big ? 34 : 32, height: 40 / 34),
+            style: AppText.display.copyWith(fontSize: 36, height: 43 / 36),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Row(
           children: [
             const AppIcon(AppIcons.location, color: AppColors.green700),
@@ -96,7 +95,7 @@ class PropertyWideLayout extends ConsumerWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                if (c.listerVerified) AppTag(label: t.verifiedLister, kind: AppTagKind.verified),
+                if (c.listerVerified) const VerifiedBadge(),
                 const FreeBadge(),
               ],
             ),
@@ -104,7 +103,7 @@ class PropertyWideLayout extends ConsumerWidget {
           ],
           Wrap(
             spacing: big ? 32 : 24,
-            runSpacing: 16,
+            runSpacing: 12,
             children: [
               for (final (k, v) in propertyFacts(context, page))
                 SizedBox(
@@ -117,8 +116,8 @@ class PropertyWideLayout extends ConsumerWidget {
                         k,
                         style: AppText.bodySmall.copyWith(color: AppColors.ink600, height: 17 / 14),
                       ),
-                      const SizedBox(height: 4),
-                      Text(v, style: AppText.body.copyWith(fontSize: 17, height: 21 / 17)),
+                      const SizedBox(height: 2),
+                      Text(v, style: AppText.subtitle.copyWith(height: 22 / 18)),
                     ],
                   ),
                 ),
@@ -128,39 +127,7 @@ class PropertyWideLayout extends ConsumerWidget {
       ),
     );
 
-    final keyBox = details.isEmpty
-        ? null
-        : PropertyBox(
-            padding: 24,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                boxTitle(t.keyDetails),
-                LayoutBuilder(
-                  builder: (context, box) => Wrap(
-                    spacing: 24,
-                    runSpacing: 16,
-                    children: [
-                      for (final (k, v) in details)
-                        SizedBox(
-                          width: (box.maxWidth - 24) / 2,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                k,
-                                style: AppText.bodySmall.copyWith(color: AppColors.ink600, height: 17 / 14),
-                              ),
-                              Text(v, style: AppText.body.copyWith(height: 19 / 16)),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
+    final keyBox = details.isEmpty ? null : KeyDetailsBox(details: details);
 
     final mainColumn = <Widget>[
       facts,
@@ -185,16 +152,16 @@ class PropertyWideLayout extends ConsumerWidget {
                   children: [
                     Semantics(
                       header: true,
-                      child: Text(title, style: AppText.title.copyWith(height: 26 / 22)),
+                      child: Text(title, style: AppText.title.copyWith(fontSize: 24, height: 29 / 24)),
                     ),
-                    if (subtitle != null) Text(subtitle, style: grey),
+                    if (subtitle != null) ...[const SizedBox(height: 4), Text(subtitle, style: grey)],
                   ],
                 ),
               ),
               if (big) AppLinkText(label: linkLabel, onTap: onLink),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: big ? 16 : 12),
           if (big)
             LayoutBuilder(
               builder: (context, box) {
@@ -231,7 +198,7 @@ class PropertyWideLayout extends ConsumerWidget {
         )
       else ...[
         titleBlock,
-        const SizedBox(height: 16),
+        gap,
         actions,
       ],
       gap,
@@ -265,7 +232,7 @@ class PropertyWideLayout extends ConsumerWidget {
         if (alerts) ...[gap, AlertBox(page: page)],
       ],
       if (related.similar.isNotEmpty) ...[
-        const SizedBox(height: 40),
+        gap,
         homesGrid(
           t.similarHomesNearby,
           (c.bedrooms ?? 0) > 0 ? t.similarHomesText(c.bedrooms!) : null,
@@ -275,10 +242,10 @@ class PropertyWideLayout extends ConsumerWidget {
         ),
       ],
       if (related.nearby.isNotEmpty) ...[
-        const SizedBox(height: 40),
+        gap,
         homesGrid(t.moreHomesIn(c.area), null, related.nearby, t.seeAllHomesIn(c.area), () => searchFrom(context, ref, page, sameBedrooms: false)),
       ],
-      const SizedBox(height: 40),
+      gap,
       MoreFromCards(columns: big ? 4 : 2),
     ];
     return WebsiteFrame(children: children);

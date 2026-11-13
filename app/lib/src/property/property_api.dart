@@ -35,12 +35,13 @@ class FeeLine {
 }
 
 class Lister {
-  const Lister({required this.id, required this.name, required this.landlord, required this.verified, this.replyMinutes});
+  const Lister({required this.id, required this.name, required this.landlord, required this.verified, this.replyMinutes, this.memberSince});
   final String id;
   final String name;
   final bool landlord;
   final bool verified;
   final int? replyMinutes;
+  final DateTime? memberSince;
 
   String get initials => name.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).take(2).map((w) => w[0].toUpperCase()).join();
 }
@@ -165,6 +166,7 @@ class PropertyPage {
               landlord: lister['role'] == 'LANDLORD',
               verified: lister['verified'] == true,
               replyMinutes: (lister['typicalResponseMinutes'] as num?)?.toInt(),
+              memberSince: lister['memberSince'] is String ? DateTime.tryParse(lister['memberSince'] as String) : null,
             ),
       amenities: [for (final a in (j['nearbyAmenities'] as List? ?? const [])) Amenity((a as Map)['name'] as String, (a['distanceM'] as num?)?.toInt())],
       savedPlaces: [for (final p in (j['savedPlaceDistances'] as List? ?? const [])) SavedPlaceDistance((p as Map)['name'] as String, (p['distanceM'] as num).toInt())],

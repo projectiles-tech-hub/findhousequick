@@ -993,5 +993,15 @@
   "periodPerYear": "per year",
   "periodPerMonth": "per month",
   "periodPerWeek": "per week",
-  "periodPerNight": "per night"
+  "periodPerNight": "per night",
+  "onSince": "On FindHouseQuick since {month}",
+  "@onSince": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "photosByRoomText": "Every part of the home, photographed on site through the FindHouseQuick app.",
+  "nearby": "Nearby"
 }

@@ -2983,6 +2983,24 @@ abstract class AppTexts {
   /// In en, this message translates to:
   /// **'per night'**
   String get periodPerNight;
+
+  /// No description provided for @onSince.
+  ///
+  /// In en, this message translates to:
+  /// **'On FindHouseQuick since {month}'**
+  String onSince(String month);
+
+  /// No description provided for @photosByRoomText.
+  ///
+  /// In en, this message translates to:
+  /// **'Every part of the home, photographed on site through the FindHouseQuick app.'**
+  String get photosByRoomText;
+
+  /// No description provided for @nearby.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearby'**
+  String get nearby;
 }
 
 class _AppTextsDelegate extends LocalizationsDelegate<AppTexts> {
