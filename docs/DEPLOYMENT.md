@@ -185,7 +185,7 @@ login. Most need the CAC certificate (RC 7987623).
 
 | Software | Why | How | Notes |
 | --- | --- | --- | --- |
-| ffmpeg (which includes ffprobe) | Reading the length of uploaded videos (ADR 0009); later, making the watermarked video copies | On Ubuntu: `sudo apt install ffmpeg`. In a container image, add the `ffmpeg` package | Needed on every server with `RUN_BACKGROUND_JOBS=true`. Without it, every video is rejected as UNREADABLE |
+| ffmpeg (which includes ffprobe) | Reading the length of uploaded videos and making their watermarked copies (ADR 0009) | On Ubuntu: `sudo apt install ffmpeg`. In a container image, add the `ffmpeg` package | Needed on every server with `RUN_BACKGROUND_JOBS=true`. Without it, every video is rejected as UNREADABLE |
 | sharp (image library) | Processing photos: removing location data, quality checks, watermarked display copies | Installed with the server's packages (`pnpm install`); it brings its own image tools | Nothing to do by hand |
 
 ### Background queues
@@ -233,7 +233,7 @@ company and its lawyer, not the developers, but no real user may sign up until t
    is set (section 1).
 3. Database migrations applied (`npx prisma migrate deploy`) and starter data loaded (`pnpm db:seed`).
    The launch city and its state are switched on (section 4).
-4. `GET /v1/health` returns `status: ok`, and `ffprobe -version` works on every server that runs background jobs.
+4. `GET /v1/health` returns `status: ok`, and `ffmpeg -version` and `ffprobe -version` work on every server that runs background jobs.
 5. The first super admin has been created (section 4) and has completed two-step login.
 6. Daily database backups are running and one restore has been tested.
 7. HTTPS works on the API and web app addresses.
