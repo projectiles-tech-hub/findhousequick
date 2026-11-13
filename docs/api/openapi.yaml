@@ -2621,6 +2621,55 @@ paths:
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { description: The country is not set up. }
 
+  /admin/countries/{countryCode}/regions/{regionId}:
+    patch:
+      tags: [Admin]
+      summary: Switch a state or region on or off (super admin; recorded)
+      parameters:
+        - { $ref: "#/components/parameters/CountryCodePath" }
+        - { name: regionId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enabled, reason]
+              properties:
+                enabled: { type: boolean }
+                reason: { type: string, minLength: 3, maxLength: 500 }
+      responses:
+        "200": { description: "The state after the change." }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { description: The state is not set up in this country. }
+
+  /admin/countries/{countryCode}/cities/{cityId}:
+    patch:
+      tags: [Admin]
+      summary: Switch a city on or off (super admin; recorded)
+      description: Buildings can be added only in a city that is on. A city can be switched on only when its state is on (REGION_OFF). Switching a city off keeps its buildings and listings.
+      parameters:
+        - { $ref: "#/components/parameters/CountryCodePath" }
+        - { name: cityId, in: path, required: true, schema: { $ref: "#/components/schemas/Id" } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enabled, reason]
+              properties:
+                enabled: { type: boolean }
+                reason: { type: string, minLength: 3, maxLength: 500 }
+      responses:
+        "200": { description: "The city after the change." }
+        "400": { description: "Its state is off (REGION_OFF), or no reason was given." }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { description: The city is not set up in this country. }
+
 components:
   securitySchemes:
     bearer:

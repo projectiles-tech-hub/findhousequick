@@ -247,6 +247,48 @@ export class ControlsService implements OnModuleInit {
   }
 
   // -------------------------------------------------------------------
+  // Switching a state (region) or a city on or off
+  // -------------------------------------------------------------------
+
+  /**
+   * Switches a state or region on or off (super admins; recorded with the reason). Buildings can be added only in a
+   * city that is on, in a state that is on, in a country that is on.
+   */
+  async switchRegion(countryCode: string, regionId: string, enabled: boolean, reason: string, actor: StaffActor) {
+    if (!isSuperAdmin(actor)) throw apiError(403, 'FORBIDDEN', 'Only super admins can switch states and cities on or off.');
+    if (!reason?.trim()) throw apiError(400, 'REASON_REQUIRED', 'A reason is required for every change.');
+    return this.prisma.$transaction(async (tx) => {
+      const before = await tx.region.findFirst({ where: { id: regionId, countryCode: countryCode.toUpperCase() } });
+      if (!before) throw new NotFoundException('That state is not set up in this country');
+      const after = await tx.region.update({ where: { id: regionId }, data: { enabled } });
+      await tx.controlChange.create({
+        data: { entityType: 'Region', entityId: regionId, action: 'REGION_SWITCHED', before: { enabled: before.enabled }, after: { enabled }, reason: reason.trim(), actorId: actor.userId },
+      });
+      return { id: after.id, code: after.code, name: after.name, enabled: after.enabled };
+    });
+  }
+
+  /**
+   * Switches a city on or off (super admins; recorded with the reason). A city can be switched on only when its state
+   * is on, so a city is never open inside a closed state. Switching a city off keeps its buildings and listings; new
+   * buildings cannot be added there.
+   */
+  async switchCity(countryCode: string, cityId: string, enabled: boolean, reason: string, actor: StaffActor) {
+    if (!isSuperAdmin(actor)) throw apiError(403, 'FORBIDDEN', 'Only super admins can switch states and cities on or off.');
+    if (!reason?.trim()) throw apiError(400, 'REASON_REQUIRED', 'A reason is required for every change.');
+    return this.prisma.$transaction(async (tx) => {
+      const before = await tx.city.findFirst({ where: { id: cityId, region: { countryCode: countryCode.toUpperCase() } }, include: { region: true } });
+      if (!before) throw new NotFoundException('That city is not set up in this country');
+      if (enabled && !before.region.enabled) throw apiError(400, 'REGION_OFF', `Switch ${before.region.name} on first.`);
+      const after = await tx.city.update({ where: { id: cityId }, data: { enabled } });
+      await tx.controlChange.create({
+        data: { entityType: 'City', entityId: cityId, action: 'CITY_SWITCHED', before: { enabled: before.enabled }, after: { enabled }, reason: reason.trim(), actorId: actor.userId },
+      });
+      return { id: after.id, name: after.name, regionId: after.regionId, enabled: after.enabled };
+    });
+  }
+
+  // -------------------------------------------------------------------
   // Changing rules (used by the admin panel once staff accounts exist)
   // -------------------------------------------------------------------
 

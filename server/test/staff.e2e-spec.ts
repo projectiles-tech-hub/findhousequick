@@ -495,6 +495,36 @@ describe('Staff: accounts, two-step login and feature rules (API)', () => {
     });
   });
 
+  describe('switching states and cities on or off', () => {
+    it('lets a super admin switch a city on only when its state is on, recording each change', async () => {
+      const admin = await staff(['SUPER_ADMIN']);
+      const manager = await staff(['COUNTRY_MANAGER'], ['NG']);
+      const region = await prisma.region.create({ data: { countryCode: 'NG', code: `T${Date.now() % 100000}`, name: 'Test State' } });
+      const city = await prisma.city.create({ data: { regionId: region.id, name: 'Test City' } });
+      try {
+        await api().patch(`/v1/admin/countries/NG/cities/${city.id}`).set(bearer(manager.token)).send({ enabled: true, reason: 'Test' }).expect(403);
+        const off = await api().patch(`/v1/admin/countries/NG/cities/${city.id}`).set(bearer(admin.token)).send({ enabled: true, reason: 'Launch' }).expect(400);
+        expect(off.body.code).toBe('REGION_OFF');
+
+        const r = await api().patch(`/v1/admin/countries/ng/regions/${region.id}`).set(bearer(admin.token)).send({ enabled: true, reason: 'Launch state' }).expect(200);
+        expect(r.body).toMatchObject({ id: region.id, enabled: true });
+        const c = await api().patch(`/v1/admin/countries/NG/cities/${city.id}`).set(bearer(admin.token)).send({ enabled: true, reason: 'Launch city' }).expect(200);
+        expect(c.body).toMatchObject({ id: city.id, enabled: true });
+
+        const record = await prisma.controlChange.findFirstOrThrow({ where: { entityType: 'City', entityId: city.id } });
+        expect(record).toMatchObject({ action: 'CITY_SWITCHED', actorId: admin.id, reason: 'Launch city', after: { enabled: true } });
+
+        // The city must belong to the country named in the address, and a reason is always needed.
+        await api().patch(`/v1/admin/countries/GH/cities/${city.id}`).set(bearer(admin.token)).send({ enabled: false, reason: 'Test' }).expect(404);
+        await api().patch(`/v1/admin/countries/NG/cities/${city.id}`).set(bearer(admin.token)).send({ enabled: false }).expect(400);
+      } finally {
+        await prisma.controlChange.deleteMany({ where: { entityId: { in: [city.id, region.id] } } });
+        await prisma.city.delete({ where: { id: city.id } });
+        await prisma.region.delete({ where: { id: region.id } });
+      }
+    });
+  });
+
   describe('managing staff', () => {
     it('adds staff by confirmed email address as well as by phone number (decision 38)', async () => {
       const admin = await staff(['SUPER_ADMIN']);

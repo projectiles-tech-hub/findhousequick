@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Param, ParseUUIDPipe, Patch } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiProperty, ApiPropertyOptional, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsObject, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { CurrentUser } from '../accounts/auth.js';
@@ -38,6 +38,18 @@ export class ChangeCountryDto {
   reason!: string;
 }
 
+export class SwitchPlaceDto {
+  @ApiProperty({ description: 'On (true) or off (false).' })
+  @IsBoolean()
+  enabled!: boolean;
+
+  @ApiProperty({ description: 'Why the change is being made; recorded with it.' })
+  @IsString()
+  @MinLength(3)
+  @MaxLength(500)
+  reason!: string;
+}
+
 /** Country settings (fees, time periods, accepted documents and so on). Super admins only, on a device that has passed two-step login. */
 @ApiTags('Admin')
 @Controller('admin/countries')
@@ -61,4 +73,38 @@ export class CountriesAdminController {
       { userId: user.id, roles: user.staff!.roles as StaffRole[], countryScopes: user.staff!.countryScopes },
     );
   }
+
+  @Patch(':countryCode/regions/:regionId')
+  @ApiOperation({ summary: 'Switch a state or region on or off (super admin; recorded)' })
+  @ApiOkResponse({ description: 'The state after the change' })
+  @ApiResponse({ status: 404, description: 'The state is not set up in this country' })
+  switchRegion(
+    @CurrentUser() user: RequestUser,
+    @Param('countryCode') countryCode: string,
+    @Param('regionId', ParseUUIDPipe) regionId: string,
+    @Body() dto: SwitchPlaceDto,
+  ) {
+    return this.controls.switchRegion(countryCode, regionId, dto.enabled, dto.reason, actor(user));
+  }
+
+  @Patch(':countryCode/cities/:cityId')
+  @ApiOperation({
+    summary: 'Switch a city on or off (super admin; recorded)',
+    description: 'Buildings can be added only in a city that is on. A city can be switched on only when its state is on (REGION_OFF).',
+  })
+  @ApiOkResponse({ description: 'The city after the change' })
+  @ApiResponse({ status: 400, description: 'Its state is off (REGION_OFF)' })
+  @ApiResponse({ status: 404, description: 'The city is not set up in this country' })
+  switchCity(
+    @CurrentUser() user: RequestUser,
+    @Param('countryCode') countryCode: string,
+    @Param('cityId', ParseUUIDPipe) cityId: string,
+    @Body() dto: SwitchPlaceDto,
+  ) {
+    return this.controls.switchCity(countryCode, cityId, dto.enabled, dto.reason, actor(user));
+  }
+}
+
+function actor(user: RequestUser) {
+  return { userId: user.id, roles: user.staff!.roles as StaffRole[], countryScopes: user.staff!.countryScopes };
 }
