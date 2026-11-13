@@ -258,6 +258,18 @@ describe('Media, listings, submission and agent authority (API, step 5 part 1)',
       await mediaStart(stranger, unitId, base).expect(404);
     });
 
+    it("asks for the occupant's consent before inside photos of an occupied unit, but not for the frontage", async () => {
+      const landlord = await person(['LANDLORD']);
+      const { unitId, at } = await buildingWithFlat(landlord);
+      const unit = (await api().patch(`/v1/units/${unitId}`).set(bearer(landlord.token)).send({ occupied: true }).expect(200)).body;
+      expect(unit.occupied).toBe(true);
+      expect(unit.parts.find((p: { code: string }) => p.code === 'frontage').outside).toBe(true);
+      const base = { partCode: 'kitchen', kind: 'PHOTO', contentType: 'image/jpeg', sizeBytes: photo.length, sha256: sha(photo), capturedAt: new Date().toISOString(), captureLocation: at };
+      expect((await mediaStart(landlord, unitId, base).expect(422)).body.code).toBe('OCCUPANT_CONSENT_REQUIRED');
+      await mediaStart(landlord, unitId, { ...base, occupantConsent: true }).expect(201);
+      await mediaStart(landlord, unitId, { ...base, partCode: 'frontage', sha256: sha(Buffer.concat([photo, Buffer.from('x')])) }).expect(201);
+    });
+
     it('resumes an interrupted upload in parts, and refuses a file that is not the one declared', async () => {
       const landlord = await person(['LANDLORD']);
       const { unitId, at } = await buildingWithFlat(landlord);

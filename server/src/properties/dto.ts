@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsInt, IsNumber, IsObject, IsOptional, IsString, IsUUID, Max, MaxLength, Min, MinLength, ValidateNested } from 'class-validator';
+import { IsInt, IsNumber, IsObject, IsOptional, IsString, IsUUID, Max, MaxLength, Min, MinLength, ValidateNested, IsBoolean } from 'class-validator';
 import { IsStandardPhone, toStandardPhone } from '../common/phone.js';
 
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
@@ -139,6 +139,11 @@ export class CreateUnitDto {
   @IsOptional()
   @IsObject()
   details?: Record<string, unknown>;
+
+  @ApiPropertyOptional({ description: "Someone lives or works there now; inside photos then need the occupant's consent (Specification 5.3)" })
+  @IsOptional()
+  @IsBoolean()
+  occupied?: boolean;
 }
 
 export class UpdateUnitDto {
@@ -167,6 +172,11 @@ export class UpdateUnitDto {
   @IsOptional()
   @IsObject()
   details?: Record<string, unknown>;
+
+  @ApiPropertyOptional({ description: "Someone lives or works there now; inside photos then need the occupant's consent" })
+  @IsOptional()
+  @IsBoolean()
+  occupied?: boolean;
 }
 
 export class PartNoteDto {

@@ -508,6 +508,8 @@ model Unit {
   floorAreaSqm   Decimal? @db.Decimal(10, 2)
   /// Finishing, power, water, security, parking and similar, validated against country settings.
   details        Json     @default("{}")
+  /// Someone lives or works there now: their consent is then needed before inside photos are taken (Specification 5.3).
+  occupied       Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -529,6 +531,8 @@ model UnitPart {
   required  Boolean   @default(true)
   minPhotos Int       @default(2)
   mediaKind MediaKind @default(PHOTO)
+  /// Outside the unit (frontage, compound): photographed without the occupant's consent.
+  outside   Boolean   @default(false)
   /// A note on this part, e.g. "newly tiled" (decision 56).
   note      String?
   sortOrder Int       @default(0)

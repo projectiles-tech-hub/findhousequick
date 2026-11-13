@@ -125,6 +125,7 @@ export class PropertiesService {
           floorLevel: dto.floorLevel ?? null,
           floorAreaSqm: dto.floorArea === undefined ? null : toSqm(dto.floorArea, settings),
           details,
+          occupied: dto.occupied ?? false,
           parts: { create: parts },
         },
       });
@@ -163,7 +164,7 @@ export class PropertiesService {
     const countsChanged = counts.bedrooms !== unit.bedrooms || counts.bathrooms !== unit.bathrooms || counts.toilets !== unit.toilets;
 
     await this.prisma.$transaction(async (tx) => {
-      await tx.unit.update({ where: { id: unit.id }, data: { ...counts, ...(details !== undefined && { details }) } });
+      await tx.unit.update({ where: { id: unit.id }, data: { ...counts, ...(details !== undefined && { details }), ...(dto.occupied !== undefined && { occupied: dto.occupied }) } });
       if (!countsChanged) return;
       const type = await tx.propertyType.findUniqueOrThrow({ where: { id: unit.propertyTypeId } });
       const wanted = generateParts(type.partTemplate, counts, settings.listings.defaultMinPhotosPerPart);
@@ -298,12 +299,14 @@ export class PropertiesService {
       floorArea: unit.floorAreaSqm === null ? null : fromSqm(Number(unit.floorAreaSqm), settings),
       areaUnit: settings.formats.areaUnit,
       details: unit.details,
+      occupied: unit.occupied,
       parts: parts.map((p) => ({
         code: p.code,
         label: p.label,
         required: p.required,
         minPhotos: p.minPhotos,
         mediaKind: p.mediaKind,
+        outside: p.outside,
         note: p.note,
         captured: p.captured,
         complete: p.captured >= Math.max(p.minPhotos, 1),

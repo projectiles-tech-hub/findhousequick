@@ -949,6 +949,7 @@ paths:
                 floorLevel: { type: integer }
                 floorArea: { type: number, description: In the country's area unit }
                 details: { $ref: "#/components/schemas/UnitDetails" }
+                occupied: { type: boolean, description: "Someone lives or works there now; inside photos then need the occupant's consent (OCCUPANT_CONSENT_REQUIRED). Frontage and compound parts are marked outside and need none." }
       responses:
         "201":
           description: Unit created with its parts checklist.
@@ -986,6 +987,7 @@ paths:
                 bathrooms: { type: integer, minimum: 0 }
                 toilets: { type: integer, minimum: 0 }
                 details: { $ref: "#/components/schemas/UnitDetails" }
+                occupied: { type: boolean, description: "Someone lives or works there now; inside photos then need the occupant's consent (OCCUPANT_CONSENT_REQUIRED). Frontage and compound parts are marked outside and need none." }
       responses:
         "200":
           description: Updated unit.
@@ -1173,7 +1175,7 @@ paths:
                 capturedAt: { type: string, format: date-time }
                 captureLocation: { $ref: "#/components/schemas/LatLng" }
                 captureAccuracyM: { type: integer }
-                occupantConsent: { type: boolean, description: Required when the unit is still occupied }
+                occupantConsent: { type: boolean, description: "Required for parts that are not outside when the unit is marked occupied (OCCUPANT_CONSENT_REQUIRED)" }
       responses:
         "201":
           description: Resumable upload created.
@@ -2926,6 +2928,7 @@ components:
         floorArea: { type: [number, "null"], description: "In the country's area unit" }
         areaUnit: { type: string, enum: [SQM, SQFT] }
         details: { $ref: "#/components/schemas/UnitDetails" }
+        occupied: { type: boolean, description: "Someone lives or works there now; inside photos then need the occupant's consent (OCCUPANT_CONSENT_REQUIRED). Frontage and compound parts are marked outside and need none." }
         checklistComplete: { type: boolean, description: Every required part has its photos or video }
         parts:
           type: array
