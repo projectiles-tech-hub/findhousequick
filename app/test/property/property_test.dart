@@ -84,8 +84,7 @@ Map<String, dynamic> _card(String id, String title, int rentNaira, {int? distanc
     };
 
 class _FakeLocation extends LocationReader {
-  _FakeLocation({this.explainedBefore = true});
-  bool explainedBefore;
+  bool explainedBefore = true;
   @override
   Future<bool> explained() async => explainedBefore;
   @override

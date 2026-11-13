@@ -1,6 +1,6 @@
 # Project status
 
-Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build session, and update it at the end.
+Updated: 13 November 2026. Read this after CLAUDE.md at the start of every build session, and update it at the end.
 
 ## Where things stand
 
@@ -122,11 +122,9 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
     fingerprint, and three watermarked display copies behind 15-minute links. Videos have their length checked.
   - Listings: drafts, every fee entered, edits recorded, submission with a list of what is missing, the staff desk
     review, availability confirmation, hourly expiry, pause, resume, mark as rented and close.
-  - Still to do from this part: automatic blurring and the hidden watermark (not built in part 4; the privacy
-    policy and the terms describe both, so they must be built before any real user signs up); a watermarked copy of each
-    video (before any video is shown publicly); asking for the occupant's consent only when the unit is occupied (an
-    "occupied" detail on units); the property page for tenants (part 2); a real storage provider adapter (Cloudflare
-    R2) once the account is opened.
+  - Still to do from this part: a real detection service for automatic blurring (the blurring, the hidden
+    watermark, the video copy and the occupant's consent for occupied units were built on 13 November 2026, in
+    pull request #62); a real storage provider adapter (Cloudflare R2) once the account is opened.
 
 - **Release 1 step 5, part 2 (search, the property page and saved items)**: complete. Merged in pull request #48 on 10 November 2026. Plan in
   `docs/adr/0010-search-and-the-property-page.md`.
@@ -169,8 +167,9 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
     decided.
   - Fee types shown on listings as a country setting (decision 55).
   - Still to do from this part: the walkthrough's GPS path (needs the phone app, step 6); automatic reading of
-    document numbers; a reminder before an inspection and a prompt for the follow-up answers; blocking another
-    user in chat; the directions link through the maps provider adapter.
+    document numbers; blocking another user in chat (planned in ADR 0011 but not in the specification or the
+    designs, so left until Emmanuel says); the directions link through the maps provider adapter. The reminder
+    before an inspection and the follow-up prompt were built in pull request #62.
 
 - **Release 1 step 5, part 5 (the public website)**: complete. Merged in pull request #51 on 10 November 2026.
   Pages 107 and 108 follow the designs approved in pull request #46. Plan in `docs/adr/0013-public-website.md`.
@@ -264,14 +263,34 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
     property page (part 3c, until then a listing opens on the public website); saved items (part 3d); the
     sections of screen 25 left out (see ADR 0014); the bell on Home (with notifications, part 4).
 
+- **Release 1 step 6 parts 3b and 3c, first half, and smaller pieces left from steps 1 to 5**: in pull request #62,
+  built on pull request #61. As built: `docs/adr/0014-app-screens.md` section 13; ADRs 0009 and 0015.
+  - Decision 85: the distance row on screen 27 stays; the Penpot design of screen 27 updated (phone).
+  - Screen 30, the property page, at 360, 768 and 1366 from the approved Figma designs with their exact
+    measurements, and the website header and footer; two new states designed in Figma first (30a and 30b).
+  - The map part for every screen, and `GET /maps/tiles` on the server (new settings `MAPS_TILES_PROVIDER`,
+    `GOOGLE_MAPS_TILES_KEY`, `OSM_TILES_URL`, `OSM_TILES_ATTRIBUTION`).
+  - Maps provider used for place search and nearby amenities, with answers kept (new country settings `maps.*`).
+  - Media protection: automatic blurring through an adapter (no real service yet), the hidden watermark (new
+    setting `HIDDEN_MARK_KEY`), and a watermarked copy of each video; the walkthrough shown on the property page.
+  - Units can be marked occupied: inside photos then need the occupant's consent.
+  - A copy of your own data (`POST` and `GET /me/data-export`), made in the background (new country settings
+    `retention.dataExportLinkDays` and `retention.dataExportEveryHours`).
+  - A reminder before an inspection and the follow-up questions after it (new country settings
+    `inspections.reminderHoursBefore` and `inspections.followUpHoursAfter`).
+  - Admin endpoints to switch a state or a city on or off.
+  - Still to do from part 3: screens 23 (Map) and 24 (Around me), the website layouts of screens 22 to 29 and the
+    distance row on screen 27's website layouts; screens 31 to 36; part 3d, saved items (screens 37 to 39). These
+    wait for the Penpot designs to be read: the Penpot tab kept going to sleep in the browser on 13 November 2026.
+
 - **Maps providers (decision 81)**: complete. Merged in pull request #56 on 11 November 2026. How it is built is in
   `docs/adr/0015-maps-providers.md`.
   - The server has an adapter for Google Maps and one for OpenStreetMap, for place search, nearby amenities and
     travel times; the provider is a server setting, for all uses or one use at a time. The default is none, so
     nothing changes for users.
   - Neither adapter has been tried against the real service: no account exists yet.
-  - Still to do: use the adapters in place search and on the property page, keeping answers so they are not paid
-    for twice; the map picture in the apps and on the website (step 6 part 3); the satellite check.
+  - Still to do: travel times to saved places; the satellite check. Place search, nearby amenities (with answers
+    kept) and the map picture's source were built in pull request #62.
   - Also recorded here: decision 82 (the scout invitation link opens no page of its own) and decision 83 (the
     Pidgin wording is written later by Projectiles Tech Hub).
 
@@ -302,16 +321,24 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
 - A company dollar card, so the hosting account (and the test system) can be opened (decision 42).
 - Scouts and the referral reward (decisions 70 to 72): Decisions Log open points 16, 18 and 19: the reward amount
   and, before it goes live, state estate agency rules and withholding tax. The release is settled (decision 72).
+- Which detection service to use for automatic blurring of faces, number plates, documents and family photographs
+  (Google Cloud Vision, Amazon Rekognition or another). It must be set before real users sign up (ADR 0009).
+- Which header every signed-in website page uses: the property page's (Figma) and the search pages' (Penpot)
+  differ. Until decided, each page is built with the header in its own design.
+- Account deletion (`DELETE /me`, Specification 15.2): what happens to a landlord's live listings and to
+  conversations, whether there is a waiting period in which the user can change their mind, and which records are
+  kept for the legal period.
 - Decisions Log open points: the five escrow settings, escrow legal structure, launch city, partner API,
   mention of the Agent Emma channel in the launch plan, budget, hiring.
 
 ## Next: Release 1, in this order
 
-1. ~~**Accounts**~~: done (pull request #4). Still to do from the accounts area: `DELETE /me` (account deletion) and
-   `POST /me/data-export`; both need background jobs. A real SMS adapter (Termii or Twilio) once an account
+1. ~~**Accounts**~~: done (pull request #4). Still to do from the accounts area: `DELETE /me` (account deletion),
+   which needs Emmanuel's decisions (see "Waiting for Emmanuel"); `POST /me/data-export` was built in pull request #62. A real SMS adapter (Termii or Twilio) once an account
    is opened. App sign-in screens.
 2. ~~**Staff accounts and roles**~~, and the admin feature-rule endpoints: done (pull request #7).
-   Still to do from this area: admin screens in the app; two-step login for ordinary users (ADR 0005, point 3).
+   Still to do from this area: admin screens in the app. Two-step login for ordinary users is for a later release
+   (decision 31, Specification 15.4).
    Country settings changes (`PATCH /admin/countries/{countryCode}`, super admins, recorded): done (pull request
    #43, merged on 2 November 2026), built before step 4 as Emmanuel asked on 29 October 2026.
 2a. ~~**Specification check**~~: done (pull requests #9 and #10; decisions 39 to 63).
@@ -351,9 +378,9 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
    reference lists (property types with their checklists, document types, regions with cities); registering a
    building at its location, with duplicates sent to the verification team; units with their checklists (one
    part per bedroom, bathroom and toilet), rebuilt when room counts change without losing photos; notes on parts;
-   unit details checked against choices held in the country settings. Still to do from this step: the comparison
-   of the building's location with the first photos (with media upload, step 5); admin endpoints to switch cities
-   on (switched on in the database for now, see `docs/DEPLOYMENT.md`).
+   unit details checked against choices held in the country settings. The comparison of the building's location
+   with its photos is done by the check on every photo and video (taken within the country's capture radius of the
+   building, step 5); the admin endpoints to switch states and cities on were built in pull request #62.
 5. **Step 5, in five parts** (ADR 0009). Part 1, documents and media upload, agent authority, listings and
    submission: complete (pull request #47). Part 2, search, the property page and saved items: complete (pull request #48). Part 3,
    messaging with the live connection (decision 47), calls inside the app (decision 44, new feature switch
@@ -373,7 +400,7 @@ Updated: 11 November 2026. Read this after CLAUDE.md at the start of every build
    (`docs/adr/0014-app-screens.md`). Part 1, the foundation: done (pull request #55). Part 2a, sign-up and sign-in on the phone
    (screens 1 to 9): done (pull request #57). Part 2b, their website layouts: done (pull request #58); all three
    merged on 11 November 2026. Part 2c, verification: done (pull request #59). Flutter upgraded to 3.50.0 (pull request #60). Part 3a, search on the phone: done
-   (pull request #61). Next: part 3b, the map and the website layouts of search; then part 3c, the property page;
+   (pull request #61). Parts 3b and 3c, first half: in pull request #62. Next: the rest of 3b and 3c (screens 23, 24 and 31 to 36, the website layouts of search);
    part 3d, saved items; then part 4,
    messages, calls and inspections; part 5, listing a property; part 6, me, settings and scouts; part 7, staff.
 

@@ -194,6 +194,25 @@ anything it works out; the shared parts are also checked by eye against the desi
 - A listing opens on the public website (page 108) until the property page is built in part 3c.
 - These screens use the phone layout on wide screens, in a column 600 wide, until their website layouts are
   built (part 3b).
+- The distance row on screen 27 was decided by Emmanuel on 13 November 2026 (decision 85), and the Penpot design
+  of screen 27 was updated to show it (phone; the website layouts in progress).
+
+### 13. The property page and the map (parts 3b and 3c, in progress)
+
+- Screen 30, the property page, follows the approved Figma designs at 360, 768 and 1366, with their exact
+  measurements: buttons with corners of 8 and a 1.5 outline, badges, chips 39 high, and the gaps between boxes
+  (12 on the phone, 16 on the website). Its website layout uses the website header and footer drawn in Figma.
+- Two states the designs did not show were designed in Figma first (frames 30a and 30b, phone and 1366): "This
+  home is no longer listed", and "Sign in to keep viewing homes" when the viewing limit is reached (decision 52).
+- "Book a free inspection" and "Chat with the lister" need level 2 on the server. Signed-out visitors go to sign
+  in; anyone not yet verified sees screen 13, Verify to continue. The booking and chat screens come in part 4;
+  until then a verified user is taken to the Inspections or Messages tab.
+- The share and video icons were added to the app's icon set from the Figma design.
+- The map: one map part for every screen (`app/lib/src/search/map_view.dart`, using the `flutter_map` and
+  `latlong2` packages), drawing the picture from whichever provider the server names through `GET /maps/tiles`,
+  with the provider's credit always shown. With no provider set, the screens show that the map is not available.
+  Screens 23 (Map) and 24 (Around me), screens 31 to 36 and the website layouts of screens 22 to 29 follow, from
+  their Penpot designs.
 
 ## Consequences
 
