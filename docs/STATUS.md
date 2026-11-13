@@ -263,7 +263,7 @@ Updated: 13 November 2026. Read this after CLAUDE.md at the start of every build
     property page (part 3c, until then a listing opens on the public website); saved items (part 3d); the
     sections of screen 25 left out (see ADR 0014); the bell on Home (with notifications, part 4).
 
-- **Blocking and deleting an account (decisions 86 to 88)**: in the pull request after #62 (built on it).
+- **Blocking and deleting an account (decisions 86 to 88)**: in pull request #63 (built on #62).
   Product Specification 1.11 (7.1, 15.2, 17.1). As built: ADR 0011 (Chat), `docs/api/openapi.yaml`.
   - Blocking in a conversation (`POST /conversations/{id}/block`, `GET /me/blocks`, `DELETE /me/blocks/{userId}`),
     behind the new switch `contact.blocking`; new country setting `verification.blocksForReview`.
@@ -342,7 +342,7 @@ Updated: 13 November 2026. Read this after CLAUDE.md at the start of every build
 ## Next: Release 1, in this order
 
 1. ~~**Accounts**~~: done (pull request #4). Still to do from the accounts area: nothing on the server (`DELETE /me` built
-   after pull request #62, decision 87; `POST /me/data-export` built in pull request #62). A real SMS adapter (Termii or Twilio) once an account
+   in pull request #63, decision 87; `POST /me/data-export` built in pull request #62). A real SMS adapter (Termii or Twilio) once an account
    is opened. App sign-in screens.
 2. ~~**Staff accounts and roles**~~, and the admin feature-rule endpoints: done (pull request #7).
    Still to do from this area: admin screens in the app. Two-step login for ordinary users is for a later release
